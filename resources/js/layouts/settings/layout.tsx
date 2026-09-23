@@ -49,18 +49,19 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 key={`${toUrl(item.href)}-${index}`}
                                 size="sm"
                                 variant="ghost"
-                                asChild
+                                nativeButton={false}
+                                render={
+                                    <Link href={item.href}>
+                                        {item.icon && (
+                                            <item.icon className="h-4 w-4" />
+                                        )}
+                                        {item.title}
+                                    </Link>
+                                }
                                 className={cn('w-full justify-start', {
                                     'bg-muted': isCurrentOrParentUrl(item.href),
                                 })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
+                            />
                         ))}
                     </nav>
                 </aside>
