@@ -48,6 +48,7 @@
     "devDependencies": {
         "@laravel/vite-plugin-wayfinder": "^0.1.10",
         "@rolldown/plugin-babel": "^0.2.4",
+        "@shadcn/lint": "^0.2.0",
         "@types/node": "^26.6.2",
         "babel-plugin-react-compiler": "^1.0.0",
         "vite-plus": "0.3.0"

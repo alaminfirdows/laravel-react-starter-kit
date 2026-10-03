@@ -40,6 +40,7 @@ export default defineConfig({
         },
     },
     lint: {
+        jsPlugins: ['@shadcn/lint'],
         ignorePatterns: [
             'vendor/**',
             'node_modules/**',
