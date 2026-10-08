@@ -2,6 +2,8 @@
 
 namespace App\Domain\Project\Models;
 
+use App\Domain\Knowledge\Models\Decision;
+use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Enums\BusinessModel;
 use App\Domain\Project\Enums\LegalEntityStatus;
 use App\Domain\Project\Enums\ProjectPhase;
@@ -137,6 +139,22 @@ class Project extends Model
     public function approvals(): HasMany
     {
         return $this->hasMany(Approval::class);
+    }
+
+    /**
+     * @return HasMany<KnowledgeDocument, $this>
+     */
+    public function knowledgeDocuments(): HasMany
+    {
+        return $this->hasMany(KnowledgeDocument::class);
+    }
+
+    /**
+     * @return HasMany<Decision, $this>
+     */
+    public function decisions(): HasMany
+    {
+        return $this->hasMany(Decision::class);
     }
 
     /**
