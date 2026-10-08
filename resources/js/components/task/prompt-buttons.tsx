@@ -9,15 +9,34 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
 import { useClipboard } from '@/hooks/use-clipboard';
+import type { DeepLink } from '@/types';
 
-export function PromptButtons({ prompt }: { prompt: string }) {
+export function PromptButtons({
+    prompt,
+    deepLink,
+}: {
+    prompt: string;
+    deepLink: DeepLink;
+}) {
     const [, copy] = useClipboard();
+
+    const openInClaude = async () => {
+        if (deepLink.url) {
+            window.location.href = deepLink.url;
+            toast.info('Claude opens with the prompt. Press Send to start.');
+
+            return;
+        }
+
+        if (await copy(deepLink.launcher)) {
+            toast.info(
+                'Prompt too long for a link. Copied — paste it in Claude.',
+            );
+        } else {
+            toast.error('Copy failed');
+        }
+    };
 
     const copyPrompt = async () => {
         if (await copy(prompt)) {
@@ -49,16 +68,12 @@ export function PromptButtons({ prompt }: { prompt: string }) {
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <span>
-                        <Button size="sm" variant="outline" disabled>
-                            <ExternalLink /> Open in Claude
-                        </Button>
-                    </span>
-                </TooltipTrigger>
-                <TooltipContent>Coming soon — connect Claude</TooltipContent>
-            </Tooltip>
+            <Button size="sm" variant="outline" onClick={openInClaude}>
+                <ExternalLink />
+                {deepLink.target === 'cowork'
+                    ? 'Open in Cowork'
+                    : 'Open in Claude'}
+            </Button>
         </div>
     );
 }

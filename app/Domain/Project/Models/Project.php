@@ -8,6 +8,7 @@ use App\Domain\Project\Enums\ProjectPhase;
 use App\Domain\Project\Enums\ProjectStatus;
 use App\Domain\Project\Enums\Stage;
 use App\Domain\Project\Policies\ProjectPolicy;
+use App\Domain\Task\Models\Approval;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Concerns\BelongsToWorkspace;
 use App\Models\User;
@@ -128,6 +129,14 @@ class Project extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    /**
+     * @return HasMany<Approval, $this>
+     */
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(Approval::class);
     }
 
     /**

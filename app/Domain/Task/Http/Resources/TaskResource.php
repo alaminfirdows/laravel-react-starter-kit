@@ -2,7 +2,9 @@
 
 namespace App\Domain\Task\Http\Resources;
 
+use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Models\Task;
+use App\Domain\Task\Models\TaskAction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -35,6 +37,7 @@ class TaskResource extends JsonResource
             'parent' => TaskSummaryResource::make($this->whenLoaded('parent')),
             'children' => TaskSummaryResource::collection($this->whenLoaded('children')),
             'actions' => TaskActionResource::collection($this->whenLoaded('actions')),
+            'hasActiveRun' => $this->whenLoaded('actions', fn (): bool => $this->actions->contains(fn (TaskAction $action): bool => $action->status === ActionStatus::Running)),
         ];
     }
 

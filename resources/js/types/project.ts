@@ -80,6 +80,43 @@ export type TaskSummary = {
     isLeaf?: boolean;
 };
 
+export type DeepLink = {
+    target: 'chat' | 'cowork';
+    launcher: string;
+    url: string | null;
+};
+
+export type ActionRun = {
+    id: string;
+    status: 'started' | 'succeeded' | 'failed' | 'cancelled';
+    channel: string;
+    actorType: 'user' | 'agent' | 'system';
+    clientName: string | null;
+    outputMd: string | null;
+    error: string | null;
+    startedAt: string | null;
+    finishedAt: string | null;
+};
+
+export type Evidence = {
+    id: string;
+    kind: string;
+    label: string;
+    value: string | null;
+    criterionKey: string | null;
+    passed: boolean | null;
+    createdAt: string | null;
+};
+
+export type Approval = {
+    id: string;
+    status: 'pending' | 'approved' | 'rejected';
+    summaryMd: string;
+    requestedByClient: string | null;
+    decisionNote: string | null;
+    createdAt: string | null;
+};
+
 export type TaskAction = {
     id: string;
     title: string;
@@ -87,9 +124,14 @@ export type TaskAction = {
     executor: string;
     executorLabel: string;
     status: string;
+    statusLabel: string;
     instructionsMd: string | null;
     isRequired: boolean;
     prompt: string;
+    deepLink: DeepLink;
+    runs: ActionRun[];
+    evidence: Evidence[];
+    pendingApproval: Approval | null;
 };
 
 export type Task = {
@@ -109,6 +151,7 @@ export type Task = {
     parent: TaskSummary | null;
     children: TaskSummary[];
     actions: TaskAction[];
+    hasActiveRun: boolean;
 };
 
 export type Activity = {

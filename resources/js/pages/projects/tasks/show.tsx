@@ -1,4 +1,5 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePoll } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { Markdown } from '@/components/markdown/markdown';
 import { ActionCard } from '@/components/task/action-card';
 import { ParentTaskCard } from '@/components/task/parent-task-card';
@@ -11,6 +12,22 @@ export default function TaskShow({
     can,
     task,
 }: ProjectPageProps & { task: Task }) {
+    const { start, stop } = usePoll(
+        10_000,
+        { only: ['task'] },
+        { autoStart: false },
+    );
+
+    useEffect(() => {
+        if (task.hasActiveRun) {
+            start();
+        } else {
+            stop();
+        }
+
+        return stop;
+    }, [task.hasActiveRun, start, stop]);
+
     return (
         <>
             <Head title={task.title} />
@@ -41,7 +58,12 @@ export default function TaskShow({
                     <section className="space-y-3">
                         <h2 className="font-semibold">How to get it done</h2>
                         {task.actions.map((action) => (
-                            <ActionCard key={action.id} action={action} />
+                            <ActionCard
+                                key={action.id}
+                                action={action}
+                                projectSlug={project.slug}
+                                canUpdate={can.update}
+                            />
                         ))}
                     </section>
                 )}
