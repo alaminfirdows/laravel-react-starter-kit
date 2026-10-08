@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import { Copy, Unplug } from 'lucide-react';
 import { toast } from 'sonner';
+import WorkspaceConnectionController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceConnectionController';
 import ConnectClaudeController from '@/actions/App/Http/Controllers/Settings/ConnectClaudeController';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -20,12 +21,25 @@ function formatDate(value: string | null) {
     return value ? new Date(value).toLocaleDateString() : '—';
 }
 
+function RevokeButton({ disabled }: { disabled: boolean }) {
+    return (
+        <Button type="submit" size="sm" variant="outline" disabled={disabled}>
+            <Unplug /> Revoke
+        </Button>
+    );
+}
+
 export default function ConnectClaude({
     connectorUrl,
     connections,
+    team,
 }: {
     connectorUrl: string;
     connections: McpConnection[];
+    team: {
+        workspace: { slug: string; name: string };
+        connections: McpConnection[];
+    } | null;
 }) {
     const [, copy] = useClipboard();
 
@@ -102,14 +116,9 @@ export default function ConnectClaude({
                                         options={{ preserveScroll: true }}
                                     >
                                         {({ processing }) => (
-                                            <Button
-                                                type="submit"
-                                                size="sm"
-                                                variant="outline"
+                                            <RevokeButton
                                                 disabled={processing}
-                                            >
-                                                <Unplug /> Revoke
-                                            </Button>
+                                            />
                                         )}
                                     </Form>
                                 </li>
@@ -117,6 +126,61 @@ export default function ConnectClaude({
                         </ul>
                     )}
                 </div>
+                {team && (
+                    <div className="space-y-6">
+                        <Heading
+                            variant="small"
+                            title={`${team.workspace.name} connections`}
+                            description="Members' clients bound to this workspace. You can revoke members ranked below you."
+                        />
+                        {team.connections.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                No member connections.
+                            </p>
+                        ) : (
+                            <ul className="divide-y rounded-md border">
+                                {team.connections.map((connection) => (
+                                    <li
+                                        key={connection.id}
+                                        className="flex items-center justify-between gap-4 p-3 text-sm"
+                                    >
+                                        <div>
+                                            <p className="font-medium">
+                                                {connection.userName}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                                {connection.clientName} · since{' '}
+                                                {formatDate(
+                                                    connection.createdAt,
+                                                )}
+                                            </p>
+                                        </div>
+                                        {connection.canRevoke && (
+                                            <Form
+                                                {...WorkspaceConnectionController.destroy.form(
+                                                    {
+                                                        workspace:
+                                                            team.workspace.slug,
+                                                        token: connection.id,
+                                                    },
+                                                )}
+                                                options={{
+                                                    preserveScroll: true,
+                                                }}
+                                            >
+                                                {({ processing }) => (
+                                                    <RevokeButton
+                                                        disabled={processing}
+                                                    />
+                                                )}
+                                            </Form>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );

@@ -2,6 +2,7 @@
 
 use App\Domain\Task\Http\Controllers\MyTaskController;
 use App\Domain\Workspace\Http\Controllers\InvitationController;
+use App\Domain\Workspace\Http\Controllers\WorkspaceConnectionController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceInvitationController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceMemberController;
@@ -59,6 +60,8 @@ Route::prefix('{workspace}')
             Route::delete('members/{member}', [WorkspaceMemberController::class, 'destroy'])->name('members.destroy');
             Route::post('members/{member}/transfer', [WorkspaceMemberController::class, 'transferOwnership'])
                 ->name('members.transfer');
+
+            Route::delete('connections/{token}', [WorkspaceConnectionController::class, 'destroy'])->name('connections.destroy');
 
             Route::get('invitations', [WorkspaceInvitationController::class, 'index'])->name('invitations.index');
             Route::post('invitations', [WorkspaceInvitationController::class, 'store'])

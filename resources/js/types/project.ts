@@ -182,6 +182,9 @@ export type McpConnection = {
     workspaceName: string | null;
     createdAt: string | null;
     expiresAt: string | null;
+    userId: string | null;
+    userName: string | null;
+    canRevoke?: boolean;
 };
 
 export type TaskComment = {

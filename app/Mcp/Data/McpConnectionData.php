@@ -15,10 +15,12 @@ final readonly class McpConnectionData
         public ?string $workspaceName,
         public ?CarbonInterface $createdAt,
         public ?CarbonInterface $expiresAt,
+        public ?string $userId = null,
+        public ?string $userName = null,
     ) {}
 
     /**
-     * @return array{id: string, clientName: string, workspaceName: string|null, createdAt: string|null, expiresAt: string|null}
+     * @return array{id: string, clientName: string, workspaceName: string|null, createdAt: string|null, expiresAt: string|null, userId: string|null, userName: string|null}
      */
     public function toArray(): array
     {
@@ -28,6 +30,8 @@ final readonly class McpConnectionData
             'workspaceName' => $this->workspaceName,
             'createdAt' => $this->createdAt?->toIso8601String(),
             'expiresAt' => $this->expiresAt?->toIso8601String(),
+            'userId' => $this->userId,
+            'userName' => $this->userName,
         ];
     }
 }
