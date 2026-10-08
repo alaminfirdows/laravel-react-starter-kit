@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Knowledge\Http\Controllers\DecisionController;
+use App\Domain\Knowledge\Http\Controllers\KnowledgeController;
 use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\Controllers\ProjectController;
 use App\Domain\Project\Http\Controllers\ProjectLogoController;
@@ -28,5 +30,15 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::get('{project}/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::post('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'store'])->name('tasks.completion.store');
     Route::delete('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'destroy'])->name('tasks.completion.destroy');
+    Route::get('{project}/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
+    Route::get('{project}/knowledge/create', [KnowledgeController::class, 'create'])->name('knowledge.create');
+    Route::post('{project}/knowledge', [KnowledgeController::class, 'store'])->name('knowledge.store');
+    Route::get('{project}/knowledge/{knowledgeDocument}', [KnowledgeController::class, 'show'])->name('knowledge.show');
+    Route::get('{project}/knowledge/{knowledgeDocument}/edit', [KnowledgeController::class, 'edit'])->name('knowledge.edit');
+    Route::put('{project}/knowledge/{knowledgeDocument}', [KnowledgeController::class, 'update'])->name('knowledge.update');
+
+    Route::get('{project}/decisions', [DecisionController::class, 'index'])->name('decisions.index');
+    Route::post('{project}/decisions', [DecisionController::class, 'store'])->name('decisions.store');
+
     Route::post('{project}/approvals/{approval}/decision', [ApprovalDecisionController::class, 'store'])->name('approvals.decision.store');
 });

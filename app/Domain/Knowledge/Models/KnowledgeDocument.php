@@ -5,6 +5,7 @@ namespace App\Domain\Knowledge\Models;
 use App\Domain\Knowledge\Enums\DocSource;
 use App\Domain\Knowledge\Enums\DocStatus;
 use App\Domain\Knowledge\Enums\DocType;
+use App\Domain\Knowledge\Policies\KnowledgeDocumentPolicy;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Concerns\BelongsToWorkspace;
@@ -12,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Database\Factories\KnowledgeDocumentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['project_id', 'workspace_id', 'task_id', 'doc_type', 'title', 'body_md', 'status', 'source', 'version', 'checksum', 'embedded_at', 'tags', 'meta'])]
 #[UseFactory(KnowledgeDocumentFactory::class)]
+#[UsePolicy(KnowledgeDocumentPolicy::class)]
 class KnowledgeDocument extends Model
 {
     /** @use HasFactory<KnowledgeDocumentFactory> */
