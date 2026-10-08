@@ -2,6 +2,9 @@
 
 namespace App\Domain\Prompt\Actions;
 
+use App\Domain\Knowledge\Enums\DocStatus;
+use App\Domain\Knowledge\Enums\DocType;
+use App\Domain\Project\Models\Project;
 use App\Domain\Prompt\Support\TokenBudget;
 use App\Domain\Task\Models\TaskAction;
 use BackedEnum;
@@ -15,6 +18,9 @@ class RenderFullPrompt
     public const int MAX_TOKENS = 3500;
 
     public const int MAX_CHARS = self::MAX_TOKENS * TokenBudget::CHARS_PER_TOKEN;
+
+    /** Budget per `{{ knowledge.<doc_type> }}` placeholder. */
+    public const int KNOWLEDGE_TOKENS = 1200;
 
     public const string COMPLETION_PROTOCOL = <<<'MD'
         ---
@@ -56,6 +62,10 @@ class RenderFullPrompt
         $models = ['project' => $action->task->project, 'task' => $action->task, 'action' => $action];
 
         $body = preg_replace_callback('/\{\{\s*([a-z_]+)\.([a-z_]+)\s*\}\}/', function (array $m) use ($models): string {
+            if ($m[1] === 'knowledge') {
+                return $this->knowledge($models['project'], $m[2]);
+            }
+
             if (! in_array($m[2], self::FIELDS[$m[1]] ?? [], true)) {
                 return '';
             }
@@ -71,5 +81,25 @@ class RenderFullPrompt
         $prompt = preg_replace("/\n{3,}/", "\n\n", trim($body).$skillLine.($withProtocol ? "\n\n".self::COMPLETION_PROTOCOL : '')) ?? '';
 
         return (new TokenBudget(self::MAX_TOKENS))->trim($prompt);
+    }
+
+    /**
+     * Body of the project's approved document of that type, trimmed to its budget. Empty when none.
+     */
+    private function knowledge(Project $project, string $docType): string
+    {
+        $type = DocType::tryFrom($docType);
+
+        if ($type === null) {
+            return '';
+        }
+
+        $body = $project->knowledgeDocuments()
+            ->where('doc_type', $type)
+            ->where('status', DocStatus::Approved)
+            ->latest('updated_at')
+            ->value('body_md');
+
+        return $body === null ? '' : (new TokenBudget(self::KNOWLEDGE_TOKENS))->trim(trim($body));
     }
 }

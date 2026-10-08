@@ -3,6 +3,9 @@
 use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Catalog\Models\Skill;
+use App\Domain\Knowledge\Enums\DocStatus;
+use App\Domain\Knowledge\Enums\DocType;
+use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Models\Project;
 use App\Domain\Prompt\Actions\RenderFullPrompt;
 use App\Domain\Task\Models\Task;
@@ -52,4 +55,20 @@ test('lists catalog task skills', function () {
     $action = TaskAction::factory()->forTask($this->task)->create();
 
     expect(app(RenderFullPrompt::class)->handle($action))->toContain('use: pricing-coach.');
+});
+
+test('knowledge placeholders insert the approved document, trimmed to budget', function () {
+    KnowledgeDocument::factory()->forProject($this->project)->create(['doc_type' => DocType::Icp, 'status' => DocStatus::Draft, 'body_md' => 'Draft ICP']);
+    KnowledgeDocument::factory()->forProject($this->project)->create(['doc_type' => DocType::Icp, 'status' => DocStatus::Approved, 'body_md' => 'Approved ICP']);
+    KnowledgeDocument::factory()->forProject($this->project)->create(['doc_type' => DocType::Brand, 'status' => DocStatus::Approved, 'body_md' => str_repeat('b', 10000)]);
+    $action = TaskAction::factory()->forTask($this->task)->create([
+        'prompt_override_md' => "ICP: {{ knowledge.icp }}\nPositioning: {{ knowledge.positioning }}|{{ knowledge.nope }}\nBrand: {{ knowledge.brand }}",
+    ]);
+
+    $prompt = app(RenderFullPrompt::class)->handle($action, withProtocol: false);
+
+    expect($prompt)->toContain('ICP: Approved ICP')
+        ->not->toContain('Draft ICP')
+        ->toContain('Positioning: |')
+        ->and(mb_strlen(str($prompt)->after('Brand: ')->toString()))->toBeLessThanOrEqual(RenderFullPrompt::KNOWLEDGE_TOKENS * 4);
 });
