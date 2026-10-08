@@ -1,5 +1,6 @@
 <?php
 
+use App\Ai\Jobs\RunAppAiActionJob;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Actions\RequestApproval;
@@ -14,6 +15,7 @@ use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -116,4 +118,46 @@ test('approval of another project is not found', function () {
     });
 
     $this->post("/acme/projects/rocket/approvals/{$approval->id}/decision", ['approve' => true])->assertNotFound();
+});
+
+test('run with AI starts an in-app run and the page polls it', function () {
+    Queue::fake();
+    $action = app(WorkspaceDiscoveryService::class)->runAs($this->workspace,
+        fn () => TaskAction::factory()->forTask($this->leaf)->appAi()->create(['status' => ActionStatus::Ready]));
+
+    $this->get("/acme/projects/rocket/tasks/{$this->leaf->id}")
+        ->assertInertia(fn (Assert $page) => $page->where('task.actions.0.runsInApp', true));
+
+    $this->post("/acme/projects/rocket/tasks/{$this->leaf->id}/actions/{$action->id}/runs")
+        ->assertRedirect()
+        ->assertInertiaFlash('toast.type', 'success');
+
+    Queue::assertPushed(RunAppAiActionJob::class);
+    expect($action->refresh()->status)->toBe(ActionStatus::Running);
+
+    $this->get("/acme/projects/rocket/tasks/{$this->leaf->id}")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('task.hasActiveRun', true)
+            ->where('task.actions.0.runs.0.channel', RunChannel::AppAi->value));
+
+    $this->post("/acme/projects/rocket/tasks/{$this->leaf->id}/actions/{$action->id}/runs")
+        ->assertInertiaFlash('toast.type', 'error');
+    Queue::assertPushed(RunAppAiActionJob::class, 1);
+});
+
+test('run refuses manual actions, viewers and actions of other tasks', function () {
+    [$manual, $foreign] = app(WorkspaceDiscoveryService::class)->runAs($this->workspace, fn () => [
+        TaskAction::factory()->forTask($this->leaf)->create(),
+        TaskAction::factory()->forTask($this->parent)->appAi()->create(['status' => ActionStatus::Ready]),
+    ]);
+
+    $this->post("/acme/projects/rocket/tasks/{$this->leaf->id}/actions/{$manual->id}/runs")
+        ->assertInertiaFlash('toast.type', 'error');
+    $this->post("/acme/projects/rocket/tasks/{$this->leaf->id}/actions/{$foreign->id}/runs")
+        ->assertNotFound();
+
+    $viewer = User::factory()->create();
+    $this->workspace->memberships()->create(['user_id' => $viewer->id, 'role' => WorkspaceRole::Viewer, 'joined_at' => now()]);
+    $this->actingAs($viewer)->post("/acme/projects/rocket/tasks/{$this->parent->id}/actions/{$foreign->id}/runs")
+        ->assertForbidden();
 });

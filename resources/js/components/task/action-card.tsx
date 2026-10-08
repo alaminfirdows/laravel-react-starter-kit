@@ -2,6 +2,7 @@ import { Markdown } from '@/components/markdown/markdown';
 import { ActionActivity } from '@/components/task/action-activity';
 import { ApprovalBanner } from '@/components/task/approval-banner';
 import { PromptButtons } from '@/components/task/prompt-buttons';
+import { RunInAppButton } from '@/components/task/run-in-app-button';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -15,12 +16,16 @@ import type { TaskAction } from '@/types';
 export function ActionCard({
     action,
     projectSlug,
+    taskId,
     canUpdate,
 }: {
     action: TaskAction;
     projectSlug: string;
+    taskId: string;
     canUpdate: boolean;
 }) {
+    const isClosed = ['done', 'skipped'].includes(action.status);
+
     return (
         <Card>
             <CardHeader>
@@ -53,7 +58,17 @@ export function ActionCard({
                 )}
                 <ActionActivity runs={action.runs} evidence={action.evidence} />
             </CardContent>
-            <CardFooter>
+            <CardFooter className="flex flex-wrap gap-2">
+                {action.runsInApp &&
+                    canUpdate &&
+                    !isClosed &&
+                    !action.pendingApproval && (
+                        <RunInAppButton
+                            action={action}
+                            projectSlug={projectSlug}
+                            taskId={taskId}
+                        />
+                    )}
                 <PromptButtons
                     prompt={action.prompt}
                     deepLink={action.deepLink}

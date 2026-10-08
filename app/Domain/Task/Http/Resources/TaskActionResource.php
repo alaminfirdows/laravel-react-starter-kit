@@ -28,6 +28,7 @@ class TaskActionResource extends JsonResource
             'type' => $this->type,
             'executor' => $this->executor,
             'executorLabel' => $this->executor->label(),
+            'runsInApp' => $this->executor->runsInApp(),
             'status' => $this->status,
             'statusLabel' => $this->status->label(),
             'instructionsMd' => $this->instructions_md,

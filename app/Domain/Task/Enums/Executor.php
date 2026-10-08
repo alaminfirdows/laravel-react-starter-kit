@@ -13,4 +13,12 @@ enum Executor: string
     case AppAi = 'app_ai';
     case AppSystem = 'app_system';
     case User = 'user';
+
+    /**
+     * Runs inside the app (queued agent or machine check), started from the task page.
+     */
+    public function runsInApp(): bool
+    {
+        return in_array($this, [self::AppAi, self::AppSystem], true);
+    }
 }

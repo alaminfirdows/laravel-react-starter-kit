@@ -24,6 +24,10 @@ class ActionRunResource extends JsonResource
             'clientName' => $this->client_name,
             'outputMd' => $this->output_md,
             'error' => $this->error,
+            'usage' => $this->usage === null ? null : [
+                'model' => $this->usage['model'] ?? null,
+                'totalTokens' => (int) ($this->usage['total_tokens'] ?? 0),
+            ],
             'startedAt' => $this->started_at->toIso8601String(),
             'finishedAt' => $this->finished_at?->toIso8601String(),
         ];

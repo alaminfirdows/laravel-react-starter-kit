@@ -94,6 +94,7 @@ export type ActionRun = {
     clientName: string | null;
     outputMd: string | null;
     error: string | null;
+    usage: { model: string | null; totalTokens: number } | null;
     startedAt: string | null;
     finishedAt: string | null;
 };
@@ -125,6 +126,7 @@ export type TaskAction = {
     type: string;
     executor: string;
     executorLabel: string;
+    runsInApp: boolean;
     status: string;
     statusLabel: string;
     instructionsMd: string | null;

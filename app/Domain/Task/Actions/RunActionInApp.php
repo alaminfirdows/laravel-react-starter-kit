@@ -32,7 +32,7 @@ class RunActionInApp
     {
         $isAi = $action->executor === Executor::AppAi;
 
-        if (! $isAi && $action->executor !== Executor::AppSystem) {
+        if (! $action->executor->runsInApp()) {
             throw InvalidActionTransition::notInApp($action);
         }
 

@@ -6,6 +6,7 @@ use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\Controllers\ProjectController;
 use App\Domain\Project\Http\Controllers\ProjectLogoController;
 use App\Domain\Project\Http\Controllers\ProjectSetupController;
+use App\Domain\Task\Http\Controllers\ActionRunController;
 use App\Domain\Task\Http\Controllers\ApprovalController;
 use App\Domain\Task\Http\Controllers\ApprovalDecisionController;
 use App\Domain\Task\Http\Controllers\TaskCompletionController;
@@ -31,6 +32,7 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::get('{project}/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::post('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'store'])->name('tasks.completion.store');
     Route::delete('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'destroy'])->name('tasks.completion.destroy');
+    Route::post('{project}/tasks/{task}/actions/{action}/runs', [ActionRunController::class, 'store'])->scopeBindings()->name('tasks.actions.runs.store');
     Route::get('{project}/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
     Route::get('{project}/knowledge/create', [KnowledgeController::class, 'create'])->name('knowledge.create');
     Route::post('{project}/knowledge', [KnowledgeController::class, 'store'])->name('knowledge.store');

@@ -60,6 +60,7 @@ export default function TaskShow({
                         {task.actions.map((action) => (
                             <ActionCard
                                 key={action.id}
+                                taskId={task.id}
                                 action={action}
                                 projectSlug={project.slug}
                                 canUpdate={can.update}

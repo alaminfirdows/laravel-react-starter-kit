@@ -17,7 +17,15 @@ function EvidenceItem({ evidence }: { evidence: Evidence }) {
 
     return (
         <li className="flex flex-wrap items-center gap-2 text-sm">
-            <Badge variant="outline">{evidence.kind}</Badge>
+            <Badge
+                variant={evidence.passed === false ? 'destructive' : 'outline'}
+            >
+                {evidence.kind === 'check_result'
+                    ? evidence.passed
+                        ? 'check passed'
+                        : 'check failed'
+                    : evidence.kind}
+            </Badge>
             <span className="font-medium">{evidence.label}</span>
             {isUrl ? (
                 <a
@@ -52,6 +60,12 @@ function RunItem({ run }: { run: ActionRun }) {
                 <span className="text-muted-foreground">
                     {formatDate(run.startedAt)}
                 </span>
+                {run.usage && (
+                    <span className="text-muted-foreground">
+                        {run.usage.model} ·{' '}
+                        {run.usage.totalTokens.toLocaleString()} tokens
+                    </span>
+                )}
             </div>
             {run.error && <p className="text-destructive">{run.error}</p>}
             {run.outputMd && (
