@@ -70,38 +70,65 @@ final readonly class McpActor
      * Project in the token's workspace the user may see (or edit), else "not found".
      *
      * @throws ValidationException
+     * @throws AuthorizationException
      */
     public function project(string $id, string $ability = 'view'): Project
     {
         $project = Project::query()->whereKey($id)->first();
 
-        return $project && $this->user->can($ability, $project)
-            ? $project
-            : $this->notFound('project_id', 'Project');
+        if ($project === null || ! $this->user->can('view', $project)) {
+            $this->notFound('project_id', 'Project');
+        }
+
+        $this->ensureAllowed($ability, $project, 'project');
+
+        return $project;
     }
 
     /**
      * @throws ValidationException
+     * @throws AuthorizationException
      */
     public function task(string $id, string $ability = 'view'): Task
     {
         $task = Task::query()->whereKey($id)->first();
 
-        return $task && $this->user->can($ability, $task)
-            ? $task
-            : $this->notFound('task_id', 'Task');
+        if ($task === null || ! $this->user->can('view', $task)) {
+            $this->notFound('task_id', 'Task');
+        }
+
+        $this->ensureAllowed($ability, $task, 'task');
+
+        return $task;
     }
 
     /**
      * @throws ValidationException
+     * @throws AuthorizationException
      */
     public function action(string $id, string $ability = 'view'): TaskAction
     {
         $action = TaskAction::query()->whereHas('task')->with('task')->whereKey($id)->first();
 
-        return $action && $this->user->can($ability, $action->task)
-            ? $action
-            : $this->notFound('action_id', 'Action');
+        if ($action === null || ! $this->user->can('view', $action->task)) {
+            $this->notFound('action_id', 'Action');
+        }
+
+        $this->ensureAllowed($ability, $action->task, 'action');
+
+        return $action;
+    }
+
+    /**
+     * Visible but not editable (e.g. a Viewer): say so plainly instead of "not found".
+     *
+     * @throws AuthorizationException
+     */
+    private function ensureAllowed(string $ability, Project|Task $subject, string $label): void
+    {
+        if (! $this->user->can($ability, $subject)) {
+            throw new AuthorizationException("You do not have permission to change this {$label}.");
+        }
     }
 
     /**

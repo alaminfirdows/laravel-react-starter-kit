@@ -26,6 +26,11 @@ class InvalidActionTransition extends InvalidTaskTransition
         return new static(__('":title" is locked until its dependencies are done.', ['title' => $action->task->title]));
     }
 
+    public static function noActiveRun(TaskAction $action): static
+    {
+        return new static(__('":title" has no started run. Call start_action first.', ['title' => $action->title]));
+    }
+
     public static function approvalRequired(TaskAction $action): static
     {
         return new static(__('":title" needs an approved approval first.', ['title' => $action->title]));
