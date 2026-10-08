@@ -7,6 +7,7 @@ use App\Domain\Task\Enums\TaskPriority;
 use Database\Factories\CatalogTaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CatalogStatus $status
  * @property int $sort_order
  * @property-read CatalogCategory $category
+ * @property-read Collection<int, Skill> $skills
+ * @property-read Collection<int, CatalogResource> $resources
  */
 #[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'status', 'published_at', 'sort_order'])]
 #[UseFactory(CatalogTaskFactory::class)]
@@ -79,5 +82,19 @@ class CatalogTask extends Model
     {
         return $this->belongsToMany(self::class, 'catalog_task_dependencies', 'task_id', 'depends_on_id')
             ->withPivot('kind');
+    }
+
+    /** @return BelongsToMany<Skill, $this> */
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'catalog_task_skill')->withPivot('required');
+    }
+
+    /** @return BelongsToMany<CatalogResource, $this> */
+    public function resources(): BelongsToMany
+    {
+        return $this->belongsToMany(CatalogResource::class, 'catalog_task_resource', 'catalog_task_id', 'resource_id')
+            ->withPivot('sort_order', 'note')
+            ->orderByPivot('sort_order');
     }
 }

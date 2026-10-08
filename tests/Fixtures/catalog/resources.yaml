@@ -1,0 +1,5 @@
+resources:
+    - key: mom-test
+      type: article
+      title: The Mom Test
+      url: https://www.momtestbook.com

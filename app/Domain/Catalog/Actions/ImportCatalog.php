@@ -4,11 +4,14 @@ namespace App\Domain\Catalog\Actions;
 
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Models\CatalogCategory;
+use App\Domain\Catalog\Models\CatalogResource;
 use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Pack;
 use App\Domain\Catalog\Models\PromptTemplate;
+use App\Domain\Catalog\Models\Skill;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -20,7 +23,7 @@ class ImportCatalog
 {
     public const int MAX_DEPTH = 2;
 
-    /** @var array{categories:int, tasks:int, actions:int, prompts:int, packs:int} */
+    /** @var array{categories:int, skills:int, resources:int, tasks:int, actions:int, prompts:int, packs:int} */
     private array $counts;
 
     /** @var array<string, int> */
@@ -32,18 +35,31 @@ class ImportCatalog
     /** @var array<string, int> */
     private array $taskIds = [];
 
+    /** @var array<string, int> */
+    private array $skillIds = [];
+
+    /** @var array<string, int> */
+    private array $resourceIds = [];
+
     /** @var list<array{file:string, task:string, depends_on:string, kind:string}> */
     private array $pendingDependencies = [];
 
     /**
-     * @return array{categories:int, tasks:int, actions:int, prompts:int, packs:int}
+     * @param  string|null  $skillsDirectory  folders with SKILL.md (`resources/skills`); null skips skill import
+     * @return array{categories:int, skills:int, resources:int, tasks:int, actions:int, prompts:int, packs:int}
      */
-    public function handle(string $directory): array
+    public function handle(string $directory, ?string $skillsDirectory = null): array
     {
-        $this->counts = ['categories' => 0, 'tasks' => 0, 'actions' => 0, 'prompts' => 0, 'packs' => 0];
+        $this->counts = ['categories' => 0, 'skills' => 0, 'resources' => 0, 'tasks' => 0, 'actions' => 0, 'prompts' => 0, 'packs' => 0];
 
-        DB::transaction(function () use ($directory): void {
+        DB::transaction(function () use ($directory, $skillsDirectory): void {
             $this->importCategories($this->read("{$directory}/categories.yaml"));
+
+            if ($skillsDirectory !== null) {
+                $this->importSkills($skillsDirectory);
+            }
+
+            $this->importResources($this->read("{$directory}/resources.yaml"));
             $this->importPrompts($this->read("{$directory}/prompts.yaml"));
 
             foreach (File::glob("{$directory}/tasks/*.yaml") as $file) {
@@ -78,6 +94,71 @@ class ImportCatalog
             ]);
             $this->categoryIds[$category->key] = $category->id;
             $this->counts['categories']++;
+        }
+    }
+
+    private function importSkills(string $directory): void
+    {
+        foreach (File::glob("{$directory}/*/SKILL.md") as $file) {
+            $folder = basename(dirname($file));
+            $front = $this->frontmatter($file);
+            $key = (string) ($front['name'] ?? '');
+
+            if ($key !== $folder || ! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $key) || strlen($key) > 64 || preg_match('/claude|anthropic/', $key)) {
+                throw new InvalidArgumentException("skills/{$folder}: name [{$key}] must equal the folder, be kebab-case, ≤64 chars, without claude/anthropic");
+            }
+
+            $description = (string) ($front['description'] ?? '');
+
+            if ($description === '' || mb_strlen($description) > 200) {
+                throw new InvalidArgumentException("skills/{$folder}: description must be 1–200 chars");
+            }
+
+            $metadata = (array) ($front['metadata'] ?? []);
+
+            $skill = Skill::updateOrCreate(['key' => $key], [
+                'title' => $metadata['title'] ?? Str::headline($key),
+                'description' => $description,
+                'version' => (string) ($metadata['version'] ?? '1.0.0'),
+                'source_path' => "resources/skills/{$key}",
+                'in_plugin' => $metadata['in_plugin'] ?? true,
+                'in_app_agents' => $metadata['in_app_agents'] ?? false,
+                'content_hash' => hash('sha256', File::get($file)),
+            ]);
+            $this->skillIds[$key] = $skill->id;
+            $this->counts['skills']++;
+        }
+    }
+
+    /**
+     * YAML frontmatter between the leading `---` fences of a Markdown file.
+     *
+     * @return array<string, mixed>
+     */
+    private function frontmatter(string $file): array
+    {
+        if (! preg_match('/\A---\R(.*?)\R---/s', File::get($file), $matches)) {
+            return [];
+        }
+
+        return (array) Yaml::parse($matches[1]);
+    }
+
+    /** @param array<string, mixed> $data */
+    private function importResources(array $data): void
+    {
+        foreach ($data['resources'] ?? [] as $row) {
+            $resource = CatalogResource::updateOrCreate(['key' => $row['key']], [
+                'type' => $row['type'],
+                'title' => $row['title'],
+                'url' => $row['url'] ?? null,
+                'description_md' => $row['description_md'] ?? null,
+                'is_affiliate' => $row['is_affiliate'] ?? false,
+                'region' => $row['region'] ?? null,
+                'meta' => $row['meta'] ?? null,
+            ]);
+            $this->resourceIds[$resource->key] = $resource->id;
+            $this->counts['resources']++;
         }
     }
 
@@ -131,10 +212,15 @@ class ImportCatalog
             'status' => $row['status'] ?? CatalogStatus::Published->value,
             'sort_order' => $position,
             'actions' => $row['actions'] ?? [],
-        ], except: ['actions']);
+            'skills' => $row['skills'] ?? [],
+            'resources' => $row['resources'] ?? [],
+        ], except: ['actions', 'skills', 'resources']);
 
         $task->published_at ??= now();
         $task->save();
+
+        $this->syncSkills($file, $task, $row['skills'] ?? []);
+        $this->syncResources($file, $task, $row['resources'] ?? []);
 
         $this->taskIds[$key] = $task->id;
         $this->counts['tasks']++;
@@ -180,6 +266,46 @@ class ImportCatalog
         }
 
         $task->actions()->whereNotIn('key', $keys)->delete();
+    }
+
+    /**
+     * Task YAML: `skills: [icp-definition, {key: x, required: false}]`.
+     *
+     * @param  list<string|array{key:string, required?:bool}>  $skills
+     */
+    private function syncSkills(string $file, CatalogTask $task, array $skills): void
+    {
+        $sync = [];
+
+        foreach ($skills as $skill) {
+            $skill = is_string($skill) ? ['key' => $skill] : $skill;
+            $id = $this->skillIds[$skill['key']]
+                ?? Skill::where('key', $skill['key'])->value('id')
+                ?? throw new InvalidArgumentException("{$file}: task [{$task->key}] has unknown skill [{$skill['key']}]");
+            $sync[$id] = ['required' => $skill['required'] ?? true];
+        }
+
+        $task->skills()->sync($sync);
+    }
+
+    /**
+     * Task YAML: `resources: [stripe-atlas, {key: x, note: '...'}]`.
+     *
+     * @param  list<string|array{key:string, note?:string}>  $resources
+     */
+    private function syncResources(string $file, CatalogTask $task, array $resources): void
+    {
+        $sync = [];
+
+        foreach ($resources as $i => $resource) {
+            $resource = is_string($resource) ? ['key' => $resource] : $resource;
+            $id = $this->resourceIds[$resource['key']]
+                ?? CatalogResource::where('key', $resource['key'])->value('id')
+                ?? throw new InvalidArgumentException("{$file}: task [{$task->key}] has unknown resource [{$resource['key']}]");
+            $sync[$id] = ['sort_order' => $i, 'note' => $resource['note'] ?? null];
+        }
+
+        $task->resources()->sync($sync);
     }
 
     private function importDependencies(): void

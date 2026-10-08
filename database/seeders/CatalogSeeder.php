@@ -9,6 +9,6 @@ class CatalogSeeder extends Seeder
 {
     public function run(ImportCatalog $import): void
     {
-        $import->handle(database_path('seeders/catalog'));
+        $import->handle(database_path('seeders/catalog'), resource_path('skills'));
     }
 }

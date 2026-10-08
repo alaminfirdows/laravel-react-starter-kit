@@ -3,6 +3,8 @@ tasks:
       category: validation
       title: Run interviews
       priority: p1
+      skills: [demo-skill]
+      resources: [{ key: mom-test, note: Read first }]
       actions:
           - {
                 key: script,
