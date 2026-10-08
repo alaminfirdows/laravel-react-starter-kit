@@ -5,7 +5,9 @@ import {
     ListTodo,
     LayoutGrid,
     Settings,
+    ShieldCheck,
 } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -17,6 +19,7 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as adminIndex } from '@/routes/admin';
 import { index as projectsIndex } from '@/routes/projects';
 import { mine as myTasks } from '@/routes/tasks';
 import { edit as editWorkspaceSettings } from '@/routes/workspace/settings';
@@ -36,6 +39,7 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage().props;
     // Built in render: workspace URLs need the URL defaults set by AppLayout.
     const mainNavItems: NavItem[] = [
         {
@@ -58,6 +62,9 @@ export function AppSidebar() {
             href: editWorkspaceSettings(),
             icon: Settings,
         },
+        ...(auth.user.is_admin
+            ? [{ title: 'Admin', href: adminIndex(), icon: ShieldCheck }]
+            : []),
     ];
 
     return (
