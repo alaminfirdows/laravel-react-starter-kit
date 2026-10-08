@@ -169,3 +169,11 @@ export type ProjectPageProps = {
     tree: ProjectTree;
     can: { update: boolean };
 };
+
+export type McpConnection = {
+    id: string;
+    clientName: string;
+    workspaceName: string | null;
+    createdAt: string | null;
+    expiresAt: string | null;
+};

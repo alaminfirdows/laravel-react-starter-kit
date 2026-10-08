@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\ConnectClaudeController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Auth\Middleware\RequirePassword;
@@ -24,6 +25,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('user-password.update');
 
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
+
+    Route::get('settings/connect-claude', [ConnectClaudeController::class, 'edit'])->name('connect-claude.edit');
+    Route::delete('settings/connect-claude/{token}', [ConnectClaudeController::class, 'destroy'])->name('connect-claude.destroy');
 });
 
 Route::get('.well-known/passkey-endpoints', function () {
