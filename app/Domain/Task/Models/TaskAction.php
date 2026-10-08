@@ -2,6 +2,7 @@
 
 namespace App\Domain\Task\Models;
 
+use App\Domain\Catalog\Models\CatalogAction;
 use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ActionType;
@@ -40,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property string|null $completed_by_id
  * @property-read Task $task
  * @property-read PromptTemplate|null $promptTemplate
+ * @property-read CatalogAction|null $catalogAction
  * @property-read ActionRun|null $lastRun
  * @property-read Collection<int, ActionRun> $runs
  * @property-read Collection<int, Evidence> $evidence
@@ -86,6 +88,14 @@ class TaskAction extends Model
     public function promptTemplate(): BelongsTo
     {
         return $this->belongsTo(PromptTemplate::class);
+    }
+
+    /**
+     * @return BelongsTo<CatalogAction, $this>
+     */
+    public function catalogAction(): BelongsTo
+    {
+        return $this->belongsTo(CatalogAction::class);
     }
 
     /**

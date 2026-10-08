@@ -2,21 +2,21 @@
 
 namespace App\Domain\Task\Actions;
 
-use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
-use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\TaskStatus;
-use App\Domain\Task\Enums\Verification;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
 use App\Domain\Task\Models\Task;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * Founder ticks a leaf: completes its open actions through `CompleteAction` (so criteria and
+ * approvals still hold), then closes the task if it has no gating actions.
+ */
 class MarkTaskDone
 {
     public function __construct(
-        protected RollupTaskStatus $rollup,
-        protected RefreshTaskLocks $refreshLocks,
-        protected ActivityRecorder $activity,
+        protected CompleteAction $completeAction,
+        protected SyncTaskFromActions $sync,
     ) {}
 
     public function handle(Task $task, Actor $actor): Task
@@ -34,28 +34,15 @@ class MarkTaskDone
         }
 
         return DB::transaction(function () use ($task, $actor): Task {
-            $completed = [
-                'completed_at' => now(),
-                'completed_by_type' => $actor->type->value,
-                'completed_by_id' => $actor->id,
-            ];
+            foreach ($task->actions()->get() as $action) {
+                $this->completeAction->handle($action->setRelation('task', $task), $actor);
+            }
 
-            $task->actions()
-                ->whereNotIn('status', [ActionStatus::Done, ActionStatus::Skipped])
-                ->update(['status' => ActionStatus::Done, ...$completed, 'updated_at' => now()]);
+            $task->refresh();
 
-            $from = $task->status;
-            $task->forceFill([
-                'status' => TaskStatus::Done,
-                'progress_pct' => 100,
-                'verification' => Verification::SelfReported,
-                'started_at' => $task->started_at ?? now(),
-                ...$completed,
-            ])->save();
-
-            $this->activity->record('task.completed', $task, ['from' => $from->value], $actor);
-            $this->rollup->handle($task, $actor);
-            $this->refreshLocks->handle($task->project);
+            if (! $task->status->isClosed()) {
+                $this->sync->close($task, $actor);
+            }
 
             return $task;
         });
