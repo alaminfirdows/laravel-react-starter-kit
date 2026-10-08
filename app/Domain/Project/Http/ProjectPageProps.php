@@ -4,6 +4,7 @@ namespace App\Domain\Project\Http;
 
 use App\Domain\Project\Http\Resources\ProjectResource;
 use App\Domain\Project\Models\Project;
+use App\Domain\Task\Enums\ApprovalStatus;
 use App\Domain\Task\Queries\ProjectTaskTree;
 use Inertia\ProvidesInertiaProperties;
 use Inertia\RenderContext;
@@ -23,6 +24,7 @@ final readonly class ProjectPageProps implements ProvidesInertiaProperties
         return [
             'project' => ProjectResource::make($this->project),
             'tree' => fn () => app(ProjectTaskTree::class)->handle($this->project),
+            'pendingApprovals' => fn (): int => $this->project->approvals()->where('status', ApprovalStatus::Pending)->count(),
             'can' => [
                 'update' => $context->request->user()?->can('update', $this->project) ?? false,
             ],

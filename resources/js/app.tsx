@@ -28,6 +28,7 @@ void createInertiaApp({
             case name.startsWith('projects/tasks/'):
             case name.startsWith('projects/knowledge/'):
             case name.startsWith('projects/decisions/'):
+            case name.startsWith('projects/approvals/'):
                 return ProjectLayout;
             default:
                 return AppLayout;

@@ -110,11 +110,13 @@ export type Evidence = {
 
 export type Approval = {
     id: string;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'expired';
     summaryMd: string;
     requestedByClient: string | null;
     decisionNote: string | null;
     createdAt: string | null;
+    decidedAt?: string | null;
+    subject?: { title: string; taskId: string; taskTitle: string };
 };
 
 export type TaskAction = {
@@ -167,6 +169,7 @@ export type Activity = {
 export type ProjectPageProps = {
     project: Project;
     tree: ProjectTree;
+    pendingApprovals: number;
     can: { update: boolean };
 };
 

@@ -1,5 +1,11 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft, BookOpen, LayoutDashboard, Scale } from 'lucide-react';
+import {
+    ArrowLeft,
+    BookOpen,
+    LayoutDashboard,
+    Scale,
+    ShieldQuestion,
+} from 'lucide-react';
 import { NavUser } from '@/components/nav-user';
 import { TaskTree } from '@/components/project/task-tree';
 import { Badge } from '@/components/ui/badge';
@@ -11,19 +17,21 @@ import {
     SidebarGroup,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuBadge,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { WorkspaceAvatar } from '@/components/workspace-avatar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { index, show } from '@/routes/projects';
+import { index as approvalsIndex } from '@/routes/projects/approvals';
 import { index as decisionsIndex } from '@/routes/projects/decisions';
 import { index as knowledgeIndex } from '@/routes/projects/knowledge';
 import { edit } from '@/routes/projects/setup';
 import type { ProjectPageProps, Task } from '@/types';
 
 export function ProjectSidebar() {
-    const { project, tree, task } = usePage<
+    const { project, tree, task, pendingApprovals } = usePage<
         ProjectPageProps & { task?: Task }
     >().props;
     const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
@@ -45,6 +53,13 @@ export function ProjectSidebar() {
             href: decisionsIndex({ project: project.slug }),
             icon: Scale,
             exact: false,
+        },
+        {
+            title: 'Approvals',
+            href: approvalsIndex({ project: project.slug }),
+            icon: ShieldQuestion,
+            exact: false,
+            badge: pendingApprovals,
         },
     ];
 
@@ -106,6 +121,11 @@ export function ProjectSidebar() {
                                         <link.icon /> {link.title}
                                     </Link>
                                 </SidebarMenuButton>
+                                {'badge' in link && !!link.badge && (
+                                    <SidebarMenuBadge>
+                                        {link.badge}
+                                    </SidebarMenuBadge>
+                                )}
                             </SidebarMenuItem>
                         ))}
                     </SidebarMenu>

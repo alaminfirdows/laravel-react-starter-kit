@@ -6,6 +6,7 @@ use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\Controllers\ProjectController;
 use App\Domain\Project\Http\Controllers\ProjectLogoController;
 use App\Domain\Project\Http\Controllers\ProjectSetupController;
+use App\Domain\Task\Http\Controllers\ApprovalController;
 use App\Domain\Task\Http\Controllers\ApprovalDecisionController;
 use App\Domain\Task\Http\Controllers\TaskCompletionController;
 use App\Domain\Task\Http\Controllers\TaskController;
@@ -40,5 +41,6 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::get('{project}/decisions', [DecisionController::class, 'index'])->name('decisions.index');
     Route::post('{project}/decisions', [DecisionController::class, 'store'])->name('decisions.store');
 
+    Route::get('{project}/approvals', [ApprovalController::class, 'index'])->name('approvals.index');
     Route::post('{project}/approvals/{approval}/decision', [ApprovalDecisionController::class, 'store'])->name('approvals.decision.store');
 });
