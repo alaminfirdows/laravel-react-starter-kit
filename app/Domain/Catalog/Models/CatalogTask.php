@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Domain\Catalog\Models;
+
+use App\Domain\Catalog\Enums\CatalogStatus;
+use App\Domain\Task\Enums\TaskPriority;
+use Database\Factories\CatalogTaskFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+/**
+ * @property int $id
+ * @property string $key
+ * @property int $category_id
+ * @property int|null $parent_id
+ * @property string $title
+ * @property string|null $summary
+ * @property string|null $body_md
+ * @property TaskPriority $priority_default
+ * @property array<int, array<string, mixed>>|null $completion_criteria
+ * @property array<int, array<string, mixed>>|null $expected_outputs
+ * @property int $version
+ * @property CatalogStatus $status
+ * @property int $sort_order
+ * @property-read CatalogCategory $category
+ */
+#[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'status', 'published_at', 'sort_order'])]
+#[UseFactory(CatalogTaskFactory::class)]
+class CatalogTask extends Model
+{
+    /** @use HasFactory<CatalogTaskFactory> */
+    use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'body_doc' => 'array',
+            'applicability' => 'array',
+            'completion_criteria' => 'array',
+            'expected_outputs' => 'array',
+            'is_optional' => 'boolean',
+            'priority_default' => TaskPriority::class,
+            'status' => CatalogStatus::class,
+            'published_at' => 'immutable_datetime',
+        ];
+    }
+
+    /** @return BelongsTo<CatalogCategory, $this> */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(CatalogCategory::class);
+    }
+
+    /** @return BelongsTo<CatalogTask, $this> */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    /** @return HasMany<CatalogTask, $this> */
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    /** @return HasMany<CatalogAction, $this> */
+    public function actions(): HasMany
+    {
+        return $this->hasMany(CatalogAction::class)->orderBy('sort_order');
+    }
+
+    /** @return BelongsToMany<CatalogTask, $this> */
+    public function dependencies(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'catalog_task_dependencies', 'task_id', 'depends_on_id')
+            ->withPivot('kind');
+    }
+}
