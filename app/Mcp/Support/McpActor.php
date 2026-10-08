@@ -3,6 +3,7 @@
 namespace App\Mcp\Support;
 
 use App\Domain\Activity\Data\Actor;
+use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Models\Task;
 use App\Domain\Task\Models\TaskAction;
@@ -117,6 +118,23 @@ final readonly class McpActor
         $this->ensureAllowed($ability, $action->task, 'action');
 
         return $action;
+    }
+
+    /**
+     * @throws ValidationException
+     * @throws AuthorizationException
+     */
+    public function document(string $id, string $ability = 'view'): KnowledgeDocument
+    {
+        $document = KnowledgeDocument::query()->with('project')->whereKey($id)->first();
+
+        if ($document === null || ! $this->user->can('view', $document->project)) {
+            $this->notFound('document_id', 'Document');
+        }
+
+        $this->ensureAllowed($ability, $document->project, 'document');
+
+        return $document;
     }
 
     /**

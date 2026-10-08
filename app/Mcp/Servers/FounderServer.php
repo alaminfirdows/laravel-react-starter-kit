@@ -8,12 +8,17 @@ use App\Mcp\Resources\TaskResource;
 use App\Mcp\Tools\AttachEvidenceTool;
 use App\Mcp\Tools\CompleteActionTool;
 use App\Mcp\Tools\GetActionTool;
+use App\Mcp\Tools\GetDocumentTool;
 use App\Mcp\Tools\GetProjectContextTool;
 use App\Mcp\Tools\GetTaskTool;
+use App\Mcp\Tools\ListDocumentsTool;
 use App\Mcp\Tools\ListProjectsTool;
 use App\Mcp\Tools\ListTasksTool;
+use App\Mcp\Tools\LogDecisionTool;
 use App\Mcp\Tools\RequestApprovalTool;
+use App\Mcp\Tools\SaveKnowledgeTool;
 use App\Mcp\Tools\SaveOutputTool;
+use App\Mcp\Tools\SearchKnowledgeTool;
 use App\Mcp\Tools\StartActionTool;
 use App\Mcp\Tools\WhoAmITool;
 use Laravel\Mcp\Server;
@@ -38,6 +43,11 @@ class FounderServer extends Server
         AttachEvidenceTool::class,
         RequestApprovalTool::class,
         CompleteActionTool::class,
+        SearchKnowledgeTool::class,
+        ListDocumentsTool::class,
+        GetDocumentTool::class,
+        SaveKnowledgeTool::class,
+        LogDecisionTool::class,
     ];
 
     protected array $resources = [
