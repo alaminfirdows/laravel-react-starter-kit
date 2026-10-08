@@ -28,13 +28,13 @@ class SkillRepository
      */
     public function forAgents(array $names = []): array
     {
-        return $this->files()
+        return array_values($this->files()
             ->filter(fn (SkillFileData $file): bool => $file->inAppAgents)
             ->when($names !== [], fn (Collection $files) => $files->only($names))
             ->map(fn (SkillFileData $file): ?Skill => Skill::fromDirectory($file->directory))
             ->filter()
-            ->values()
-            ->all();
+
+            ->all());
     }
 
     /**
