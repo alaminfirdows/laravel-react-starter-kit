@@ -24,14 +24,14 @@
 
 ## Tasks
 
-| # | Task | Files / classes | Tests |
-| --- | --- | --- | --- |
-| 1 | Invitations | migration `workspace_invitations`; `Workspace\Actions\{InviteMember,AcceptInvitation,RevokeInvitation}`; mail | `InvitationTest` (Review Focus 1) |
-| 2 | Members UI | `settings/workspace/members` page: list, change role, remove (`RemoveMember` unassigns tasks) | `MembersHttpTest` (Review Focus 4) |
-| 3 | Assignment | `Task\Actions\AssignTask`; assignee picker on task page; "My tasks" page | `AssignTaskTest` |
-| 4 | Comments | migration `comments`; `Comment\Actions\{PostComment,ResolveComment}`; `@mention` parser → notifications | `CommentTest` (Review Focus 3, 5) |
-| 5 | Per-member MCP tokens | tokens list per member on Connect Claude page; admin can revoke others' tokens | `McpTokensTest` |
-| 6 | Audit view | `projects/activity` page (filters: actor, channel, event); workspace-level activity for admins | `ActivityHttpTest` |
-| 7 | Reverb | `composer require laravel/reverb`; events `TaskStatusChanged`, `CommentPosted`, `RunFinished` (ShouldBroadcast); channel auth | `BroadcastAuthTest` (Review Focus 2) |
-| 8 | Live UI | `useEcho` hooks → `router.reload({ only: ['tree','task'] })`; replace P1 polling | manual smoke |
-| 9 | Docs + gate | `composer ci:check` | — |
+| #   | Task                  | Files / classes                                                                                                               | Tests                                |
+| --- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| 1   | Invitations           | migration `workspace_invitations`; `Workspace\Actions\{InviteMember,AcceptInvitation,RevokeInvitation}`; mail                 | `InvitationTest` (Review Focus 1)    |
+| 2   | Members UI            | `settings/workspace/members` page: list, change role, remove (`RemoveMember` unassigns tasks)                                 | `MembersHttpTest` (Review Focus 4)   |
+| 3   | Assignment            | `Task\Actions\AssignTask`; assignee picker on task page; "My tasks" page                                                      | `AssignTaskTest`                     |
+| 4   | Comments              | migration `comments`; `Comment\Actions\{PostComment,ResolveComment}`; `@mention` parser → notifications                       | `CommentTest` (Review Focus 3, 5)    |
+| 5   | Per-member MCP tokens | tokens list per member on Connect Claude page; admin can revoke others' tokens                                                | `McpTokensTest`                      |
+| 6   | Audit view            | `projects/activity` page (filters: actor, channel, event); workspace-level activity for admins                                | `ActivityHttpTest`                   |
+| 7   | Reverb                | `composer require laravel/reverb`; events `TaskStatusChanged`, `CommentPosted`, `RunFinished` (ShouldBroadcast); channel auth | `BroadcastAuthTest` (Review Focus 2) |
+| 8   | Live UI               | `useEcho` hooks → `router.reload({ only: ['tree','task'] })`; replace P1 polling                                              | manual smoke                         |
+| 9   | Docs + gate           | `composer ci:check`                                                                                                           | —                                    |

@@ -24,15 +24,15 @@
 
 ## Tasks
 
-| # | Task | Files / classes | Tests |
-| --- | --- | --- | --- |
-| 1 | Admin gate + layout | `users.is_admin`, `Gate::define('admin')`, `layouts/admin-layout.tsx` | `AdminAccessTest` |
-| 2 | Catalog editing Actions | `Catalog\Actions\{SaveCatalogTask,SaveCatalogAction,SavePromptTemplate,SavePack,PublishCatalogTask}` sharing versioning with `ImportCatalog` (extract `Catalog\Support\Versioning`) | `CatalogEditingTest` |
-| 3 | Admin UI | pages `admin/catalog/*` (tree editor, Tiptap body, actions, prompts, packs) | `AdminCatalogHttpTest` |
-| 4 | YAML ↔ DB sync | `catalog:export` command; `catalog:import --check` refuses when DB has newer admin edits | `CatalogSyncTest` (Review Focus 3) |
-| 5 | Update detection | `Catalog\Jobs\FlagCatalogUpdates` sets `tasks.has_catalog_update` after publish | `FlagCatalogUpdatesTest` (Review Focus 2) |
-| 6 | Diff + upgrade | `Catalog\Actions\DiffCatalogVersion`, `Task\Actions\UpgradeTaskFromCatalog`; task page "Update available" dialog with per-field diff | `UpgradeTaskTest` (Review Focus 1) |
-| 7 | Extra packs | "Add pack" on project (non-default packs for phase), uses `ApplyPack` | `AddPackHttpTest` |
-| 8 | Community packs | `packs.owner_workspace_id`, `visibility (private|public)`, `review_status`; submit + review flow | `CommunityPackTest` (Review Focus 4) |
-| 9 | Analytics | `Analytics\Queries\{TaskCompletionStats,DropOffByTask}` from `activity_log`; admin dashboard | `AnalyticsTest` (Review Focus 5) |
-| 10 | Docs + gate | `composer ci:check` | — |
+| #   | Task                    | Files / classes                                                                                                                                                                     | Tests                                           |
+| --- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| 1   | Admin gate + layout     | `users.is_admin`, `Gate::define('admin')`, `layouts/admin-layout.tsx`                                                                                                               | `AdminAccessTest`                               |
+| 2   | Catalog editing Actions | `Catalog\Actions\{SaveCatalogTask,SaveCatalogAction,SavePromptTemplate,SavePack,PublishCatalogTask}` sharing versioning with `ImportCatalog` (extract `Catalog\Support\Versioning`) | `CatalogEditingTest`                            |
+| 3   | Admin UI                | pages `admin/catalog/*` (tree editor, Tiptap body, actions, prompts, packs)                                                                                                         | `AdminCatalogHttpTest`                          |
+| 4   | YAML ↔ DB sync          | `catalog:export` command; `catalog:import --check` refuses when DB has newer admin edits                                                                                            | `CatalogSyncTest` (Review Focus 3)              |
+| 5   | Update detection        | `Catalog\Jobs\FlagCatalogUpdates` sets `tasks.has_catalog_update` after publish                                                                                                     | `FlagCatalogUpdatesTest` (Review Focus 2)       |
+| 6   | Diff + upgrade          | `Catalog\Actions\DiffCatalogVersion`, `Task\Actions\UpgradeTaskFromCatalog`; task page "Update available" dialog with per-field diff                                                | `UpgradeTaskTest` (Review Focus 1)              |
+| 7   | Extra packs             | "Add pack" on project (non-default packs for phase), uses `ApplyPack`                                                                                                               | `AddPackHttpTest`                               |
+| 8   | Community packs         | `packs.owner_workspace_id`, `visibility (private                                                                                                                                    | public)`, `review_status`; submit + review flow | `CommunityPackTest` (Review Focus 4) |
+| 9   | Analytics               | `Analytics\Queries\{TaskCompletionStats,DropOffByTask}` from `activity_log`; admin dashboard                                                                                        | `AnalyticsTest` (Review Focus 5)                |
+| 10  | Docs + gate             | `composer ci:check`                                                                                                                                                                 | —                                               |

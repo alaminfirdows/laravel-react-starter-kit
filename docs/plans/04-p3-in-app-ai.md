@@ -25,16 +25,16 @@
 
 ## Tasks
 
-| # | Task | Files / classes | Tests |
-| --- | --- | --- | --- |
-| 1 | AI setup | `composer require laravel/ai`; publish config; `config/ai.php` models; `.env.example` keys | `AiConfigTest` |
-| 2 | Skill loader | `Ai\Support\SkillRepository` (parse SKILL.md frontmatter + body) | `SkillRepositoryTest` |
-| 3 | Agents | `Ai\Agents\{DraftDocumentAgent,ReviewAgent,ResearchSummaryAgent}` with structured output (`output_md`, `outputs[]`) | `DraftDocumentAgentTest` (`Agent::fake`) |
-| 4 | Run job | `Ai\Jobs\RunAppAiActionJob` (ShouldBeUnique per action, timeout, failed handler) + `Task\Actions\RunActionInApp` entry point | `RunAppAiActionJobTest` (Review Focus 1, 2, 4) |
-| 5 | Budget | `workspaces.settings.ai_budget`, `Ai\Support\UsageMeter` (monthly sum of `action_runs.usage`) | `UsageMeterTest` (Review Focus 5) |
-| 6 | Checks | `Checks\Check` interface, `HttpsCheck`, `DnsSpfCheck`, `SitemapCheck`, `RobotsCheck`; `Checks\Jobs\RunCheckJob`; registry by `config.check` key | one test per check with `Http::fake` (Review Focus 3) |
-| 7 | Scheduled + wait actions | `Task\Console\ProcessScheduledActions` (rrule, wait rules) in scheduler | `ProcessScheduledActionsTest` |
-| 8 | Approvals UI | `projects/approvals/index` page, approve/reject with note (`DecideApproval`), badge count in sidebar | `ApprovalHttpTest` |
-| 9 | Notifications | `ApprovalRequested`, `ActionFailed`, `RunFinished` (database + mail); bell menu component | `NotificationsTest` |
-| 10 | Task page | "Run with AI" button for `app_ai` actions, streaming output panel, run usage, check results | `TaskHttpTest` additions; manual smoke |
-| 11 | Docs + gate | `composer ci:check` | — |
+| #   | Task                     | Files / classes                                                                                                                                 | Tests                                                 |
+| --- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 1   | AI setup                 | `composer require laravel/ai`; publish config; `config/ai.php` models; `.env.example` keys                                                      | `AiConfigTest`                                        |
+| 2   | Skill loader             | `Ai\Support\SkillRepository` (parse SKILL.md frontmatter + body)                                                                                | `SkillRepositoryTest`                                 |
+| 3   | Agents                   | `Ai\Agents\{DraftDocumentAgent,ReviewAgent,ResearchSummaryAgent}` with structured output (`output_md`, `outputs[]`)                             | `DraftDocumentAgentTest` (`Agent::fake`)              |
+| 4   | Run job                  | `Ai\Jobs\RunAppAiActionJob` (ShouldBeUnique per action, timeout, failed handler) + `Task\Actions\RunActionInApp` entry point                    | `RunAppAiActionJobTest` (Review Focus 1, 2, 4)        |
+| 5   | Budget                   | `workspaces.settings.ai_budget`, `Ai\Support\UsageMeter` (monthly sum of `action_runs.usage`)                                                   | `UsageMeterTest` (Review Focus 5)                     |
+| 6   | Checks                   | `Checks\Check` interface, `HttpsCheck`, `DnsSpfCheck`, `SitemapCheck`, `RobotsCheck`; `Checks\Jobs\RunCheckJob`; registry by `config.check` key | one test per check with `Http::fake` (Review Focus 3) |
+| 7   | Scheduled + wait actions | `Task\Console\ProcessScheduledActions` (rrule, wait rules) in scheduler                                                                         | `ProcessScheduledActionsTest`                         |
+| 8   | Approvals UI             | `projects/approvals/index` page, approve/reject with note (`DecideApproval`), badge count in sidebar                                            | `ApprovalHttpTest`                                    |
+| 9   | Notifications            | `ApprovalRequested`, `ActionFailed`, `RunFinished` (database + mail); bell menu component                                                       | `NotificationsTest`                                   |
+| 10  | Task page                | "Run with AI" button for `app_ai` actions, streaming output panel, run usage, check results                                                     | `TaskHttpTest` additions; manual smoke                |
+| 11  | Docs + gate              | `composer ci:check`                                                                                                                             | —                                                     |

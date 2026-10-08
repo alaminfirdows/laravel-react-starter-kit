@@ -1,64 +1,74 @@
 tasks:
-  - key: developing.mvp-scope
-    category: product-scope
-    title: Lock the MVP scope
-    summary: Decide the smallest version that solves the core problem.
-    priority: p0
-    est_minutes: 180
-    body_md: |
-      ## Why
-      A fixed scope keeps the first release small and on time.
-    children:
-      - key: developing.mvp-scope.jobs
-        title: List the core jobs to be done
-        actions:
-          - key: draft
-            title: Draft the jobs list
-            type: ai
-            executor: claude_desktop
-            prompt: generic-task
-            instructions_md: List the 3–5 jobs the customer hires the product for, most important first.
-      - key: developing.mvp-scope.cut
-        title: Cut features to the MVP
-        depends_on:
-          - {key: developing.mvp-scope.jobs, kind: hard}
-        actions:
-          - key: cut
-            title: Mark each feature in, later or never
-            type: ai
-            executor: claude_desktop
-            prompt: generic-task
-            instructions_md: For each feature, mark it as MVP, later or never, with one line of reason.
-  - key: developing.brand-basics
-    category: brand
-    title: Set up brand basics
-    summary: Name, domain, logo and voice.
-    priority: p1
-    est_minutes: 240
-    body_md: |
-      ## Why
-      You need a name and a look before the landing page and launch.
-    children:
-      - key: developing.brand-basics.name
-        title: Choose the name and domain
-        actions:
-          - key: ideas
-            title: Generate name ideas
-            type: ai
-            executor: claude_desktop
-            prompt: generic-task
-            instructions_md: Suggest 15 names with a matching .com or .io domain idea.
-          - {key: buy-domain, title: Buy the domain, type: manual, executor: user}
-      - key: developing.brand-basics.logo
-        title: Make a simple logo
-        actions:
-          - {key: logo, title: Upload the logo to the project, type: manual, executor: user}
-      - key: developing.brand-basics.voice
-        title: Write the brand voice
-        actions:
-          - key: draft
-            title: Draft voice guidelines
-            type: ai
-            executor: claude_desktop
-            prompt: generic-task
-            instructions_md: Draft 5 voice rules with a do/don't example for each.
+    - key: developing.mvp-scope
+      category: product-scope
+      title: Lock the MVP scope
+      summary: Decide the smallest version that solves the core problem.
+      priority: p0
+      est_minutes: 180
+      body_md: |
+          ## Why
+          A fixed scope keeps the first release small and on time.
+      children:
+          - key: developing.mvp-scope.jobs
+            title: List the core jobs to be done
+            actions:
+                - key: draft
+                  title: Draft the jobs list
+                  type: ai
+                  executor: claude_desktop
+                  prompt: generic-task
+                  instructions_md: List the 3–5 jobs the customer hires the product for, most important first.
+          - key: developing.mvp-scope.cut
+            title: Cut features to the MVP
+            depends_on:
+                - { key: developing.mvp-scope.jobs, kind: hard }
+            actions:
+                - key: cut
+                  title: Mark each feature in, later or never
+                  type: ai
+                  executor: claude_desktop
+                  prompt: generic-task
+                  instructions_md: For each feature, mark it as MVP, later or never, with one line of reason.
+    - key: developing.brand-basics
+      category: brand
+      title: Set up brand basics
+      summary: Name, domain, logo and voice.
+      priority: p1
+      est_minutes: 240
+      body_md: |
+          ## Why
+          You need a name and a look before the landing page and launch.
+      children:
+          - key: developing.brand-basics.name
+            title: Choose the name and domain
+            actions:
+                - key: ideas
+                  title: Generate name ideas
+                  type: ai
+                  executor: claude_desktop
+                  prompt: generic-task
+                  instructions_md: Suggest 15 names with a matching .com or .io domain idea.
+                - {
+                      key: buy-domain,
+                      title: Buy the domain,
+                      type: manual,
+                      executor: user,
+                  }
+          - key: developing.brand-basics.logo
+            title: Make a simple logo
+            actions:
+                - {
+                      key: logo,
+                      title: Upload the logo to the project,
+                      type: manual,
+                      executor: user,
+                  }
+          - key: developing.brand-basics.voice
+            title: Write the brand voice
+            actions:
+                - key: draft
+                  title: Draft voice guidelines
+                  type: ai
+                  executor: claude_desktop
+                  prompt: generic-task
+                  instructions_md: Draft 5 voice rules with a do/don't example for each.

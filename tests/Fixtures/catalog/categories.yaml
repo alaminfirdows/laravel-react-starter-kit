@@ -1,2 +1,2 @@
 categories:
-  - {key: validation, name: Validation, phase: research, sort_order: 1}
+    - { key: validation, name: Validation, phase: research, sort_order: 1 }

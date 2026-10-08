@@ -1,14 +1,28 @@
 tasks:
-  - key: plan.interviews
-    category: validation
-    title: Run interviews
-    priority: p1
-    actions:
-      - {key: script, title: Draft script, type: ai, executor: claude_desktop, prompt: generic}
-    children:
-      - key: plan.interviews.recruit
-        title: Recruit people
-        actions: [{key: recruit, title: Book calls, type: manual, executor: user}]
-      - key: plan.interviews.run
-        title: Hold the calls
-        depends_on: [{key: plan.interviews.recruit, kind: hard}]
+    - key: plan.interviews
+      category: validation
+      title: Run interviews
+      priority: p1
+      actions:
+          - {
+                key: script,
+                title: Draft script,
+                type: ai,
+                executor: claude_desktop,
+                prompt: generic,
+            }
+      children:
+          - key: plan.interviews.recruit
+            title: Recruit people
+            actions:
+                [
+                    {
+                        key: recruit,
+                        title: Book calls,
+                        type: manual,
+                        executor: user,
+                    },
+                ]
+          - key: plan.interviews.run
+            title: Hold the calls
+            depends_on: [{ key: plan.interviews.recruit, kind: hard }]

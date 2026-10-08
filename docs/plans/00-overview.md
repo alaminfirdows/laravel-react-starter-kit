@@ -8,31 +8,31 @@
 
 ## Plan files
 
-| File | Phase | Detail level |
-| --- | --- | --- |
-| `01-p0-foundation.md` | P0 Foundation: Postgres, catalog, projects, wizard, task tree UI, manual completion, copy prompt, activity log | Full TDD steps |
-| `02-p1-claude-bridge.md` | P1: Passport, MCP server, launcher/full prompts, deep links, ActionRuns, evidence, plugin build | Task outline — expand before start |
-| `03-p2-knowledge.md` | P2: knowledge docs, versions, pgvector chunks, hybrid search, context snapshot, decisions | Task outline — expand before start |
-| `04-p3-in-app-ai.md` | P3: `laravel/ai` agents, machine checks, approvals UI, notifications | Task outline — expand before start |
-| `05-p4-workspaces.md` | P4: assignment, comments, mentions, per-member MCP tokens, audit views, Reverb | Task outline — expand before start |
-| `06-p5-marketplace.md` | P5: catalog authoring UI, catalog upgrades + diff, community packs, analytics | Task outline — expand before start |
+| File                     | Phase                                                                                                          | Detail level                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `01-p0-foundation.md`    | P0 Foundation: Postgres, catalog, projects, wizard, task tree UI, manual completion, copy prompt, activity log | Full TDD steps                     |
+| `02-p1-claude-bridge.md` | P1: Passport, MCP server, launcher/full prompts, deep links, ActionRuns, evidence, plugin build                | Task outline — expand before start |
+| `03-p2-knowledge.md`     | P2: knowledge docs, versions, pgvector chunks, hybrid search, context snapshot, decisions                      | Task outline — expand before start |
+| `04-p3-in-app-ai.md`     | P3: `laravel/ai` agents, machine checks, approvals UI, notifications                                           | Task outline — expand before start |
+| `05-p4-workspaces.md`    | P4: assignment, comments, mentions, per-member MCP tokens, audit views, Reverb                                 | Task outline — expand before start |
+| `06-p5-marketplace.md`   | P5: catalog authoring UI, catalog upgrades + diff, community packs, analytics                                  | Task outline — expand before start |
 
 Before starting phase N ≥ 1: re-run `superpowers:writing-plans` on that file to turn the outline into full TDD steps against the code that exists then. Outlines name tables, classes and tests so the expansion is mechanical.
 
 ## Decisions (agreed 2026-10-08, override the spec where they differ)
 
-| Topic | Decision |
-| --- | --- |
-| Tenancy | Reuse `App\Domain\Workspace` as is. UI label stays "Workspace". Signup already creates a personal workspace (`CreateNewUser` → `CreateWorkspace::personal`). |
-| Code layout | Module per domain, same as Workspace: `app/Domain/<Module>/{Models,Enums,Actions,Queries,Data,Http/Controllers,Http/Requests,Policies,Console,Providers}`. Factories stay in `database/factories`. `docs/CLAUDE.md` folder layout updated in P0 Task 19. |
-| Phase | New `ProjectPhase` enum: `planning`, `developing`, `selling`. Chosen first in "Add project". Each phase maps to one default Pack (`packs.audience.phase` + `is_default`). Spec `stage` stays a separate profile field. Spec `catalog_categories.phase` stays (renamed enum `CatalogPhase`). |
-| Wizard | Step 0 (phase + name) creates a **draft** project and applies the default pack at once. Steps identity → business → market → goals edit the draft. Finishing the last step activates it (requires `name`, `one_liner`, `stage`, `business_model`, `primary_market`). |
-| Catalog source | YAML in `database/seeders/catalog/*.yaml`, imported by `ImportCatalog` (`php artisan catalog:import`). P0 ships sample content; real content supplied by the founder later. |
-| Completion | Spec model. Leaf task holds TaskActions. User checks a leaf → `MarkTaskDone` closes its open actions (`verification=self_reported`) → `RollupTaskStatus` updates ancestors. Parent progress = mean of leaf `progress_pct`. |
-| Task UI | Inside a project the app sidebar is replaced by a project sidebar holding the task tree (grouped by category). Main area = task detail. Progress bar top-right. Subtask page = same layout + breadcrumb + parent task card on top. |
-| Database | PostgreSQL 16+ now, for dev and tests. Enums stored as `string` + CHECK constraint (`App\Support\Database\EnumCheck`). |
-| Editor | Tiptap v3 + `@tiptap/markdown` (Markdown in/out). Render with `react-markdown` + `remark-gfm` + `rehype-sanitize`. |
-| Deferred from P0 | `skills`, `resources`, `catalog_task_skill`, `catalog_task_resource` (P1), deep links / ActionRuns (P1), Reverb (P4). |
+| Topic            | Decision                                                                                                                                                                                                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenancy          | Reuse `App\Domain\Workspace` as is. UI label stays "Workspace". Signup already creates a personal workspace (`CreateNewUser` → `CreateWorkspace::personal`).                                                                                                                                |
+| Code layout      | Module per domain, same as Workspace: `app/Domain/<Module>/{Models,Enums,Actions,Queries,Data,Http/Controllers,Http/Requests,Policies,Console,Providers}`. Factories stay in `database/factories`. `docs/CLAUDE.md` folder layout updated in P0 Task 19.                                    |
+| Phase            | New `ProjectPhase` enum: `planning`, `developing`, `selling`. Chosen first in "Add project". Each phase maps to one default Pack (`packs.audience.phase` + `is_default`). Spec `stage` stays a separate profile field. Spec `catalog_categories.phase` stays (renamed enum `CatalogPhase`). |
+| Wizard           | Step 0 (phase + name) creates a **draft** project and applies the default pack at once. Steps identity → business → market → goals edit the draft. Finishing the last step activates it (requires `name`, `one_liner`, `stage`, `business_model`, `primary_market`).                        |
+| Catalog source   | YAML in `database/seeders/catalog/*.yaml`, imported by `ImportCatalog` (`php artisan catalog:import`). P0 ships sample content; real content supplied by the founder later.                                                                                                                 |
+| Completion       | Spec model. Leaf task holds TaskActions. User checks a leaf → `MarkTaskDone` closes its open actions (`verification=self_reported`) → `RollupTaskStatus` updates ancestors. Parent progress = mean of leaf `progress_pct`.                                                                  |
+| Task UI          | Inside a project the app sidebar is replaced by a project sidebar holding the task tree (grouped by category). Main area = task detail. Progress bar top-right. Subtask page = same layout + breadcrumb + parent task card on top.                                                          |
+| Database         | PostgreSQL 16+ now, for dev and tests. Enums stored as `string` + CHECK constraint (`App\Support\Database\EnumCheck`).                                                                                                                                                                      |
+| Editor           | Tiptap v3 + `@tiptap/markdown` (Markdown in/out). Render with `react-markdown` + `remark-gfm` + `rehype-sanitize`.                                                                                                                                                                          |
+| Deferred from P0 | `skills`, `resources`, `catalog_task_skill`, `catalog_task_resource` (P1), deep links / ActionRuns (P1), Reverb (P4).                                                                                                                                                                       |
 
 ## Global conventions (every phase)
 

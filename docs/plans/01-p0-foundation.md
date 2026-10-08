@@ -90,11 +90,13 @@ tests/Feature/{Activity,Catalog,Project,Task,Prompt}/*Test.php
 ### Task 1: Switch to PostgreSQL + EnumCheck helper
 
 **Files:**
+
 - Modify: `.env`, `.env.example` (DB block), `phpunit.xml` (DB env), `.github/workflows/tests.yml` (postgres service)
 - Create: `app/Support/Database/EnumCheck.php`
 - Test: `tests/Feature/Support/EnumCheckTest.php`
 
 **Interfaces:**
+
 - Produces: `EnumCheck::add(string $table, string $column, class-string<\BackedEnum> $enum, bool $nullable = false): void`, `EnumCheck::drop(string $table, string $column): void`
 
 - [ ] **Step 1: Create local databases**
@@ -106,6 +108,7 @@ createdb founderos && createdb founderos_testing
 - [ ] **Step 2: Point the app and tests at Postgres**
 
 `.env` and `.env.example`:
+
 ```dotenv
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -116,28 +119,30 @@ DB_PASSWORD=
 ```
 
 `phpunit.xml` — replace the two sqlite lines:
+
 ```xml
 <env name="DB_CONNECTION" value="pgsql"/>
 <env name="DB_DATABASE" value="founderos_testing"/>
 ```
 
 `.github/workflows/tests.yml` — add under `jobs.ci`:
+
 ```yaml
-    services:
-      postgres:
+services:
+    postgres:
         image: postgres:16
         env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: founderos_testing
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: founderos_testing
         ports: ['5432:5432']
         options: >-
-          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    env:
-      DB_CONNECTION: pgsql
-      DB_HOST: 127.0.0.1
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      DB_DATABASE: founderos_testing
+            --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+env:
+    DB_CONNECTION: pgsql
+    DB_HOST: 127.0.0.1
+    DB_USERNAME: postgres
+    DB_PASSWORD: postgres
+    DB_DATABASE: founderos_testing
 ```
 
 - [ ] **Step 3: Run the existing suite on Postgres**
@@ -256,6 +261,7 @@ git commit -m "chore: switch to PostgreSQL and add EnumCheck helper"
 ### Task 2: Domain enums
 
 **Files:**
+
 - Create: `app/Domain/Catalog/Enums/{CatalogPhase,CatalogStatus}.php`
 - Create: `app/Domain/Project/Enums/{ProjectPhase,ProjectStatus,BusinessModel,Stage,LegalEntityStatus}.php`
 - Create: `app/Domain/Task/Enums/{TaskStatus,TaskPriority,ActionType,Executor,ActionStatus,Verification,DependencyKind}.php`
@@ -263,26 +269,28 @@ git commit -m "chore: switch to PostgreSQL and add EnumCheck helper"
 - Test: `tests/Unit/Enums/TaskStatusTest.php`, `tests/Unit/Enums/ProjectPhaseTest.php`
 
 **Interfaces:**
+
 - Produces (values are the exact DB strings):
-  - `CatalogPhase`: `pre_planning, research, foundation, product, launch, growth, operations`
-  - `CatalogStatus`: `draft, published, archived`
-  - `ProjectPhase`: `planning, developing, selling` + `label(): string`, `description(): string`, `static options(): list<array{value,label,description}>`
-  - `ProjectStatus`: `draft, active, archived`
-  - `BusinessModel`: `b2b_saas, b2c_app, marketplace, agency, ecommerce, other` + `label()`
-  - `Stage`: `idea, validating, building, pre_launch, launched, revenue, scaling` + `label()`
-  - `LegalEntityStatus`: `none, in_progress, registered`
-  - `TaskStatus`: `locked, todo, in_progress, blocked, awaiting_approval, done, skipped` + `isClosed(): bool` (done|skipped), `label(): string`
-  - `TaskPriority`: `p0, p1, p2, p3`
-  - `ActionType`: `ai, research, browser, document, file, mcp, check, input, approval, manual, wait, scheduled`
-  - `Executor`: `claude_desktop, claude_chrome, app_ai, app_system, user`
-  - `ActionStatus`: `pending, ready, running, awaiting_input, awaiting_approval, done, failed, skipped` + `isClosed(): bool` (done|skipped)
-  - `Verification`: `none, self_reported, evidence_attached, verified`
-  - `DependencyKind`: `hard, soft`
-  - `MediaKind`: `image, document, export, screenshot`
+    - `CatalogPhase`: `pre_planning, research, foundation, product, launch, growth, operations`
+    - `CatalogStatus`: `draft, published, archived`
+    - `ProjectPhase`: `planning, developing, selling` + `label(): string`, `description(): string`, `static options(): list<array{value,label,description}>`
+    - `ProjectStatus`: `draft, active, archived`
+    - `BusinessModel`: `b2b_saas, b2c_app, marketplace, agency, ecommerce, other` + `label()`
+    - `Stage`: `idea, validating, building, pre_launch, launched, revenue, scaling` + `label()`
+    - `LegalEntityStatus`: `none, in_progress, registered`
+    - `TaskStatus`: `locked, todo, in_progress, blocked, awaiting_approval, done, skipped` + `isClosed(): bool` (done|skipped), `label(): string`
+    - `TaskPriority`: `p0, p1, p2, p3`
+    - `ActionType`: `ai, research, browser, document, file, mcp, check, input, approval, manual, wait, scheduled`
+    - `Executor`: `claude_desktop, claude_chrome, app_ai, app_system, user`
+    - `ActionStatus`: `pending, ready, running, awaiting_input, awaiting_approval, done, failed, skipped` + `isClosed(): bool` (done|skipped)
+    - `Verification`: `none, self_reported, evidence_attached, verified`
+    - `DependencyKind`: `hard, soft`
+    - `MediaKind`: `image, document, export, screenshot`
 
 - [ ] **Step 1: Write failing unit tests**
 
 `tests/Unit/Enums/TaskStatusTest.php`:
+
 ```php
 <?php
 
@@ -307,6 +315,7 @@ test('action done and skipped are closed', function () {
 ```
 
 `tests/Unit/Enums/ProjectPhaseTest.php`:
+
 ```php
 <?php
 
@@ -439,15 +448,17 @@ git commit -m "feat: add catalog, project, task and media enums"
 ### Task 3: Activity log + ActivityRecorder
 
 **Files:**
+
 - Create: `database/migrations/2026_10_08_100000_create_activity_log_table.php`
 - Create: `app/Domain/Activity/Enums/{ActorType,ActivityChannel}.php`, `app/Domain/Activity/Data/Actor.php`, `app/Domain/Activity/Models/Activity.php`, `app/Domain/Activity/ActivityRecorder.php`
 - Test: `tests/Feature/Activity/ActivityRecorderTest.php`
 
 **Interfaces:**
+
 - Produces:
-  - `ActorType`: `user, agent, system`; `ActivityChannel`: `web, mcp, queue, cli`
-  - `Actor::user(User $user, ActivityChannel $channel = ActivityChannel::Web): Actor`, `Actor::system(ActivityChannel $channel = ActivityChannel::Queue): Actor`, `Actor::agent(User $user, string $clientName): Actor`, `Actor::current(): Actor` (auth user → user/web, else system/cli or queue). Public readonly props: `ActorType $type`, `?string $id`, `?string $clientName`, `ActivityChannel $channel`.
-  - `ActivityRecorder::record(string $event, Model $subject, array $properties = [], ?Actor $actor = null): Activity` — reads `workspace_id` and `project_id` from the subject (`project_id` = subject id when the subject is a `Project`).
+    - `ActorType`: `user, agent, system`; `ActivityChannel`: `web, mcp, queue, cli`
+    - `Actor::user(User $user, ActivityChannel $channel = ActivityChannel::Web): Actor`, `Actor::system(ActivityChannel $channel = ActivityChannel::Queue): Actor`, `Actor::agent(User $user, string $clientName): Actor`, `Actor::current(): Actor` (auth user → user/web, else system/cli or queue). Public readonly props: `ActorType $type`, `?string $id`, `?string $clientName`, `ActivityChannel $channel`.
+    - `ActivityRecorder::record(string $event, Model $subject, array $properties = [], ?Actor $actor = null): Activity` — reads `workspace_id` and `project_id` from the subject (`project_id` = subject id when the subject is a `Project`).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -558,6 +569,7 @@ return new class extends Migration
 - [ ] **Step 4: Implement Actor, Activity, ActivityRecorder**
 
 `app/Domain/Activity/Data/Actor.php`:
+
 ```php
 <?php
 
@@ -605,6 +617,7 @@ final readonly class Actor
 ```
 
 `app/Domain/Activity/Models/Activity.php`:
+
 ```php
 <?php
 
@@ -659,6 +672,7 @@ class Activity extends Model
 ```
 
 `app/Domain/Activity/ActivityRecorder.php`:
+
 ```php
 <?php
 
@@ -718,18 +732,20 @@ git commit -m "feat: add activity log and ActivityRecorder"
 ### Task 4: Catalog schema, models, factories
 
 **Files:**
+
 - Create: `database/migrations/2026_10_08_100100_create_catalog_tables.php`
 - Create: `app/Domain/Catalog/Models/{CatalogCategory,CatalogTask,CatalogAction,PromptTemplate,Pack,PackItem}.php`
 - Create: `database/factories/{CatalogCategory,CatalogTask,CatalogAction,PromptTemplate,Pack}Factory.php`
 - Test: `tests/Feature/Catalog/CatalogModelTest.php`
 
 **Interfaces:**
+
 - Produces:
-  - `CatalogTask` relations: `category(): BelongsTo`, `parent(): BelongsTo`, `children(): HasMany` (ordered by `sort_order`), `actions(): HasMany` (ordered), `dependencies(): BelongsToMany<CatalogTask>` (pivot `kind`), casts `applicability|completion_criteria|expected_outputs|body_doc` → `array`, `status` → `CatalogStatus`.
-  - `CatalogAction`: `task()`, `promptTemplate()`; casts `type` → `ActionType`, `executor` → `Executor`, `config` → `array`.
-  - `Pack`: `items(): HasMany<PackItem>` ordered, `static defaultForPhase(ProjectPhase $phase): ?Pack` (published + `is_default` + `audience->phase`).
-  - `PackItem`: `pack()`, `catalogTask()`.
-  - Factories: `CatalogTaskFactory::childOf(CatalogTask $parent)`, `PackFactory::defaultFor(ProjectPhase $phase)`, `PackFactory::withTasks(CatalogTask ...$tasks)` (include_subtree true).
+    - `CatalogTask` relations: `category(): BelongsTo`, `parent(): BelongsTo`, `children(): HasMany` (ordered by `sort_order`), `actions(): HasMany` (ordered), `dependencies(): BelongsToMany<CatalogTask>` (pivot `kind`), casts `applicability|completion_criteria|expected_outputs|body_doc` → `array`, `status` → `CatalogStatus`.
+    - `CatalogAction`: `task()`, `promptTemplate()`; casts `type` → `ActionType`, `executor` → `Executor`, `config` → `array`.
+    - `Pack`: `items(): HasMany<PackItem>` ordered, `static defaultForPhase(ProjectPhase $phase): ?Pack` (published + `is_default` + `audience->phase`).
+    - `PackItem`: `pack()`, `catalogTask()`.
+    - Factories: `CatalogTaskFactory::childOf(CatalogTask $parent)`, `PackFactory::defaultFor(ProjectPhase $phase)`, `PackFactory::withTasks(CatalogTask ...$tasks)` (include_subtree true).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -904,6 +920,7 @@ return new class extends Migration
 - [ ] **Step 4: Models** (namespace `App\Domain\Catalog\Models`, `#[UseFactory]` per model, `@property` docblocks like `Workspace`)
 
 `CatalogTask.php` (core of the module):
+
 ```php
 <?php
 
@@ -991,6 +1008,7 @@ class CatalogTask extends Model
 ```
 
 `Pack.php` key method:
+
 ```php
 public static function defaultForPhase(ProjectPhase $phase): ?self
 {
@@ -1008,11 +1026,13 @@ public function items(): HasMany
     return $this->hasMany(PackItem::class)->orderBy('sort_order');
 }
 ```
+
 `Pack` casts: `audience` → `array`, `is_default` → `boolean`, `status` → `CatalogStatus`. `PackItem`: `public $timestamps = false;`, casts `include_subtree` → `boolean`. `CatalogCategory` casts `phase` → `CatalogPhase`. `CatalogAction` casts listed in Interfaces. `PromptTemplate` casts `variables`, `skill_keys` → `array`.
 
 - [ ] **Step 5: Factories**
 
 `CatalogTaskFactory`:
+
 ```php
 public function definition(): array
 {
@@ -1040,6 +1060,7 @@ public function childOf(CatalogTask $parent): static
 ```
 
 `PackFactory`:
+
 ```php
 public function definition(): array
 {
@@ -1087,12 +1108,14 @@ git commit -m "feat: add catalog schema, models and factories"
 ### Task 5: Catalog YAML importer, command and sample content
 
 **Files:**
+
 - Create: `app/Domain/Catalog/Actions/ImportCatalog.php`, `app/Domain/Catalog/Console/ImportCatalogCommand.php`, `app/Domain/Catalog/Providers/CatalogServiceProvider.php`
 - Modify: `bootstrap/providers.php` (add `CatalogServiceProvider`), `composer.json` (`symfony/yaml`), `database/seeders/DatabaseSeeder.php` (call `CatalogSeeder`)
 - Create: `database/seeders/CatalogSeeder.php`, `database/seeders/catalog/{categories,prompts,packs}.yaml`, `database/seeders/catalog/tasks/{planning,developing,selling}.yaml`
 - Test: `tests/Feature/Catalog/ImportCatalogTest.php`, fixtures `tests/Fixtures/catalog/{categories,prompts,packs}.yaml`, `tests/Fixtures/catalog/tasks/sample.yaml`
 
 **Interfaces:**
+
 - Consumes: Task 4 models.
 - Produces: `ImportCatalog::handle(string $directory): array{categories:int, tasks:int, actions:int, prompts:int, packs:int}`; throws `InvalidArgumentException` naming the file + key on: unknown category, unknown prompt key, unknown dependency key, depth > 2, two default packs for one phase. Command `catalog:import {path=database/seeders/catalog}`.
 
@@ -1101,57 +1124,65 @@ YAML format (authoring contract — goes into `database/seeders/catalog/README.m
 ```yaml
 # categories.yaml
 categories:
-  - key: idea-validation
-    name: Idea validation
-    phase: research            # CatalogPhase
-    icon: lightbulb            # lucide icon name
-    sort_order: 1
-    description_md: Prove people have the problem.
+    - key: idea-validation
+      name: Idea validation
+      phase: research # CatalogPhase
+      icon: lightbulb # lucide icon name
+      sort_order: 1
+      description_md: Prove people have the problem.
 
 # prompts.yaml
 prompts:
-  - key: generic-task
-    title: Generic task prompt
-    target: chat               # chat|cowork|code
-    full_md: |
-      You are helping {{ project.name }} — {{ project.one_liner }}.
-      Task: {{ task.title }}
-      {{ task.body_md }}
-      Step: {{ action.title }}
-      {{ action.instructions_md }}
+    - key: generic-task
+      title: Generic task prompt
+      target: chat # chat|cowork|code
+      full_md: |
+          You are helping {{ project.name }} — {{ project.one_liner }}.
+          Task: {{ task.title }}
+          {{ task.body_md }}
+          Step: {{ action.title }}
+          {{ action.instructions_md }}
 
 # tasks/planning.yaml
 tasks:
-  - key: planning.problem-interviews
-    category: idea-validation
-    title: Run 10 problem interviews
-    summary: Talk to people who have the problem before building.
-    priority: p1
-    est_minutes: 600
-    body_md: |
-      ## Why
-      ...
-    depends_on: []             # [{key: other.task, kind: hard}]
-    actions:
-      - key: write-script
-        title: Draft an interview script
-        type: ai
-        executor: claude_desktop
-        prompt: generic-task
-        instructions_md: Draft 8 open questions about the problem.
-    children:
-      - key: planning.problem-interviews.recruit
-        title: Recruit 10 interviewees
-        actions: [{key: recruit, title: Book 10 calls, type: manual, executor: user}]
+    - key: planning.problem-interviews
+      category: idea-validation
+      title: Run 10 problem interviews
+      summary: Talk to people who have the problem before building.
+      priority: p1
+      est_minutes: 600
+      body_md: |
+          ## Why
+          ...
+      depends_on: [] # [{key: other.task, kind: hard}]
+      actions:
+          - key: write-script
+            title: Draft an interview script
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft 8 open questions about the problem.
+      children:
+          - key: planning.problem-interviews.recruit
+            title: Recruit 10 interviewees
+            actions:
+                [
+                    {
+                        key: recruit,
+                        title: Book 10 calls,
+                        type: manual,
+                        executor: user,
+                    },
+                ]
 
 # packs.yaml
 packs:
-  - key: planning-starter
-    name: Planning starter
-    phase: planning            # ProjectPhase → audience.phase
-    is_default: true
-    items:
-      - task: planning.problem-interviews     # include_subtree defaults to true
+    - key: planning-starter
+      name: Planning starter
+      phase: planning # ProjectPhase → audience.phase
+      is_default: true
+      items:
+          - task: planning.problem-interviews # include_subtree defaults to true
 ```
 
 Children inherit `category` from the parent.
@@ -1163,42 +1194,63 @@ Run: `composer require symfony/yaml`
 - [ ] **Step 2: Write test fixtures**
 
 `tests/Fixtures/catalog/categories.yaml`:
+
 ```yaml
 categories:
-  - {key: validation, name: Validation, phase: research, sort_order: 1}
+    - { key: validation, name: Validation, phase: research, sort_order: 1 }
 ```
+
 `tests/Fixtures/catalog/prompts.yaml`:
+
 ```yaml
 prompts:
-  - key: generic
-    title: Generic
-    full_md: "Help {{ project.name }} with {{ task.title }}."
+    - key: generic
+      title: Generic
+      full_md: 'Help {{ project.name }} with {{ task.title }}.'
 ```
+
 `tests/Fixtures/catalog/tasks/sample.yaml`:
+
 ```yaml
 tasks:
-  - key: plan.interviews
-    category: validation
-    title: Run interviews
-    priority: p1
-    actions:
-      - {key: script, title: Draft script, type: ai, executor: claude_desktop, prompt: generic}
-    children:
-      - key: plan.interviews.recruit
-        title: Recruit people
-        actions: [{key: recruit, title: Book calls, type: manual, executor: user}]
-      - key: plan.interviews.run
-        title: Hold the calls
-        depends_on: [{key: plan.interviews.recruit, kind: hard}]
+    - key: plan.interviews
+      category: validation
+      title: Run interviews
+      priority: p1
+      actions:
+          - {
+                key: script,
+                title: Draft script,
+                type: ai,
+                executor: claude_desktop,
+                prompt: generic,
+            }
+      children:
+          - key: plan.interviews.recruit
+            title: Recruit people
+            actions:
+                [
+                    {
+                        key: recruit,
+                        title: Book calls,
+                        type: manual,
+                        executor: user,
+                    },
+                ]
+          - key: plan.interviews.run
+            title: Hold the calls
+            depends_on: [{ key: plan.interviews.recruit, kind: hard }]
 ```
+
 `tests/Fixtures/catalog/packs.yaml`:
+
 ```yaml
 packs:
-  - key: planning-starter
-    name: Planning starter
-    phase: planning
-    is_default: true
-    items: [{task: plan.interviews}]
+    - key: planning-starter
+      name: Planning starter
+      phase: planning
+      is_default: true
+      items: [{ task: plan.interviews }]
 ```
 
 - [ ] **Step 3: Write the failing test**
@@ -1593,12 +1645,14 @@ class ImportCatalogCommand extends Command
 `CatalogServiceProvider::boot()` registers the command when `runningInConsole()` (same as `WorkspaceServiceProvider`). Add to `bootstrap/providers.php`.
 
 `database/seeders/CatalogSeeder.php`:
+
 ```php
 public function run(ImportCatalog $import): void
 {
     $import->handle(database_path('seeders/catalog'));
 }
 ```
+
 Call it first in `DatabaseSeeder::run()`.
 
 - [ ] **Step 7: Write sample catalog content**
@@ -1624,6 +1678,7 @@ git commit -m "feat: import catalog from YAML with sample packs per phase"
 ### Task 6: Projects schema, Media, models, policy
 
 **Files:**
+
 - Create: `database/migrations/2026_10_08_100200_create_projects_tables.php`
 - Create: `app/Domain/Project/Models/{Project,ProjectBrand,ProjectPack}.php`, `app/Domain/Media/Models/Media.php`, `app/Domain/Project/Policies/ProjectPolicy.php`
 - Create: `database/factories/ProjectFactory.php`
@@ -1631,16 +1686,18 @@ git commit -m "feat: import catalog from YAML with sample packs per phase"
 - Test: `tests/Feature/Project/ProjectModelTest.php`, `tests/Feature/Project/ProjectPolicyTest.php`
 
 **Interfaces:**
+
 - Produces:
-  - `Project` (ULID, `BelongsToWorkspace`, `SoftDeletes`, route key `slug`): relations `owner()`, `brand(): HasOne<ProjectBrand>`, `tasks(): HasMany<Task>`, `packs(): HasMany<ProjectPack>`; casts `phase` → `ProjectPhase`, `status` → `ProjectStatus`, `business_model` → `BusinessModel`, `stage` → `Stage`, `legal_entity_status` → `LegalEntityStatus`, `target_markets|languages|goals|tech|settings|meta|description_doc` → `array`, `founded_on` → `immutable_date`, `activated_at` → `immutable_datetime`; accessor `logo_url` (via `brand.logo`); `isDraft(): bool`.
-  - Fillable (user-editable profile only): `name, one_liner, description_md, description_doc, website_url, primary_domain, business_model, industry, stage, pricing_model, revenue_band, primary_market, target_markets, languages, target_customer, problem_statement, solution_summary, legal_entity_status, entity_type, jurisdiction, founded_on, team_size, timezone, currency, goals, tech`. `workspace_id, owner_id, slug, phase, status, activated_at` set via `forceFill` in Actions.
-  - `ProjectFactory`: default `phase=planning`, `status=active`, required profile filled; states `draft()`, `forWorkspace(Workspace $w)` (sets `workspace_id` + `owner_id` = owner).
-  - `ProjectPolicy`: `viewAny(User)`, `view(User, Project)`, `create(User)` (role ≥ Member in current workspace), `update(User, Project)` (role ≥ Member), `delete(User, Project)` (role ≥ Admin or project owner).
-  - `Workspace::projects(): HasMany<Project>` — needed by `scopeBindings()`.
+    - `Project` (ULID, `BelongsToWorkspace`, `SoftDeletes`, route key `slug`): relations `owner()`, `brand(): HasOne<ProjectBrand>`, `tasks(): HasMany<Task>`, `packs(): HasMany<ProjectPack>`; casts `phase` → `ProjectPhase`, `status` → `ProjectStatus`, `business_model` → `BusinessModel`, `stage` → `Stage`, `legal_entity_status` → `LegalEntityStatus`, `target_markets|languages|goals|tech|settings|meta|description_doc` → `array`, `founded_on` → `immutable_date`, `activated_at` → `immutable_datetime`; accessor `logo_url` (via `brand.logo`); `isDraft(): bool`.
+    - Fillable (user-editable profile only): `name, one_liner, description_md, description_doc, website_url, primary_domain, business_model, industry, stage, pricing_model, revenue_band, primary_market, target_markets, languages, target_customer, problem_statement, solution_summary, legal_entity_status, entity_type, jurisdiction, founded_on, team_size, timezone, currency, goals, tech`. `workspace_id, owner_id, slug, phase, status, activated_at` set via `forceFill` in Actions.
+    - `ProjectFactory`: default `phase=planning`, `status=active`, required profile filled; states `draft()`, `forWorkspace(Workspace $w)` (sets `workspace_id` + `owner_id` = owner).
+    - `ProjectPolicy`: `viewAny(User)`, `view(User, Project)`, `create(User)` (role ≥ Member in current workspace), `update(User, Project)` (role ≥ Member), `delete(User, Project)` (role ≥ Admin or project owner).
+    - `Workspace::projects(): HasMany<Project>` — needed by `scopeBindings()`.
 
 - [ ] **Step 1: Write failing tests**
 
 `ProjectModelTest.php`:
+
 ```php
 <?php
 
@@ -1674,6 +1731,7 @@ test('invalid phase is rejected by the database', function () {
 ```
 
 `ProjectPolicyTest.php`:
+
 ```php
 <?php
 
@@ -1837,6 +1895,7 @@ return new class extends Migration
 - [ ] **Step 4: Models, factory, policy, Workspace relation**
 
 `Project.php` essentials:
+
 ```php
 #[Fillable([/* profile fields listed in Interfaces */])]
 #[UseFactory(ProjectFactory::class)]
@@ -1879,6 +1938,7 @@ class Project extends Model
     }
 }
 ```
+
 `Task` model arrives in Task 7; reference it by `use App\Domain\Task\Models\Task;` now (only resolved when called).
 
 `Media.php`: ULID, `BelongsToWorkspace`, casts `kind` → `MediaKind`; `url(): string` returns `Storage::disk($this->disk)->url($this->path)`.
@@ -1886,6 +1946,7 @@ class Project extends Model
 `ProjectBrand.php`: ULID, fillable `colors, fonts, voice_md, tone, logo_media_id, logo_variants, socials`, `logo(): BelongsTo<Media>` via `logo_media_id`.
 
 `ProjectPolicy.php`:
+
 ```php
 <?php
 
@@ -1934,6 +1995,7 @@ class ProjectPolicy
 ```
 
 `Workspace.php` add:
+
 ```php
 /**
  * @return HasMany<Project, $this>
@@ -1945,6 +2007,7 @@ public function projects(): HasMany
 ```
 
 `ProjectFactory`:
+
 ```php
 public function definition(): array
 {
@@ -1975,6 +2038,7 @@ public function forWorkspace(Workspace $workspace): static
     return $this->state(['workspace_id' => $workspace->id, 'owner_id' => $workspace->owner_id]);
 }
 ```
+
 Factories bypass fillable (Eloquent factories use `forceFill`-like `newModel($attributes)` + unguarded) — fine.
 
 - [ ] **Step 5: Run tests**
@@ -1994,19 +2058,21 @@ git commit -m "feat: add projects, brands, media and project policy"
 ### Task 7: Tasks schema, models, factories
 
 **Files:**
+
 - Create: `database/migrations/2026_10_08_100300_create_tasks_tables.php`
 - Create: `app/Domain/Task/Models/{Task,TaskAction}.php`, `app/Domain/Task/Policies/TaskPolicy.php`
 - Create: `database/factories/{Task,TaskAction}Factory.php`
 - Test: `tests/Feature/Task/TaskModelTest.php`
 
 **Interfaces:**
+
 - Produces:
-  - `Task` (ULID, `BelongsToWorkspace`, `SoftDeletes`): relations `project()`, `parent()`, `children(): HasMany` (ordered `sort_order`), `actions(): HasMany<TaskAction>` (ordered), `dependencies(): BelongsToMany<Task>` (pivot `kind`, table `task_dependencies`, keys `task_id`/`depends_on_id`), `dependents(): BelongsToMany<Task>` (reverse); casts `status` → `TaskStatus`, `priority` → `TaskPriority`, `verification` → `Verification`, `completion_criteria|expected_outputs|body_doc` → `array`, dates → `immutable_datetime`; `isLeaf(): bool` (uses `children_count` when loaded, else `children()->exists()`).
-  - Fillable on `Task`: `title, summary, body_md, body_doc, priority, due_at` only.
-  - `TaskAction` (ULID): `task()`, `promptTemplate()`; casts `type` → `ActionType`, `executor` → `Executor`, `status` → `ActionStatus`, `config` → `array`. Fillable: none user-editable in P0 (`#[Fillable([])]`; Actions use `forceFill`).
-  - `TaskFactory`: `forProject(Project $p)` (sets `project_id`, `workspace_id`), `childOf(Task $parent)` (depth + 1, same project), states `done()`, `locked()`.
-  - `TaskActionFactory`: `forTask(Task $t)`.
-  - `TaskPolicy`: `view(User, Task)` → `can('view', $task->project)`, `update(User, Task)` → `can('update', $task->project)`.
+    - `Task` (ULID, `BelongsToWorkspace`, `SoftDeletes`): relations `project()`, `parent()`, `children(): HasMany` (ordered `sort_order`), `actions(): HasMany<TaskAction>` (ordered), `dependencies(): BelongsToMany<Task>` (pivot `kind`, table `task_dependencies`, keys `task_id`/`depends_on_id`), `dependents(): BelongsToMany<Task>` (reverse); casts `status` → `TaskStatus`, `priority` → `TaskPriority`, `verification` → `Verification`, `completion_criteria|expected_outputs|body_doc` → `array`, dates → `immutable_datetime`; `isLeaf(): bool` (uses `children_count` when loaded, else `children()->exists()`).
+    - Fillable on `Task`: `title, summary, body_md, body_doc, priority, due_at` only.
+    - `TaskAction` (ULID): `task()`, `promptTemplate()`; casts `type` → `ActionType`, `executor` → `Executor`, `status` → `ActionStatus`, `config` → `array`. Fillable: none user-editable in P0 (`#[Fillable([])]`; Actions use `forceFill`).
+    - `TaskFactory`: `forProject(Project $p)` (sets `project_id`, `workspace_id`), `childOf(Task $parent)` (depth + 1, same project), states `done()`, `locked()`.
+    - `TaskActionFactory`: `forTask(Task $t)`.
+    - `TaskPolicy`: `view(User, Task)` → `can('view', $task->project)`, `update(User, Task)` → `can('update', $task->project)`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -2178,6 +2244,7 @@ public function isLeaf(): bool
 ```
 
 `TaskFactory::childOf()`:
+
 ```php
 public function childOf(Task $parent): static
 {
@@ -2190,6 +2257,7 @@ public function childOf(Task $parent): static
     ]);
 }
 ```
+
 Default definition: `title`, `status` = `TaskStatus::Todo`, `priority` = `TaskPriority::P2`, `verification` = `Verification::None`, `depth` 0, `category_key` = `'general'`. `done()` sets `status=done`, `progress_pct=100`, `completed_at=now()`, `verification=self_reported`.
 
 Register `TaskPolicy` with `#[UsePolicy(TaskPolicy::class)]` on `Task`.
@@ -2211,18 +2279,21 @@ git commit -m "feat: add tasks, task actions and dependencies"
 ### Task 8: ApplyPack (catalog snapshot into a project)
 
 **Files:**
+
 - Create: `app/Domain/Project/Actions/ApplyPack.php`, `app/Domain/Task/Actions/RefreshTaskLocks.php`
 - Test: `tests/Feature/Project/ApplyPackTest.php`, `tests/Feature/Task/RefreshTaskLocksTest.php`
 
 **Interfaces:**
+
 - Consumes: `Pack`, `PackItem`, `CatalogTask`, `Project`, `Task`, `ActivityRecorder`, `Actor`.
 - Produces:
-  - `ApplyPack::handle(Project $project, Pack $pack, ?Actor $actor = null): int` (number of tasks created). Copies each pack item's catalog task (+ subtree when `include_subtree`), its actions, and dependencies between copied tasks. Skips catalog tasks the project already has. Records `project_packs` (upsert) and activity `project.pack_applied` `{pack, version, tasks_created}`. Calls `RefreshTaskLocks`.
-  - `RefreshTaskLocks::handle(Project $project): void` — every non-closed task with a hard dependency whose status is not closed → `locked`; every `locked` task whose hard deps are all closed → `todo`. Leaves `in_progress/blocked/awaiting_approval/done/skipped` alone except: `todo|locked` only.
+    - `ApplyPack::handle(Project $project, Pack $pack, ?Actor $actor = null): int` (number of tasks created). Copies each pack item's catalog task (+ subtree when `include_subtree`), its actions, and dependencies between copied tasks. Skips catalog tasks the project already has. Records `project_packs` (upsert) and activity `project.pack_applied` `{pack, version, tasks_created}`. Calls `RefreshTaskLocks`.
+    - `RefreshTaskLocks::handle(Project $project): void` — every non-closed task with a hard dependency whose status is not closed → `locked`; every `locked` task whose hard deps are all closed → `todo`. Leaves `in_progress/blocked/awaiting_approval/done/skipped` alone except: `todo|locked` only.
 
 - [ ] **Step 1: Write failing tests**
 
 `ApplyPackTest.php`:
+
 ```php
 <?php
 
@@ -2299,6 +2370,7 @@ test('skips unpublished catalog tasks', function () {
 ```
 
 `RefreshTaskLocksTest.php`:
+
 ```php
 <?php
 
@@ -2578,21 +2650,24 @@ git commit -m "feat: apply catalog packs to projects with dependency locks"
 ### Task 9: CreateProject, UpdateProjectSetup, ActivateProject, UpdateProjectLogo
 
 **Files:**
+
 - Create: `app/Domain/Project/Enums/ProjectSetupStep.php`
 - Create: `app/Domain/Project/Actions/{CreateProject,UpdateProjectSetup,ActivateProject,UpdateProjectLogo}.php`
 - Test: `tests/Feature/Project/CreateProjectTest.php`, `tests/Feature/Project/ProjectSetupActionsTest.php`
 
 **Interfaces:**
+
 - Produces:
-  - `ProjectSetupStep`: `identity, business, market, goals`; `next(): ?self`; `fields(): list<string>` (identity: `name, one_liner, description_md, website_url`; business: `business_model, stage, industry, pricing_model`; market: `primary_market, target_customer, problem_statement, solution_summary`; goals: `goals`); `rules(): array` (Laravel rules, listed in Step 3); `label(): string`; `static firstIncomplete(Project $p): ?self` (first step whose required fields are blank: identity→one_liner, business→business_model|stage, market→primary_market; goals is never "incomplete").
-  - `CreateProject::handle(User $owner, ProjectPhase $phase, string $name): Project` — draft, unique slug per workspace, applies `Pack::defaultForPhase($phase)` when one exists, activity `project.created`.
-  - `UpdateProjectSetup::handle(Project $project, ProjectSetupStep $step, array $data): Project` — fills only `$step->fields()`, activity `project.updated` `{step, changed: [keys]}`.
-  - `ActivateProject::handle(Project $project): Project` — throws `ValidationException` (key = missing field) when any of `name, one_liner, stage, business_model, primary_market` is blank; sets `status=active`, `activated_at`; activity `project.activated`. No-op if already active.
-  - `UpdateProjectLogo::handle(Project $project, UploadedFile $logo): Media` — stores on `public` disk under `project-logos/{project_id}`, creates `Media(kind=image)`, sets `brand.logo_media_id` (creates brand row if missing), deletes previous logo media + file; activity `project.logo_updated`.
+    - `ProjectSetupStep`: `identity, business, market, goals`; `next(): ?self`; `fields(): list<string>` (identity: `name, one_liner, description_md, website_url`; business: `business_model, stage, industry, pricing_model`; market: `primary_market, target_customer, problem_statement, solution_summary`; goals: `goals`); `rules(): array` (Laravel rules, listed in Step 3); `label(): string`; `static firstIncomplete(Project $p): ?self` (first step whose required fields are blank: identity→one_liner, business→business_model|stage, market→primary_market; goals is never "incomplete").
+    - `CreateProject::handle(User $owner, ProjectPhase $phase, string $name): Project` — draft, unique slug per workspace, applies `Pack::defaultForPhase($phase)` when one exists, activity `project.created`.
+    - `UpdateProjectSetup::handle(Project $project, ProjectSetupStep $step, array $data): Project` — fills only `$step->fields()`, activity `project.updated` `{step, changed: [keys]}`.
+    - `ActivateProject::handle(Project $project): Project` — throws `ValidationException` (key = missing field) when any of `name, one_liner, stage, business_model, primary_market` is blank; sets `status=active`, `activated_at`; activity `project.activated`. No-op if already active.
+    - `UpdateProjectLogo::handle(Project $project, UploadedFile $logo): Media` — stores on `public` disk under `project-logos/{project_id}`, creates `Media(kind=image)`, sets `brand.logo_media_id` (creates brand row if missing), deletes previous logo media + file; activity `project.logo_updated`.
 
 - [ ] **Step 1: Write failing tests**
 
 `CreateProjectTest.php`:
+
 ```php
 <?php
 
@@ -2644,6 +2719,7 @@ test('name without slug characters still gets a slug', function () {
 ```
 
 `ProjectSetupActionsTest.php`:
+
 ```php
 <?php
 
@@ -2802,6 +2878,7 @@ enum ProjectSetupStep: string
 - [ ] **Step 4: Implement the Actions**
 
 `CreateProject.php`:
+
 ```php
 <?php
 
@@ -2863,6 +2940,7 @@ class CreateProject
 ```
 
 `UpdateProjectSetup.php`:
+
 ```php
 public function handle(Project $project, ProjectSetupStep $step, array $data): Project
 {
@@ -2881,6 +2959,7 @@ public function handle(Project $project, ProjectSetupStep $step, array $data): P
 ```
 
 `ActivateProject.php`:
+
 ```php
 public const array REQUIRED = ['name', 'one_liner', 'business_model', 'stage', 'primary_market'];
 
@@ -2904,9 +2983,11 @@ public function handle(Project $project): Project
     return $project;
 }
 ```
+
 Note: the activation test expects keys in order `one_liner, business_model, stage, primary_market` — `REQUIRED` order above produces that (name is filled).
 
 `UpdateProjectLogo.php`:
+
 ```php
 public const string DISK = 'public';
 
@@ -2964,17 +3045,19 @@ git commit -m "feat: create draft projects, setup steps, activation and logo"
 ### Task 10: Task status Actions — MarkTaskDone, ReopenTask, RollupTaskStatus
 
 **Files:**
+
 - Create: `app/Domain/Task/Exceptions/InvalidTaskTransition.php`
 - Create: `app/Domain/Task/Actions/{MarkTaskDone,ReopenTask,RollupTaskStatus}.php`
 - Test: `tests/Feature/Task/TaskCompletionActionsTest.php`
 
 **Interfaces:**
+
 - Consumes: `RefreshTaskLocks`, `ActivityRecorder`, `Actor`.
 - Produces:
-  - `InvalidTaskTransition extends \DomainException` with named constructors `notLeaf(Task)`, `locked(Task)`.
-  - `MarkTaskDone::handle(Task $task, Actor $actor): Task` — leaf only; refuses `locked`; no-op when closed. Closes open actions (`done`, `completed_at`, `completed_by_*`), sets task `done`, `progress_pct=100`, `verification=self_reported`, `started_at ??= now`, `completed_*`. Then rollup + locks. Activity `task.completed`.
-  - `ReopenTask::handle(Task $task, Actor $actor): Task` — leaf only; no-op unless closed. Actions completed by a user go back to `pending`; task → `todo`, `progress_pct=0`, `verification=none`, clears `completed_*`. Then rollup + locks. Activity `task.reopened`.
-  - `RollupTaskStatus::handle(Task $changed, Actor $actor): void` — walks ancestors of `$changed`. For each: `progress_pct` = rounded mean of leaf `progress_pct` in its subtree; status = `done` if all children closed, else `in_progress` if any leaf has progress > 0 or status in (`in_progress`,`done`,`skipped`), else `todo` (keeps `locked` if it was locked). On status change: set/clear `completed_at`, `verification` (`self_reported` when done), activity `task.status_changed` `{from, to}`.
+    - `InvalidTaskTransition extends \DomainException` with named constructors `notLeaf(Task)`, `locked(Task)`.
+    - `MarkTaskDone::handle(Task $task, Actor $actor): Task` — leaf only; refuses `locked`; no-op when closed. Closes open actions (`done`, `completed_at`, `completed_by_*`), sets task `done`, `progress_pct=100`, `verification=self_reported`, `started_at ??= now`, `completed_*`. Then rollup + locks. Activity `task.completed`.
+    - `ReopenTask::handle(Task $task, Actor $actor): Task` — leaf only; no-op unless closed. Actions completed by a user go back to `pending`; task → `todo`, `progress_pct=0`, `verification=none`, clears `completed_*`. Then rollup + locks. Activity `task.reopened`.
+    - `RollupTaskStatus::handle(Task $changed, Actor $actor): void` — walks ancestors of `$changed`. For each: `progress_pct` = rounded mean of leaf `progress_pct` in its subtree; status = `done` if all children closed, else `in_progress` if any leaf has progress > 0 or status in (`in_progress`,`done`,`skipped`), else `todo` (keeps `locked` if it was locked). On status change: set/clear `completed_at`, `verification` (`self_reported` when done), activity `task.status_changed` `{from, to}`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -3084,6 +3167,7 @@ Expected: FAIL — classes not found.
 - [ ] **Step 3: Implement**
 
 `InvalidTaskTransition.php`:
+
 ```php
 <?php
 
@@ -3107,6 +3191,7 @@ class InvalidTaskTransition extends DomainException
 ```
 
 `MarkTaskDone.php`:
+
 ```php
 <?php
 
@@ -3176,6 +3261,7 @@ class MarkTaskDone
 `ReopenTask.php` mirrors it: guard `! $task->status->isClosed()` → return; `! isLeaf()` → `notLeaf`; actions where `status = done` and `completed_by_type = 'user'` → `pending`, null `completed_*`; task → `todo`, `progress_pct=0`, `verification=none`, null `completed_*`; activity `task.reopened`; rollup; locks.
 
 `RollupTaskStatus.php`:
+
 ```php
 <?php
 
@@ -3283,10 +3369,12 @@ git commit -m "feat: complete and reopen tasks with progress rollup"
 ### Task 11: RenderFullPrompt
 
 **Files:**
+
 - Create: `app/Domain/Prompt/Actions/RenderFullPrompt.php`
 - Test: `tests/Feature/Prompt/RenderFullPromptTest.php`
 
 **Interfaces:**
+
 - Produces: `RenderFullPrompt::handle(TaskAction $action): string`. Template = `prompt_override_md` ?? `promptTemplate.full_md` ?? built-in default. Placeholders `{{ project.<field> }}`, `{{ task.<field> }}`, `{{ action.<field> }}` with fields: project `name, one_liner, description_md, website_url, business_model, stage, industry, primary_market, target_customer, problem_statement, solution_summary, phase`; task `title, summary, body_md`; action `title, instructions_md`. Unknown → `''`. Enums render `->value`. Appends `COMPLETION_PROTOCOL`. Collapses 3+ blank lines to 2. Caps at `MAX_CHARS = 14000` (ending with `\n…[truncated]`).
 
 - [ ] **Step 1: Write the failing test**
@@ -3436,15 +3524,17 @@ git commit -m "feat: render full prompts for task actions"
 ### Task 12: Read models — ProjectTaskTree, TaskDetail, ProjectPageProps
 
 **Files:**
+
 - Create: `app/Domain/Task/Queries/{ProjectTaskTree,TaskDetail}.php`, `app/Domain/Project/Data/ProjectPageProps.php`
 - Test: `tests/Feature/Task/ProjectTaskTreeTest.php`
 
 **Interfaces:**
+
 - Consumes: `Task`, `CatalogCategory`, `RenderFullPrompt::handle(TaskAction): string` (Task 11).
 - Produces (array shapes match `resources/js/types/project.ts`):
-  - `ProjectTaskTree::handle(Project $project): array{progressPct:int, groups: list<array{key:string, name:string, icon:?string, progressPct:int, tasks: list<TreeNode>}>}`; `TreeNode = array{id:string, title:string, status:string, progressPct:int, depth:int, children: list<TreeNode>}`. Groups ordered by catalog category `sort_order`, unknown keys last under name `Other`. Project progress = mean of all leaf `progress_pct`.
-  - `TaskDetail::handle(Task $task): array{id, title, summary, bodyMd, status, statusLabel, progressPct, depth, isLeaf, priority, verification, completedAt, ancestors: list<array{id,title}>, parent: ?array{id,title,progressPct,status}, children: list<array{id,title,status,progressPct,isLeaf}>, actions: list<array{id,title,type,executor,status,instructionsMd,isRequired,prompt:string}>}`
-  - `ProjectPageProps::for(Project $project, User $user): array{project: array{id,slug,name,oneLiner,phase,phaseLabel,status,logoUrl,setupStep:?string}, tree: <ProjectTaskTree>, can: array{update:bool}}`
+    - `ProjectTaskTree::handle(Project $project): array{progressPct:int, groups: list<array{key:string, name:string, icon:?string, progressPct:int, tasks: list<TreeNode>}>}`; `TreeNode = array{id:string, title:string, status:string, progressPct:int, depth:int, children: list<TreeNode>}`. Groups ordered by catalog category `sort_order`, unknown keys last under name `Other`. Project progress = mean of all leaf `progress_pct`.
+    - `TaskDetail::handle(Task $task): array{id, title, summary, bodyMd, status, statusLabel, progressPct, depth, isLeaf, priority, verification, completedAt, ancestors: list<array{id,title}>, parent: ?array{id,title,progressPct,status}, children: list<array{id,title,status,progressPct,isLeaf}>, actions: list<array{id,title,type,executor,status,instructionsMd,isRequired,prompt:string}>}`
+    - `ProjectPageProps::for(Project $project, User $user): array{project: array{id,slug,name,oneLiner,phase,phaseLabel,status,logoUrl,setupStep:?string}, tree: <ProjectTaskTree>, can: array{update:bool}}`
 
 - [ ] **Step 1: Write the failing test**
 
@@ -3572,6 +3662,7 @@ class ProjectTaskTree
 - [ ] **Step 4: Implement TaskDetail and ProjectPageProps**
 
 `TaskDetail::handle()`:
+
 ```php
 public function __construct(protected RenderFullPrompt $renderPrompt) {}
 
@@ -3626,6 +3717,7 @@ public function handle(Task $task): array
 ```
 
 `ProjectPageProps::for()`:
+
 ```php
 public function __construct(protected ProjectTaskTree $tree) {}
 
@@ -3648,6 +3740,7 @@ public function for(Project $project, User $user): array
     ];
 }
 ```
+
 `ProjectPageProps` is a service (resolve from container), despite living in `Data/`.
 
 - [ ] **Step 5: Run tests**
@@ -3667,6 +3760,7 @@ git commit -m "feat: add project task tree and task detail read models"
 ### Task 13: HTTP layer — routes, controllers, requests
 
 **Files:**
+
 - Create: `routes/projects.php`; Modify: `routes/workspace.php` (inside the tenant group, after `Route::inertia('dashboard', …)`: `require __DIR__.'/projects.php';`)
 - Create: `app/Domain/Project/Http/Controllers/{ProjectController,ProjectSetupController,ProjectLogoController}.php`
 - Create: `app/Domain/Project/Http/Requests/{StoreProjectRequest,UpdateProjectSetupRequest,UpdateProjectLogoRequest}.php`
@@ -3674,31 +3768,33 @@ git commit -m "feat: add project task tree and task detail read models"
 - Test: `tests/Feature/Project/ProjectHttpTest.php`, `tests/Feature/Project/ProjectSetupHttpTest.php`, `tests/Feature/Task/TaskHttpTest.php`, `tests/Feature/Project/ProjectIsolationTest.php`
 
 **Interfaces:**
+
 - Produces routes (all under `/{workspace}`, names as listed — Wayfinder generates `@/routes/projects/...`):
 
-| Method | URI | Name | Controller@method | Page / response |
-| --- | --- | --- | --- | --- |
-| GET | `projects` | `projects.index` | `ProjectController@index` | `projects/index` |
-| GET | `projects/create` | `projects.create` | `ProjectController@create` | `projects/create` |
-| POST | `projects` | `projects.store` | `ProjectController@store` | → `projects.setup.edit` step identity |
-| GET | `projects/{project}` | `projects.show` | `ProjectController@show` | `projects/overview` |
-| GET | `projects/{project}/setup/{step}` | `projects.setup.edit` | `ProjectSetupController@edit` | `projects/setup` |
-| PATCH | `projects/{project}/setup/{step}` | `projects.setup.update` | `ProjectSetupController@update` | → next step, or activate → `projects.show` |
-| POST | `projects/{project}/logo` | `projects.logo.store` | `ProjectLogoController@store` | back |
-| GET | `projects/{project}/tasks/{task}` | `projects.tasks.show` | `TaskController@show` | `projects/tasks/show` |
-| POST | `projects/{project}/tasks/{task}/completion` | `projects.tasks.completion.store` | `TaskCompletionController@store` | back |
-| DELETE | `projects/{project}/tasks/{task}/completion` | `projects.tasks.completion.destroy` | `TaskCompletionController@destroy` | back |
+| Method | URI                                          | Name                                | Controller@method                  | Page / response                            |
+| ------ | -------------------------------------------- | ----------------------------------- | ---------------------------------- | ------------------------------------------ |
+| GET    | `projects`                                   | `projects.index`                    | `ProjectController@index`          | `projects/index`                           |
+| GET    | `projects/create`                            | `projects.create`                   | `ProjectController@create`         | `projects/create`                          |
+| POST   | `projects`                                   | `projects.store`                    | `ProjectController@store`          | → `projects.setup.edit` step identity      |
+| GET    | `projects/{project}`                         | `projects.show`                     | `ProjectController@show`           | `projects/overview`                        |
+| GET    | `projects/{project}/setup/{step}`            | `projects.setup.edit`               | `ProjectSetupController@edit`      | `projects/setup`                           |
+| PATCH  | `projects/{project}/setup/{step}`            | `projects.setup.update`             | `ProjectSetupController@update`    | → next step, or activate → `projects.show` |
+| POST   | `projects/{project}/logo`                    | `projects.logo.store`               | `ProjectLogoController@store`      | back                                       |
+| GET    | `projects/{project}/tasks/{task}`            | `projects.tasks.show`               | `TaskController@show`              | `projects/tasks/show`                      |
+| POST   | `projects/{project}/tasks/{task}/completion` | `projects.tasks.completion.store`   | `TaskCompletionController@store`   | back                                       |
+| DELETE | `projects/{project}/tasks/{task}/completion` | `projects.tasks.completion.destroy` | `TaskCompletionController@destroy` | back                                       |
 
 - Page props:
-  - `projects/index`: `projects: list<{id, slug, name, oneLiner, phase, phaseLabel, status, logoUrl, progressPct}>`, `can: {create: bool}`
-  - `projects/create`: `phases: ProjectPhase::options()`
-  - `projects/setup`: `project: {slug, name, status, ...all wizard fields}`, `step: string`, `steps: list<{value,label}>`, `options: {businessModels: list<{value,label}>, stages: list<{value,label}>}`, `logoUrl: ?string`
-  - `projects/overview`: `ProjectPageProps` + `nextTask: ?{id, title}` (first open leaf in tree order that is not locked)
-  - `projects/tasks/show`: `ProjectPageProps` + `task: TaskDetail`
+    - `projects/index`: `projects: list<{id, slug, name, oneLiner, phase, phaseLabel, status, logoUrl, progressPct}>`, `can: {create: bool}`
+    - `projects/create`: `phases: ProjectPhase::options()`
+    - `projects/setup`: `project: {slug, name, status, ...all wizard fields}`, `step: string`, `steps: list<{value,label}>`, `options: {businessModels: list<{value,label}>, stages: list<{value,label}>}`, `logoUrl: ?string`
+    - `projects/overview`: `ProjectPageProps` + `nextTask: ?{id, title}` (first open leaf in tree order that is not locked)
+    - `projects/tasks/show`: `ProjectPageProps` + `task: TaskDetail`
 
 - [ ] **Step 1: Write failing HTTP tests**
 
 `ProjectHttpTest.php`:
+
 ```php
 <?php
 
@@ -3767,6 +3863,7 @@ test('overview renders tree and next task', function () {
 ```
 
 `ProjectSetupHttpTest.php`:
+
 ```php
 <?php
 
@@ -3834,6 +3931,7 @@ test('logo rejects non images', function () {
 ```
 
 `TaskHttpTest.php`:
+
 ```php
 <?php
 
@@ -3902,6 +4000,7 @@ test('viewer can read but not complete', function () {
 (If `assertInertiaFlash` does not exist in the installed inertia-laravel, assert `session('inertia.flash_data')` per how `WorkspaceSettingsTest` checks toasts — open that test and copy its assertion.)
 
 `ProjectIsolationTest.php`:
+
 ```php
 <?php
 
@@ -3947,6 +4046,7 @@ Expected: FAIL — 404 on all routes.
 - [ ] **Step 3: Routes**
 
 `routes/projects.php`:
+
 ```php
 <?php
 
@@ -3987,6 +4087,7 @@ Route::prefix('projects')->name('projects.')->group(function () {
 - [ ] **Step 4: Controllers**
 
 `ProjectController.php`:
+
 ```php
 <?php
 
@@ -4070,6 +4171,7 @@ class ProjectController extends Controller
 `index` computes the tree per project (N queries) — acceptable for P0 (few projects per workspace); P1 caches `progress_pct` on `projects`. Note this in a code comment.
 
 `StoreProjectRequest`:
+
 ```php
 public function authorize(): bool
 {
@@ -4086,6 +4188,7 @@ public function rules(): array
 ```
 
 `ProjectSetupController.php`:
+
 ```php
 <?php
 
@@ -4164,6 +4267,7 @@ class ProjectSetupController extends Controller
 ```
 
 `UpdateProjectSetupRequest`:
+
 ```php
 public function authorize(): bool
 {
@@ -4182,6 +4286,7 @@ public function rules(): array
 `ProjectLogoController::store(UpdateProjectLogoRequest $request, Workspace $workspace, Project $project, UpdateProjectLogo $action)` → `$action->handle($project, $request->file('logo'))`, toast, `back()`. `UpdateProjectLogoRequest` rules: `'logo' => ['required', 'image', 'mimes:png,jpg,jpeg,webp,svg', 'max:2048']`; authorize `update`.
 
 `TaskController.php`:
+
 ```php
 public function show(Request $request, Workspace $workspace, Project $project, Task $task, ProjectPageProps $props, TaskDetail $detail): Response
 {
@@ -4195,6 +4300,7 @@ public function show(Request $request, Workspace $workspace, Project $project, T
 ```
 
 `TaskCompletionController.php`:
+
 ```php
 public function store(Request $request, Workspace $workspace, Project $project, Task $task, MarkTaskDone $markDone): RedirectResponse
 {
@@ -4240,16 +4346,18 @@ git commit -m "feat: add project, setup and task routes and controllers"
 ### Task 14: Frontend foundation — packages, shadcn components, types, Markdown
 
 **Files:**
+
 - Modify: `package.json` (deps)
 - Create (generated): `resources/js/components/ui/{progress,scroll-area,textarea,radio-group,tabs}.tsx`
 - Create: `resources/js/types/project.ts`, `resources/js/components/markdown/markdown.tsx`, `resources/js/components/markdown/markdown-editor.tsx`
 - Modify: `resources/js/types/index.ts` (export project types)
 
 **Interfaces:**
+
 - Produces:
-  - `<Markdown source={string|null} className? />` — sanitized render, GFM, links open in new tab.
-  - `<MarkdownEditor name={string} defaultValue={string|null} placeholder? />` — Tiptap editor + hidden `<input name>` holding Markdown, so it works inside Inertia `<Form>`.
-  - Types (mirror Task 12/13 props): `ProjectPhase`, `TaskStatus`, `TreeNode`, `TreeGroup`, `ProjectTree`, `ProjectSummary`, `ProjectListItem`, `TaskDetail`, `TaskActionDetail`, `ProjectPageProps`.
+    - `<Markdown source={string|null} className? />` — sanitized render, GFM, links open in new tab.
+    - `<MarkdownEditor name={string} defaultValue={string|null} placeholder? />` — Tiptap editor + hidden `<input name>` holding Markdown, so it works inside Inertia `<Form>`.
+    - Types (mirror Task 12/13 props): `ProjectPhase`, `TaskStatus`, `TreeNode`, `TreeGroup`, `ProjectTree`, `ProjectSummary`, `ProjectListItem`, `TaskDetail`, `TaskActionDetail`, `ProjectPageProps`.
 
 - [ ] **Step 1: Install packages + shadcn components**
 
@@ -4257,11 +4365,13 @@ git commit -m "feat: add project, setup and task routes and controllers"
 pnpm add @tiptap/react @tiptap/pm @tiptap/starter-kit @tiptap/markdown @tiptap/extension-placeholder react-markdown remark-gfm rehype-sanitize
 pnpm dlx shadcn@latest add progress scroll-area textarea radio-group tabs
 ```
+
 VERIFY: `@tiptap/markdown` is the official v3 Markdown extension (`editor.getMarkdown()`, `contentType: 'markdown'`). If the installed version lacks it, use `tiptap-markdown` (community) with `editor.storage.markdown.getMarkdown()` and record the choice in `docs/CLAUDE.md`.
 
 - [ ] **Step 2: Types**
 
 `resources/js/types/project.ts`:
+
 ```ts
 export type ProjectPhase = 'planning' | 'developing' | 'selling';
 export type ProjectStatus = 'draft' | 'active' | 'archived';
@@ -4308,7 +4418,9 @@ export type ProjectSummary = {
     setupStep: string | null;
 };
 
-export type ProjectListItem = Omit<ProjectSummary, 'setupStep'> & { progressPct: number };
+export type ProjectListItem = Omit<ProjectSummary, 'setupStep'> & {
+    progressPct: number;
+};
 
 export type TaskActionDetail = {
     id: string;
@@ -4335,8 +4447,19 @@ export type TaskDetail = {
     verification: string;
     completedAt: string | null;
     ancestors: { id: string; title: string }[];
-    parent: { id: string; title: string; progressPct: number; status: TaskStatus } | null;
-    children: { id: string; title: string; status: TaskStatus; progressPct: number; isLeaf: boolean }[];
+    parent: {
+        id: string;
+        title: string;
+        progressPct: number;
+        status: TaskStatus;
+    } | null;
+    children: {
+        id: string;
+        title: string;
+        status: TaskStatus;
+        progressPct: number;
+        isLeaf: boolean;
+    }[];
     actions: TaskActionDetail[];
 };
 
@@ -4346,6 +4469,7 @@ export type ProjectPageProps = {
     can: { update: boolean };
 };
 ```
+
 Add `export type * from './project';` to `types/index.ts`.
 
 - [ ] **Step 3: Markdown renderer**
@@ -4356,7 +4480,13 @@ import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 
-export function Markdown({ source, className }: { source: string | null; className?: string }) {
+export function Markdown({
+    source,
+    className,
+}: {
+    source: string | null;
+    className?: string;
+}) {
     if (!source) {
         return null;
     }
@@ -4373,7 +4503,11 @@ export function Markdown({ source, className }: { source: string | null; classNa
                 rehypePlugins={[rehypeSanitize]}
                 components={{
                     a: ({ node: _node, ...props }) => (
-                        <a {...props} target="_blank" rel="noreferrer noopener" />
+                        <a
+                            {...props}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                        />
                     ),
                 }}
             >
@@ -4407,7 +4541,11 @@ export function MarkdownEditor({
     const [markdown, setMarkdown] = useState(defaultValue ?? '');
 
     const editor = useEditor({
-        extensions: [StarterKit, MarkdownExtension, Placeholder.configure({ placeholder })],
+        extensions: [
+            StarterKit,
+            MarkdownExtension,
+            Placeholder.configure({ placeholder }),
+        ],
         content: defaultValue ?? '',
         contentType: 'markdown',
         immediatelyRender: false,
@@ -4420,11 +4558,37 @@ export function MarkdownEditor({
     });
 
     const tools = [
-        { icon: Bold, label: 'Bold', active: 'bold', run: () => editor?.chain().focus().toggleBold().run() },
-        { icon: Italic, label: 'Italic', active: 'italic', run: () => editor?.chain().focus().toggleItalic().run() },
-        { icon: Heading2, label: 'Heading', active: 'heading', run: () => editor?.chain().focus().toggleHeading({ level: 2 }).run() },
-        { icon: List, label: 'Bullet list', active: 'bulletList', run: () => editor?.chain().focus().toggleBulletList().run() },
-        { icon: ListOrdered, label: 'Numbered list', active: 'orderedList', run: () => editor?.chain().focus().toggleOrderedList().run() },
+        {
+            icon: Bold,
+            label: 'Bold',
+            active: 'bold',
+            run: () => editor?.chain().focus().toggleBold().run(),
+        },
+        {
+            icon: Italic,
+            label: 'Italic',
+            active: 'italic',
+            run: () => editor?.chain().focus().toggleItalic().run(),
+        },
+        {
+            icon: Heading2,
+            label: 'Heading',
+            active: 'heading',
+            run: () =>
+                editor?.chain().focus().toggleHeading({ level: 2 }).run(),
+        },
+        {
+            icon: List,
+            label: 'Bullet list',
+            active: 'bulletList',
+            run: () => editor?.chain().focus().toggleBulletList().run(),
+        },
+        {
+            icon: ListOrdered,
+            label: 'Numbered list',
+            active: 'orderedList',
+            run: () => editor?.chain().focus().toggleOrderedList().run(),
+        },
     ];
 
     return (
@@ -4466,16 +4630,19 @@ git commit -m "feat: add markdown renderer, tiptap editor and project types"
 ### Task 15: Projects index + "Add project" (phase picker) + sidebar link
 
 **Files:**
+
 - Create: `resources/js/pages/projects/index.tsx`, `resources/js/pages/projects/create.tsx`, `resources/js/components/project/phase-picker.tsx`
 - Modify: `resources/js/components/app-sidebar.tsx` (add "Projects" nav item)
 
 **Interfaces:**
+
 - Consumes: routes `@/routes/projects` (`index`, `create`, `show`), `@/actions/App/Domain/Project/Http/Controllers/ProjectController` (`store`), types `ProjectListItem`, `PhaseOption`.
 - Produces: `<PhasePicker phases={PhaseOption[]} name="phase" />` — radio cards (shadcn `RadioGroup`), icons: planning `Lightbulb`, developing `Hammer`, selling `Rocket`.
 
 - [ ] **Step 1: Sidebar item**
 
 In `app-sidebar.tsx` add after Dashboard:
+
 ```tsx
 import { FolderKanban } from 'lucide-react';
 import { index as projectsIndex } from '@/routes/projects';
@@ -4497,9 +4664,19 @@ const icons: Record<ProjectPhase, typeof Lightbulb> = {
     selling: Rocket,
 };
 
-export function PhasePicker({ phases, name }: { phases: PhaseOption[]; name: string }) {
+export function PhasePicker({
+    phases,
+    name,
+}: {
+    phases: PhaseOption[];
+    name: string;
+}) {
     return (
-        <RadioGroup name={name} defaultValue={phases[0]?.value} className="grid gap-3 md:grid-cols-3">
+        <RadioGroup
+            name={name}
+            defaultValue={phases[0]?.value}
+            className="grid gap-3 md:grid-cols-3"
+        >
             {phases.map((phase) => {
                 const Icon = icons[phase.value];
 
@@ -4511,10 +4688,15 @@ export function PhasePicker({ phases, name }: { phases: PhaseOption[]; name: str
                     >
                         <div className="flex w-full items-center justify-between">
                             <Icon className="size-5" />
-                            <RadioGroupItem id={`phase-${phase.value}`} value={phase.value} />
+                            <RadioGroupItem
+                                id={`phase-${phase.value}`}
+                                value={phase.value}
+                            />
                         </div>
                         <span className="font-medium">{phase.label}</span>
-                        <span className="text-sm text-muted-foreground">{phase.description}</span>
+                        <span className="text-sm text-muted-foreground">
+                            {phase.description}
+                        </span>
                     </Label>
                 );
             })}
@@ -4542,7 +4724,10 @@ export default function CreateProject({ phases }: { phases: PhaseOption[] }) {
         <>
             <Head title="New project" />
             <div className="mx-auto w-full max-w-3xl space-y-8 p-4 md:p-8">
-                <Heading title="New project" description="Where are you right now? We build your plan from this." />
+                <Heading
+                    title="New project"
+                    description="Where are you right now? We build your plan from this."
+                />
                 <Form {...ProjectController.store.form()} className="space-y-6">
                     {({ processing, errors }) => (
                         <>
@@ -4553,10 +4738,20 @@ export default function CreateProject({ phases }: { phases: PhaseOption[] }) {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Project name</Label>
-                                <Input id="name" name="name" required maxLength={120} placeholder="Acme Rockets" />
+                                <Input
+                                    id="name"
+                                    name="name"
+                                    required
+                                    maxLength={120}
+                                    placeholder="Acme Rockets"
+                                />
                                 <InputError message={errors.name} />
                             </div>
-                            <Button type="submit" disabled={processing} data-test="create-project-button">
+                            <Button
+                                type="submit"
+                                disabled={processing}
+                                data-test="create-project-button"
+                            >
                                 Create draft project
                             </Button>
                         </>
@@ -4590,7 +4785,13 @@ import { Progress } from '@/components/ui/progress';
 import { create, index, show } from '@/routes/projects';
 import type { ProjectListItem } from '@/types';
 
-export default function ProjectsIndex({ projects, can }: { projects: ProjectListItem[]; can: { create: boolean } }) {
+export default function ProjectsIndex({
+    projects,
+    can,
+}: {
+    projects: ProjectListItem[];
+    can: { create: boolean };
+}) {
     const addButton = can.create && (
         <Button asChild>
             <Link href={create()}>
@@ -4604,32 +4805,58 @@ export default function ProjectsIndex({ projects, can }: { projects: ProjectList
             <Head title="Projects" />
             <div className="space-y-6 p-4 md:p-8">
                 <div className="flex items-start justify-between gap-4">
-                    <Heading title="Projects" description="Each project is one company or product." />
+                    <Heading
+                        title="Projects"
+                        description="Each project is one company or product."
+                    />
                     {projects.length > 0 && addButton}
                 </div>
                 {projects.length === 0 ? (
                     <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed p-12 text-center">
-                        <p className="text-muted-foreground">No projects yet.</p>
+                        <p className="text-muted-foreground">
+                            No projects yet.
+                        </p>
                         {addButton}
                     </div>
                 ) : (
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {projects.map((project) => (
-                            <Link key={project.id} href={show({ project: project.slug })} className="block">
+                            <Link
+                                key={project.id}
+                                href={show({ project: project.slug })}
+                                className="block"
+                            >
                                 <Card className="h-full transition hover:border-primary">
                                     <CardHeader className="flex-row items-center gap-3">
-                                        {project.logoUrl && <img src={project.logoUrl} alt="" className="size-10 rounded-md object-cover" />}
+                                        {project.logoUrl && (
+                                            <img
+                                                src={project.logoUrl}
+                                                alt=""
+                                                className="size-10 rounded-md object-cover"
+                                            />
+                                        )}
                                         <div className="min-w-0">
-                                            <CardTitle className="truncate">{project.name}</CardTitle>
-                                            <p className="truncate text-sm text-muted-foreground">{project.oneLiner}</p>
+                                            <CardTitle className="truncate">
+                                                {project.name}
+                                            </CardTitle>
+                                            <p className="truncate text-sm text-muted-foreground">
+                                                {project.oneLiner}
+                                            </p>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         <div className="flex gap-2">
                                             <Badge>{project.phaseLabel}</Badge>
-                                            {project.status === 'draft' && <Badge variant="outline">Draft</Badge>}
+                                            {project.status === 'draft' && (
+                                                <Badge variant="outline">
+                                                    Draft
+                                                </Badge>
+                                            )}
                                         </div>
-                                        <Progress value={project.progressPct} aria-label={`${project.progressPct}% done`} />
+                                        <Progress
+                                            value={project.progressPct}
+                                            aria-label={`${project.progressPct}% done`}
+                                        />
                                     </CardContent>
                                 </Card>
                             </Link>
@@ -4661,9 +4888,11 @@ git commit -m "feat: projects list and phase picker"
 ### Task 16: Setup wizard page
 
 **Files:**
+
 - Create: `resources/js/pages/projects/setup.tsx`, `resources/js/components/project/setup-steps.tsx`
 
 **Interfaces:**
+
 - Consumes: `@/actions/App/Domain/Project/Http/Controllers/ProjectSetupController` (`update`), `ProjectLogoController` (`store`), `@/routes/projects/setup` (`edit`), `@/routes/projects` (`show`); props from Task 13.
 - Produces: `<SetupSteps steps current projectSlug />` — horizontal stepper; completed steps are links (`edit({project, step})`).
 
@@ -4676,7 +4905,15 @@ import { cn } from '@/lib/utils';
 import { edit } from '@/routes/projects/setup';
 import type { Option } from '@/types';
 
-export function SetupSteps({ steps, current, projectSlug }: { steps: Option[]; current: string; projectSlug: string }) {
+export function SetupSteps({
+    steps,
+    current,
+    projectSlug,
+}: {
+    steps: Option[];
+    current: string;
+    projectSlug: string;
+}) {
     const currentIndex = steps.findIndex((s) => s.value === current);
 
     return (
@@ -4687,14 +4924,21 @@ export function SetupSteps({ steps, current, projectSlug }: { steps: Option[]; c
                         href={edit({ project: projectSlug, step: step.value })}
                         className={cn(
                             'flex items-center gap-2 rounded-full border px-3 py-1',
-                            i === currentIndex && 'border-primary bg-primary text-primary-foreground',
+                            i === currentIndex &&
+                                'border-primary bg-primary text-primary-foreground',
                             i < currentIndex && 'text-muted-foreground',
                         )}
                     >
-                        {i < currentIndex ? <Check className="size-3" /> : <span>{i + 1}</span>}
+                        {i < currentIndex ? (
+                            <Check className="size-3" />
+                        ) : (
+                            <span>{i + 1}</span>
+                        )}
                         {step.label}
                     </Link>
-                    {i < steps.length - 1 && <span className="text-muted-foreground">—</span>}
+                    {i < steps.length - 1 && (
+                        <span className="text-muted-foreground">—</span>
+                    )}
                 </li>
             ))}
         </ol>
@@ -4717,11 +4961,15 @@ Footer: "Back" link (previous step) + "Save and continue" / on goals "Finish set
 SetupPage.layout = (props: { project: { slug: string; name: string } }) => ({
     breadcrumbs: [
         { title: 'Projects', href: index() },
-        { title: props.project.name, href: show({ project: props.project.slug }) },
+        {
+            title: props.project.name,
+            href: show({ project: props.project.slug }),
+        },
         { title: 'Setup', href: '#' },
     ],
 });
 ```
+
 (If Inertia v3 static `layout` objects cannot read props, set breadcrumbs inside the page via `setLayoutProps` — check the inertia-react-development skill.)
 
 - [ ] **Step 3: Check + manual smoke**
@@ -4741,16 +4989,18 @@ git commit -m "feat: project setup wizard"
 ### Task 17: Project layout — task-tree sidebar + overview page
 
 **Files:**
+
 - Create: `resources/js/layouts/project-layout.tsx`, `resources/js/components/project/{project-sidebar.tsx,task-tree.tsx,task-status-icon.tsx,project-progress.tsx}`, `resources/js/pages/projects/overview.tsx`
 - Modify: `resources/js/app.tsx` (layout switch)
 
 **Interfaces:**
+
 - Consumes: `ProjectPageProps` via `usePage<ProjectPageProps>().props`; routes `@/routes/projects` (`index`, `show`), `@/routes/projects/tasks` (`show`), `@/routes/projects/setup` (`edit`).
 - Produces:
-  - `ProjectLayout` — `AppShell variant="sidebar"` + `ProjectSidebar` + `AppContent`; header row = breadcrumbs (left) + `<ProjectProgress value>` (right).
-  - `<TaskTree groups activeTaskId? />` — `SidebarGroup` per category (label + group %), `Collapsible` nodes, `TaskStatusIcon`, active item highlighted, auto-expands ancestors of the active task.
-  - `<TaskStatusIcon status />` — `done` CheckCircle2 (green), `in_progress` CircleDot, `locked` Lock, `skipped` CircleSlash, others Circle.
-  - `<ProjectProgress value label? />` — `Progress` + `NN%` text, `w-40`.
+    - `ProjectLayout` — `AppShell variant="sidebar"` + `ProjectSidebar` + `AppContent`; header row = breadcrumbs (left) + `<ProjectProgress value>` (right).
+    - `<TaskTree groups activeTaskId? />` — `SidebarGroup` per category (label + group %), `Collapsible` nodes, `TaskStatusIcon`, active item highlighted, auto-expands ancestors of the active task.
+    - `<TaskStatusIcon status />` — `done` CheckCircle2 (green), `in_progress` CircleDot, `locked` Lock, `skipped` CircleSlash, others Circle.
+    - `<ProjectProgress value label? />` — `Progress` + `NN%` text, `w-40`.
 
 - [ ] **Step 1: Layout switch in `app.tsx`**
 
@@ -4765,24 +5015,64 @@ case name.startsWith('projects/tasks/'):
 - [ ] **Step 2: Status icon + progress**
 
 ```tsx
-import { CheckCircle2, Circle, CircleDot, CircleSlash, Lock } from 'lucide-react';
+import {
+    CheckCircle2,
+    Circle,
+    CircleDot,
+    CircleSlash,
+    Lock,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskStatus } from '@/types';
 
-export function TaskStatusIcon({ status, className }: { status: TaskStatus; className?: string }) {
-    const props = { className: cn('size-4 shrink-0', className), 'aria-label': status.replace('_', ' ') };
+export function TaskStatusIcon({
+    status,
+    className,
+}: {
+    status: TaskStatus;
+    className?: string;
+}) {
+    const props = {
+        className: cn('size-4 shrink-0', className),
+        'aria-label': status.replace('_', ' '),
+    };
 
     switch (status) {
         case 'done':
-            return <CheckCircle2 {...props} className={cn(props.className, 'text-emerald-600')} />;
+            return (
+                <CheckCircle2
+                    {...props}
+                    className={cn(props.className, 'text-emerald-600')}
+                />
+            );
         case 'in_progress':
-            return <CircleDot {...props} className={cn(props.className, 'text-amber-500')} />;
+            return (
+                <CircleDot
+                    {...props}
+                    className={cn(props.className, 'text-amber-500')}
+                />
+            );
         case 'locked':
-            return <Lock {...props} className={cn(props.className, 'text-muted-foreground')} />;
+            return (
+                <Lock
+                    {...props}
+                    className={cn(props.className, 'text-muted-foreground')}
+                />
+            );
         case 'skipped':
-            return <CircleSlash {...props} className={cn(props.className, 'text-muted-foreground')} />;
+            return (
+                <CircleSlash
+                    {...props}
+                    className={cn(props.className, 'text-muted-foreground')}
+                />
+            );
         default:
-            return <Circle {...props} className={cn(props.className, 'text-muted-foreground')} />;
+            return (
+                <Circle
+                    {...props}
+                    className={cn(props.className, 'text-muted-foreground')}
+                />
+            );
     }
 }
 ```
@@ -4790,12 +5080,25 @@ export function TaskStatusIcon({ status, className }: { status: TaskStatus; clas
 ```tsx
 import { Progress } from '@/components/ui/progress';
 
-export function ProjectProgress({ value, label = 'Progress' }: { value: number; label?: string }) {
+export function ProjectProgress({
+    value,
+    label = 'Progress',
+}: {
+    value: number;
+    label?: string;
+}) {
     return (
-        <div className="flex items-center gap-3" aria-label={`${label}: ${value}%`}>
-            <span className="hidden text-xs text-muted-foreground sm:inline">{label}</span>
+        <div
+            className="flex items-center gap-3"
+            aria-label={`${label}: ${value}%`}
+        >
+            <span className="hidden text-xs text-muted-foreground sm:inline">
+                {label}
+            </span>
             <Progress value={value} className="w-32 md:w-40" />
-            <span className="w-10 text-right text-sm font-medium tabular-nums">{value}%</span>
+            <span className="w-10 text-right text-sm font-medium tabular-nums">
+                {value}%
+            </span>
         </div>
     );
 }
@@ -4806,7 +5109,11 @@ export function ProjectProgress({ value, label = 'Progress' }: { value: number; 
 ```tsx
 import { Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     SidebarGroup,
     SidebarGroupLabel,
@@ -4820,12 +5127,27 @@ import { show } from '@/routes/projects/tasks';
 import type { TreeGroup, TreeNode } from '@/types';
 
 function containsTask(node: TreeNode, id?: string): boolean {
-    return !!id && (node.id === id || node.children.some((c) => containsTask(c, id)));
+    return (
+        !!id &&
+        (node.id === id || node.children.some((c) => containsTask(c, id)))
+    );
 }
 
-function Node({ node, projectSlug, activeTaskId }: { node: TreeNode; projectSlug: string; activeTaskId?: string }) {
+function Node({
+    node,
+    projectSlug,
+    activeTaskId,
+}: {
+    node: TreeNode;
+    projectSlug: string;
+    activeTaskId?: string;
+}) {
     const link = (
-        <SidebarMenuButton asChild isActive={node.id === activeTaskId} size="sm">
+        <SidebarMenuButton
+            asChild
+            isActive={node.id === activeTaskId}
+            size="sm"
+        >
             <Link href={show({ project: projectSlug, task: node.id })} prefetch>
                 <TaskStatusIcon status={node.status} />
                 <span className="truncate">{node.title}</span>
@@ -4841,7 +5163,10 @@ function Node({ node, projectSlug, activeTaskId }: { node: TreeNode; projectSlug
         <Collapsible asChild defaultOpen={containsTask(node, activeTaskId)}>
             <SidebarMenuItem>
                 <div className="flex items-center">
-                    <CollapsibleTrigger className="p-1 [&[data-state=open]>svg]:rotate-90" aria-label={`Toggle ${node.title}`}>
+                    <CollapsibleTrigger
+                        className="p-1 [&[data-state=open]>svg]:rotate-90"
+                        aria-label={`Toggle ${node.title}`}
+                    >
                         <ChevronRight className="size-3 transition-transform" />
                     </CollapsibleTrigger>
                     <div className="min-w-0 flex-1">{link}</div>
@@ -4849,7 +5174,12 @@ function Node({ node, projectSlug, activeTaskId }: { node: TreeNode; projectSlug
                 <CollapsibleContent>
                     <SidebarMenuSub>
                         {node.children.map((child) => (
-                            <Node key={child.id} node={child} projectSlug={projectSlug} activeTaskId={activeTaskId} />
+                            <Node
+                                key={child.id}
+                                node={child}
+                                projectSlug={projectSlug}
+                                activeTaskId={activeTaskId}
+                            />
                         ))}
                     </SidebarMenuSub>
                 </CollapsibleContent>
@@ -4858,7 +5188,15 @@ function Node({ node, projectSlug, activeTaskId }: { node: TreeNode; projectSlug
     );
 }
 
-export function TaskTree({ groups, projectSlug, activeTaskId }: { groups: TreeGroup[]; projectSlug: string; activeTaskId?: string }) {
+export function TaskTree({
+    groups,
+    projectSlug,
+    activeTaskId,
+}: {
+    groups: TreeGroup[];
+    projectSlug: string;
+    activeTaskId?: string;
+}) {
     return groups.map((group) => (
         <SidebarGroup key={group.key}>
             <SidebarGroupLabel className="flex justify-between">
@@ -4867,7 +5205,12 @@ export function TaskTree({ groups, projectSlug, activeTaskId }: { groups: TreeGr
             </SidebarGroupLabel>
             <SidebarMenu>
                 {group.tasks.map((node) => (
-                    <Node key={node.id} node={node} projectSlug={projectSlug} activeTaskId={activeTaskId} />
+                    <Node
+                        key={node.id}
+                        node={node}
+                        projectSlug={projectSlug}
+                        activeTaskId={activeTaskId}
+                    />
                 ))}
             </SidebarMenu>
         </SidebarGroup>
@@ -4880,6 +5223,7 @@ export function TaskTree({ groups, projectSlug, activeTaskId }: { groups: TreeGr
 `project-sidebar.tsx`: `Sidebar collapsible="offcanvas" variant="inset"`; header = back link "← All projects" (`index()`), project logo/initials + name + phase `Badge` (links to `show({project})`), "Finish setup" `Button size="sm"` when `project.setupStep` (→ `edit({project, step: setupStep})`); content = `<ScrollArea><TaskTree … /></ScrollArea>`; footer = `<NavUser />`. Active task id = `usePage().props.task?.id`.
 
 `project-layout.tsx`:
+
 ```tsx
 import { usePage } from '@inertiajs/react';
 import { AppContent } from '@/components/app-content';
@@ -4893,15 +5237,31 @@ import { index, show } from '@/routes/projects';
 import { show as showTask } from '@/routes/projects/tasks';
 import type { BreadcrumbItem, ProjectPageProps, TaskDetail } from '@/types';
 
-export default function ProjectLayout({ children }: { children: React.ReactNode }) {
+export default function ProjectLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     useWorkspaceUrlDefaults();
-    const { project, tree, task } = usePage<ProjectPageProps & { task?: TaskDetail }>().props;
+    const { project, tree, task } = usePage<
+        ProjectPageProps & { task?: TaskDetail }
+    >().props;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Projects', href: index() },
         { title: project.name, href: show({ project: project.slug }) },
-        ...(task?.ancestors ?? []).map((a) => ({ title: a.title, href: showTask({ project: project.slug, task: a.id }) })),
-        ...(task ? [{ title: task.title, href: showTask({ project: project.slug, task: task.id }) }] : []),
+        ...(task?.ancestors ?? []).map((a) => ({
+            title: a.title,
+            href: showTask({ project: project.slug, task: a.id }),
+        })),
+        ...(task
+            ? [
+                  {
+                      title: task.title,
+                      href: showTask({ project: project.slug, task: task.id }),
+                  },
+              ]
+            : []),
     ];
 
     return (
@@ -4913,7 +5273,10 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
                         <SidebarTrigger className="-ml-1" />
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
-                    <ProjectProgress value={task ? task.progressPct : tree.progressPct} label={task ? 'Task' : 'Project'} />
+                    <ProjectProgress
+                        value={task ? task.progressPct : tree.progressPct}
+                        label={task ? 'Task' : 'Project'}
+                    />
                 </header>
                 {children}
             </AppContent>
@@ -4942,16 +5305,18 @@ git commit -m "feat: project layout with task tree sidebar and overview"
 ### Task 18: Task detail page (parent + subtask views, prompts)
 
 **Files:**
+
 - Create: `resources/js/pages/projects/tasks/show.tsx`, `resources/js/components/task/{task-header.tsx,parent-task-card.tsx,subtask-list.tsx,action-card.tsx,prompt-buttons.tsx}`
 
 **Interfaces:**
+
 - Consumes: `TaskDetail`, `ProjectPageProps`; `@/actions/App/Domain/Task/Http/Controllers/TaskCompletionController` (`store`, `destroy`); `@/routes/projects/tasks` (`show`); `useClipboard`.
 - Produces:
-  - `<TaskHeader task canUpdate projectSlug />` — title, status badge, priority badge, summary; leaf + `canUpdate`: "Mark as done" / "Reopen" button (`<Form {...TaskCompletionController.store.form({project, task})}>` / `destroy`). Locked → disabled button + tooltip "Finish dependencies first".
-  - `<ParentTaskCard parent projectSlug />` — shown when `task.parent` exists (subtask view): compact card at the top with parent title, status icon, `Progress`, link back.
-  - `<SubtaskList items projectSlug canUpdate />` — rows: checkbox (leaf only; toggles completion with `router.post/delete`, `preserveScroll: true`, optimistic: local checked state reverts on error), status icon, title link, `progressPct` for non-leaf children.
-  - `<ActionCard action />` — title, `Badge` type + executor, required marker, `<Markdown source={instructionsMd} />`, `<PromptButtons prompt />`.
-  - `<PromptButtons prompt />` — "Copy prompt" (`useClipboard`, toast via `sonner` "Prompt copied"), "Preview" (`Dialog` showing the prompt in `<pre>`), "Open in Claude" button disabled with tooltip "Coming soon — connect Claude" (enabled in P1).
+    - `<TaskHeader task canUpdate projectSlug />` — title, status badge, priority badge, summary; leaf + `canUpdate`: "Mark as done" / "Reopen" button (`<Form {...TaskCompletionController.store.form({project, task})}>` / `destroy`). Locked → disabled button + tooltip "Finish dependencies first".
+    - `<ParentTaskCard parent projectSlug />` — shown when `task.parent` exists (subtask view): compact card at the top with parent title, status icon, `Progress`, link back.
+    - `<SubtaskList items projectSlug canUpdate />` — rows: checkbox (leaf only; toggles completion with `router.post/delete`, `preserveScroll: true`, optimistic: local checked state reverts on error), status icon, title link, `progressPct` for non-leaf children.
+    - `<ActionCard action />` — title, `Badge` type + executor, required marker, `<Markdown source={instructionsMd} />`, `<PromptButtons prompt />`.
+    - `<PromptButtons prompt />` — "Copy prompt" (`useClipboard`, toast via `sonner` "Prompt copied"), "Preview" (`Dialog` showing the prompt in `<pre>`), "Open in Claude" button disabled with tooltip "Coming soon — connect Claude" (enabled in P1).
 
 - [ ] **Step 1: Page composition**
 
@@ -4964,18 +5329,35 @@ import { SubtaskList } from '@/components/task/subtask-list';
 import { TaskHeader } from '@/components/task/task-header';
 import type { ProjectPageProps, TaskDetail } from '@/types';
 
-export default function TaskShow({ project, can, task }: ProjectPageProps & { task: TaskDetail }) {
+export default function TaskShow({
+    project,
+    can,
+    task,
+}: ProjectPageProps & { task: TaskDetail }) {
     return (
         <>
             <Head title={task.title} />
             <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
-                {task.parent && <ParentTaskCard parent={task.parent} projectSlug={project.slug} />}
-                <TaskHeader task={task} canUpdate={can.update} projectSlug={project.slug} />
+                {task.parent && (
+                    <ParentTaskCard
+                        parent={task.parent}
+                        projectSlug={project.slug}
+                    />
+                )}
+                <TaskHeader
+                    task={task}
+                    canUpdate={can.update}
+                    projectSlug={project.slug}
+                />
                 <Markdown source={task.bodyMd} />
                 {task.children.length > 0 && (
                     <section className="space-y-3">
                         <h2 className="font-semibold">Subtasks</h2>
-                        <SubtaskList items={task.children} projectSlug={project.slug} canUpdate={can.update} />
+                        <SubtaskList
+                            items={task.children}
+                            projectSlug={project.slug}
+                            canUpdate={can.update}
+                        />
                     </section>
                 )}
                 {task.actions.length > 0 && (
@@ -4998,8 +5380,18 @@ export default function TaskShow({ project, can, task }: ProjectPageProps & { ta
 import { Copy, ExternalLink, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useClipboard } from '@/hooks/use-clipboard';
 
 export function PromptButtons({ prompt }: { prompt: string }) {
@@ -5009,7 +5401,11 @@ export function PromptButtons({ prompt }: { prompt: string }) {
         <div className="flex flex-wrap gap-2">
             <Button
                 size="sm"
-                onClick={async () => ((await copy(prompt)) ? toast.success('Prompt copied') : toast.error('Copy failed'))}
+                onClick={async () =>
+                    (await copy(prompt))
+                        ? toast.success('Prompt copied')
+                        : toast.error('Copy failed')
+                }
             >
                 <Copy /> Copy prompt
             </Button>
@@ -5023,7 +5419,9 @@ export function PromptButtons({ prompt }: { prompt: string }) {
                     <DialogHeader>
                         <DialogTitle>Prompt</DialogTitle>
                     </DialogHeader>
-                    <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">{prompt}</pre>
+                    <pre className="max-h-[60vh] overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">
+                        {prompt}
+                    </pre>
                 </DialogContent>
             </Dialog>
             <Tooltip>
@@ -5054,16 +5452,29 @@ import type { TaskDetail } from '@/types';
 
 type Item = TaskDetail['children'][number];
 
-function Row({ item, projectSlug, canUpdate }: { item: Item; projectSlug: string; canUpdate: boolean }) {
+function Row({
+    item,
+    projectSlug,
+    canUpdate,
+}: {
+    item: Item;
+    projectSlug: string;
+    canUpdate: boolean;
+}) {
     const [checked, setChecked] = useState(item.status === 'done');
     const args = { project: projectSlug, task: item.id };
 
     const toggle = (next: boolean) => {
         setChecked(next);
-        router.visit(next ? TaskCompletionController.store(args) : TaskCompletionController.destroy(args), {
-            preserveScroll: true,
-            onError: () => setChecked(!next),
-        });
+        router.visit(
+            next
+                ? TaskCompletionController.store(args)
+                : TaskCompletionController.destroy(args),
+            {
+                preserveScroll: true,
+                onError: () => setChecked(!next),
+            },
+        );
     };
 
     return (
@@ -5078,26 +5489,46 @@ function Row({ item, projectSlug, canUpdate }: { item: Item; projectSlug: string
             ) : (
                 <TaskStatusIcon status={item.status} />
             )}
-            <Link href={show(args)} className="min-w-0 flex-1 truncate hover:underline">
+            <Link
+                href={show(args)}
+                className="min-w-0 flex-1 truncate hover:underline"
+            >
                 {item.title}
             </Link>
-            {!item.isLeaf && <span className="text-xs tabular-nums text-muted-foreground">{item.progressPct}%</span>}
+            {!item.isLeaf && (
+                <span className="text-xs tabular-nums text-muted-foreground">
+                    {item.progressPct}%
+                </span>
+            )}
         </li>
     );
 }
 
-export function SubtaskList({ items, projectSlug, canUpdate }: { items: Item[]; projectSlug: string; canUpdate: boolean }) {
+export function SubtaskList({
+    items,
+    projectSlug,
+    canUpdate,
+}: {
+    items: Item[];
+    projectSlug: string;
+    canUpdate: boolean;
+}) {
     return (
         <ul className="space-y-2">
             {items.map((item) => (
-                <Row key={item.id} item={item} projectSlug={projectSlug} canUpdate={canUpdate} />
+                <Row
+                    key={item.id}
+                    item={item}
+                    projectSlug={projectSlug}
+                    canUpdate={canUpdate}
+                />
             ))}
         </ul>
     );
 }
 ```
 
-The completion controller returns `back()` with a toast. A domain refusal (locked/parent) comes back as an error *toast*, not a validation error, so `onError` will not fire; the server state wins on reload because `checked` is re-initialised from props through `key={item.id + item.status}` on `<Row>` — use that key instead of `item.id`.
+The completion controller returns `back()` with a toast. A domain refusal (locked/parent) comes back as an error _toast_, not a validation error, so `onError` will not fire; the server state wins on reload because `checked` is re-initialised from props through `key={item.id + item.status}` on `<Row>` — use that key instead of `item.id`.
 
 - [ ] **Step 4: Header, parent card, action card**
 
@@ -5106,6 +5537,7 @@ Implement as described in Interfaces with shadcn `Card`, `Badge`, `Button`, `Pro
 - [ ] **Step 5: Check + manual smoke**
 
 Run: `pnpm run types:check && pnpm run check`; browser:
+
 1. Open a root task → body, subtasks, actions, prompt copy works (paste into a text editor).
 2. Click a subtask → parent card + breadcrumb on top, same layout below.
 3. Check a subtask → tree icon + top-right progress update without full reload.
@@ -5123,6 +5555,7 @@ git commit -m "feat: task page with subtasks, progress and copy prompt"
 ### Task 19: Docs + full gate
 
 **Files:**
+
 - Modify: `docs/CLAUDE.md` (folder layout → module per domain; Postgres; Tiptap decided; `catalog:import`), `docs/DATA_MODEL.md` (add `projects.phase`, `projects.status` `draft`, `projects.activated_at`, `content_hash` on `catalog_tasks`/`prompt_templates`/`packs`, `packs.audience.phase` + one default per phase), `docs/PROJECT_CONTEXT.md` §7.1 (phase → default pack → draft → wizard)
 - Modify: `database/seeders/DatabaseSeeder.php` (verified in Task 5)
 
