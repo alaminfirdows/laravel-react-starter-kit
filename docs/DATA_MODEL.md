@@ -112,7 +112,12 @@ Unique "singleton" types per project (icp, positioning, messaging, brand, brief)
 
 **knowledge_document_versions** — `document_id`, `version`, `body_md`, `created_by_type/_id`, `change_note`.
 
-**knowledge_chunks** — `id`, `document_id`, `project_id`, `chunk_index`, `heading_path`, `content`, `token_count`, `embedding vector(1536)` (HNSW cosine via `->index()`), `tsv tsvector` generated (GIN), `meta`.
+**knowledge_chunks** — `id`, `workspace_id`, `document_id`, `project_id`, `chunk_index`, `heading_path`, `content`, `token_count`, `embedding vector(1536)` (HNSW cosine via `->vectorIndex()`), `tsv tsvector` generated from `heading_path || content` (GIN), `meta`.
+Chunking: heading-aware, ≤ 500 tokens (4 chars/token), 50-token overlap. Embedding is queued (`EmbedDocumentJob`) and runs only on a new version; until then, search uses full text only. Hybrid search = vector (min similarity 0.3) + `ts_rank`, merged with reciprocal rank fusion (k = 60); archived docs excluded.
+
+**decisions** — `id ulid`, `workspace_id`, `project_id`, `task_id?`, `title`, `decision_md`, `rationale_md?`, `alternatives jsonb`, `owner_id → users?`, `decided_on date`, `source` (same values as docs), `revisit_on date?`.
+
+**projects.context_snapshot_md** — rebuilt by a debounced queued job (`RebuildContextSnapshotJob`) after project setup, doc save or decision.
 
 Structured research tables (optional P2+, instead of docs when rows matter): **interviews** (person, company, role, date, problem, current_solution, pain, desired_outcome, objections, quotes, feature_requests) and **competitors** (name, url, pricing, icp, positioning, features, integrations, strengths, complaints, last_reviewed_at) — fields taken from the founder checklist. Each row also mirrored to a knowledge doc for search.
 

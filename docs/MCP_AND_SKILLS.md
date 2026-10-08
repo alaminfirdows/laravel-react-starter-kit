@@ -27,7 +27,13 @@
 - Plugin: `php artisan plugin:build --release=1.0.0 --skills=resources/skills --output=plugin` → `plugin/` + `storage/app/plugins/founder-os-<version>.zip`. Skills ship unless frontmatter `metadata.in_plugin: false`.
 - Inspector: `php artisan mcp:inspector founder`.
 
-Rows below = full target spec; P2+ adds knowledge tools.
+### Shipped (P2)
+
+- Tools: `search_knowledge` (project_id, query, doc_types[], limit ≤ 20), `list_documents` (project_id, doc_type?, status?; archived hidden by default), `get_document` (document_id) — read-only; `save_knowledge` (project_id, doc_type or document_id, title, body_md ≤ 200 000 chars, status draft|approved, task_id?, change_note?), `log_decision` (project_id, title, decision_md, rationale_md?, alternatives[], task_id?, revisit_on?) — write, need `update` on project. Both set `source=claude_mcp`.
+- `get_project_context` without `sections` returns the cached context snapshot (`projects.context_snapshot_md`, ≤ 6 000 chars: profile, goals, brand, approved singleton docs as summaries + IDs, last 10 decisions) + live progress.
+- Full prompts accept `{{ knowledge.<doc_type> }}` → latest approved doc body of that type, trimmed to 1 200 tokens; empty when none.
+
+Rows below = full target spec.
 
 ### Advertised (hot)
 
