@@ -18,6 +18,17 @@
 
 ## 2. Tools
 
+### Shipped (P1)
+
+- Tools: `whoami`, `list_projects`, `get_project_context`, `list_tasks`, `get_task`, `get_action` (read-only); `start_action`, `save_output`, `attach_evidence` (kinds `url`/`value`/`note`; `check_result` is app-only), `request_approval`, `complete_action` (write, need `update` on project).
+- Prompt: `run-task` (`task_id`) → launcher for first open action.
+- Resources: `founder://projects/{project_id}/context`, `founder://tasks/{task_id}`.
+- Errors: foreign/unknown ID → "not found"; viewer write → permission error; invalid transition → tool error.
+- Plugin: `php artisan plugin:build --release=1.0.0 --skills=resources/skills --output=plugin` → `plugin/` + `storage/app/plugins/founder-os-<version>.zip`. Skills ship unless frontmatter `metadata.in_plugin: false`.
+- Inspector: `php artisan mcp:inspector founder`.
+
+Rows below = full target spec; P2+ adds knowledge tools.
+
 ### Advertised (hot)
 
 | Tool                  | Purpose                                                                                    | Key args                                                     | Annotations |
