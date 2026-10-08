@@ -2,6 +2,9 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Prompts\WorkOnTaskPrompt;
+use App\Mcp\Resources\ProjectContextResource;
+use App\Mcp\Resources\TaskResource;
 use App\Mcp\Tools\AttachEvidenceTool;
 use App\Mcp\Tools\CompleteActionTool;
 use App\Mcp\Tools\GetActionTool;
@@ -38,10 +41,11 @@ class FounderServer extends Server
     ];
 
     protected array $resources = [
-        //
+        ProjectContextResource::class,
+        TaskResource::class,
     ];
 
     protected array $prompts = [
-        //
+        WorkOnTaskPrompt::class,
     ];
 }
