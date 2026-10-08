@@ -58,6 +58,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Collection<int, TaskAction> $actions
  * @property-read Collection<int, Task> $dependencies
  * @property-read Collection<int, Task> $dependents
+ * @property-read Collection<int, Evidence> $evidence
+ * @property-read Collection<int, ActionRun> $runs
  */
 #[Fillable(['title', 'summary', 'body_md', 'body_doc', 'priority', 'due_at'])]
 #[UseFactory(TaskFactory::class)]
@@ -163,5 +165,21 @@ class Task extends Model
     {
         return $this->belongsToMany(self::class, 'task_dependencies', 'depends_on_id', 'task_id')
             ->withPivot('kind');
+    }
+
+    /**
+     * @return HasMany<Evidence, $this>
+     */
+    public function evidence(): HasMany
+    {
+        return $this->hasMany(Evidence::class);
+    }
+
+    /**
+     * @return HasMany<ActionRun, $this>
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(ActionRun::class)->latest('started_at');
     }
 }

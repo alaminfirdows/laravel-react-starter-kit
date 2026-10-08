@@ -10,10 +10,13 @@ use Carbon\CarbonImmutable;
 use Database\Factories\TaskActionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property string $id
@@ -31,11 +34,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $requires_approval
  * @property ActionStatus $status
  * @property int $sort_order
+ * @property string|null $last_run_id
  * @property CarbonImmutable|null $completed_at
  * @property string|null $completed_by_type
  * @property string|null $completed_by_id
  * @property-read Task $task
  * @property-read PromptTemplate|null $promptTemplate
+ * @property-read ActionRun|null $lastRun
+ * @property-read Collection<int, ActionRun> $runs
+ * @property-read Collection<int, Evidence> $evidence
+ * @property-read Collection<int, Approval> $approvals
  */
 #[Fillable([])]
 #[UseFactory(TaskActionFactory::class)]
@@ -78,5 +86,37 @@ class TaskAction extends Model
     public function promptTemplate(): BelongsTo
     {
         return $this->belongsTo(PromptTemplate::class);
+    }
+
+    /**
+     * @return HasMany<ActionRun, $this>
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(ActionRun::class)->latest('started_at');
+    }
+
+    /**
+     * @return BelongsTo<ActionRun, $this>
+     */
+    public function lastRun(): BelongsTo
+    {
+        return $this->belongsTo(ActionRun::class, 'last_run_id');
+    }
+
+    /**
+     * @return HasMany<Evidence, $this>
+     */
+    public function evidence(): HasMany
+    {
+        return $this->hasMany(Evidence::class);
+    }
+
+    /**
+     * @return MorphMany<Approval, $this>
+     */
+    public function approvals(): MorphMany
+    {
+        return $this->morphMany(Approval::class, 'subject');
     }
 }
