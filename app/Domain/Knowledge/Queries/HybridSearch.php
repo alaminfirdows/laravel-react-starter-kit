@@ -77,7 +77,7 @@ class HybridSearch
 
     /**
      * @param  list<DocType>  $docTypes
-     * @return list<string>
+     * @return array<int, string> chunk IDs, best first
      */
     protected function vectorRanks(Project $project, string $query, array $docTypes, int $pool): array
     {
@@ -95,13 +95,12 @@ class HybridSearch
             ->limit($pool)
             ->get(['knowledge_chunks.id'])
             ->map(fn (KnowledgeChunk $chunk): string => $chunk->id)
-            ->values()
             ->all();
     }
 
     /**
      * @param  list<DocType>  $docTypes
-     * @return list<string>
+     * @return array<int, string> chunk IDs, best first
      */
     protected function textRanks(Project $project, string $query, array $docTypes, int $pool): array
     {
@@ -111,7 +110,6 @@ class HybridSearch
             ->limit($pool)
             ->get(['knowledge_chunks.id'])
             ->map(fn (KnowledgeChunk $chunk): string => $chunk->id)
-            ->values()
             ->all();
     }
 
