@@ -2,6 +2,7 @@
 
 namespace App\Domain\Workspace\Models;
 
+use App\Domain\Project\Models\Project;
 use App\Domain\Workspace\Concerns\GeneratesUniqueWorkspaceSlugs;
 use App\Domain\Workspace\Enums\WorkspaceStatus;
 use App\Domain\Workspace\Enums\WorkspaceType;
@@ -116,6 +117,14 @@ class Workspace extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(WorkspaceInvitation::class);
+    }
+
+    /**
+     * @return HasMany<Project, $this>
+     */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
     }
 
     public function isPersonal(): bool
