@@ -36,6 +36,8 @@ Route::prefix('{workspace}')
     ->group(function () {
         Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
+        require __DIR__.'/projects.php';
+
         Route::get('settings', fn () => to_route('workspace.settings.edit'))->name('workspace.settings');
 
         Route::prefix('settings')->name('workspace.')->group(function () {
