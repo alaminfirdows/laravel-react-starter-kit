@@ -2,17 +2,19 @@
 
 namespace App\Domain\Prompt\Actions;
 
+use App\Domain\Prompt\Support\TokenBudget;
 use App\Domain\Task\Models\TaskAction;
 use BackedEnum;
-use Illuminate\Support\Str;
 
 /**
  * Self-contained "full prompt" (PROJECT_CONTEXT §8) for users without the connector.
- * P1 adds the launcher prompt + deep link next to it.
+ * The launcher prompt + deep link live in RenderLauncherPrompt / BuildDeepLink.
  */
 class RenderFullPrompt
 {
-    public const int MAX_CHARS = 14000;
+    public const int MAX_TOKENS = 3500;
+
+    public const int MAX_CHARS = self::MAX_TOKENS * TokenBudget::CHARS_PER_TOKEN;
 
     public const string COMPLETION_PROTOCOL = <<<'MD'
         ---
@@ -42,7 +44,7 @@ class RenderFullPrompt
 
     public function handle(TaskAction $action): string
     {
-        $action->loadMissing(['promptTemplate', 'task.project']);
+        $action->loadMissing(['promptTemplate', 'task.project', 'task.catalogTask.skills']);
 
         $template = $action->prompt_override_md
             ?? $action->promptTemplate->full_md
@@ -60,10 +62,11 @@ class RenderFullPrompt
             return $value instanceof BackedEnum ? (string) $value->value : (string) $value;
         }, $template) ?? '';
 
-        $prompt = preg_replace("/\n{3,}/", "\n\n", trim($body)."\n\n".self::COMPLETION_PROTOCOL) ?? '';
+        $skills = $action->task->catalogTask?->skills->pluck('key')->implode(', ');
+        $skillLine = $skills ? "\n\nIf you have the Founder OS skills installed, use: {$skills}." : '';
 
-        return mb_strlen($prompt) > self::MAX_CHARS
-            ? Str::substr($prompt, 0, self::MAX_CHARS - 13)."\n…[truncated]"
-            : $prompt;
+        $prompt = preg_replace("/\n{3,}/", "\n\n", trim($body).$skillLine."\n\n".self::COMPLETION_PROTOCOL) ?? '';
+
+        return (new TokenBudget(self::MAX_TOKENS))->trim($prompt);
     }
 }

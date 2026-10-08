@@ -1,6 +1,8 @@
 <?php
 
+use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\PromptTemplate;
+use App\Domain\Catalog\Models\Skill;
 use App\Domain\Project\Models\Project;
 use App\Domain\Prompt\Actions\RenderFullPrompt;
 use App\Domain\Task\Models\Task;
@@ -41,4 +43,13 @@ test('output is capped at 14000 characters', function () {
 
     expect(mb_strlen($prompt))->toBeLessThanOrEqual(RenderFullPrompt::MAX_CHARS)
         ->and($prompt)->toEndWith('…[truncated]');
+});
+
+test('lists catalog task skills', function () {
+    $catalogTask = CatalogTask::factory()->create();
+    $catalogTask->skills()->attach(Skill::factory()->create(['key' => 'pricing-coach']), ['required' => false]);
+    $this->task->forceFill(['catalog_task_id' => $catalogTask->id])->save();
+    $action = TaskAction::factory()->forTask($this->task)->create();
+
+    expect(app(RenderFullPrompt::class)->handle($action))->toContain('use: pricing-coach.');
 });
