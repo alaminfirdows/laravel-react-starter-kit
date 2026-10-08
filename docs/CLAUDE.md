@@ -4,12 +4,12 @@ Read `PROJECT_CONTEXT.md` first, then `docs/DATA_MODEL.md` and `docs/MCP_AND_SKI
 
 ## Stack
 
-- **Backend:** Laravel 13 (PHP ≥ 8.3), PostgreSQL 16+ with `pgvector`, Redis (queue/cache), Laravel Horizon.
+- **Backend:** Laravel 13 (PHP ≥ 8.3), PostgreSQL 16+ (`pgvector` from P2), Redis (queue/cache), Laravel Horizon.
 - **Frontend:** Laravel React starter kit — Inertia + React + TypeScript + Tailwind + shadcn/ui. Wayfinder/Ziggy for typed routes (whichever the starter kit ships).
 - **AI in app:** `laravel/ai` (agents, embeddings, reranking, skills, fakes).
 - **MCP:** `laravel/mcp` 1.x + `laravel/passport` (OAuth 2.1 for Claude custom connector).
 - **Auth (web):** starter-kit auth (Fortify) + Passport for MCP only.
-- **Rich text:** canonical **Markdown** in DB. Editor: Tiptap-based shadcn-compatible editor with Markdown import/export (VERIFY package at implementation; Milkdown is the fallback). Render with a sanitizing Markdown renderer (server: league/commonmark with safe mode; client: react-markdown + rehype-sanitize).
+- **Rich text:** canonical **Markdown** in DB. Editor: Tiptap 3 (`@tiptap/react` + `@tiptap/markdown`, `components/markdown/markdown-editor.tsx`) writing Markdown into a hidden input. Render with a sanitizing Markdown renderer (server: league/commonmark with safe mode; client: react-markdown + rehype-sanitize).
 - **Testing:** Pest, Laravel MCP testing helpers / MCP Inspector, `Agent::fake()`, `Embeddings::fake()`.
 - **Quality:** Pint, Larastan (level 6+), ESLint + Prettier, TypeScript strict.
 
@@ -20,6 +20,7 @@ composer require laravel/ai laravel/mcp laravel/passport laravel/horizon
 php artisan vendor:publish --provider="Laravel\Ai\AiServiceProvider"
 php artisan passport:install && php artisan passport:keys
 php artisan migrate --seed            # seeds catalog from database/seeders/catalog/*.yaml
+php artisan catalog:import            # re-import catalog YAML (version bump on content_hash change)
 npm i && npm run dev
 php artisan mcp:inspector founder     # VERIFY command name in installed laravel/mcp version
 ```
@@ -29,34 +30,21 @@ php artisan mcp:inspector founder     # VERIFY command name in installed laravel
 ## Folder layout
 
 ```
-app/
-  Enums/                 TaskStatus, ActionType, Executor, ActionStatus, DocType, Phase, Stage …
-  Models/                Workspace, Project, ProjectBrand, Task, TaskAction, ActionRun, Evidence,
-                         Approval, Decision, KnowledgeDocument, KnowledgeChunk, Media, Catalog\*
-  Domain/                business logic, one class per use case (verb-first):
-    Projects/            CreateProject, ApplyPack, BuildContextSnapshot
-    Tasks/               StartAction, CompleteAction, EvaluateCriteria, RollupTaskStatus, RequestApproval
-    Knowledge/           SaveDocument, ChunkDocument, EmbedChunks, HybridSearch
-    Prompts/             RenderLauncherPrompt, RenderFullPrompt, BuildDeepLink
-    Catalog/             ImportCatalog, DiffCatalogVersion
-  Activity/ActivityRecorder.php
-  Policies/
-  Http/Controllers/      thin; call Domain classes; return Inertia::render()
-  Mcp/Servers/FounderServer.php
-  Mcp/Tools/             one class per tool; validate → authorize → call Domain → format
-  Mcp/Resources/  Mcp/Prompts/
-  Ai/Agents/             app_ai executors (DraftDocumentAgent, ReviewAgent …) — implement HasSkills
-  Ai/Tools/
-  Jobs/                  EmbedDocumentJob, RunAppAiActionJob, RunCheckJob, RollupProgressJob
-  Checks/                machine checks: HttpsCheck, DnsSpfCheck, SitemapCheck … (implement Check)
+app/Domain/<Module>/            one folder per module: Activity, Catalog, Project, Prompt, Task, Workspace …
+  Models/  Enums/  Actions/     Actions: one use case per class, `handle()` (CreateProject, ApplyPack, MarkTaskDone …)
+  Data/  Queries/               readonly Data objects + read models (ProjectTaskTree)
+  Http/{Controllers,Requests,Resources}   thin controllers; Inertia props via JsonResource / ProvidesInertiaProperties
+  Policies/  Exceptions/
+app/Mcp/  app/Ai/  app/Checks/  (P1+)
 resources/
-  js/pages/              Inertia pages: dashboard, projects/*, tasks/show, knowledge/*, connect-claude
+  js/pages/              Inertia pages: dashboard, projects/{index,create,setup,overview,tasks/show} …
   js/components/ui/      shadcn (generated, do not hand-edit)
-  js/components/app/     TaskTree, ActionCard, PromptButtons, EvidenceForm, MarkdownEditor …
+  js/components/{project,task,markdown}/   TaskTree, ProjectSidebar, ActionCard, PromptButtons, MarkdownEditor …
+  js/layouts/project-layout.tsx            task-tree sidebar for project + task pages
   skills/<skill-name>/SKILL.md   ← single source for plugin + in-app agents
-database/seeders/catalog/ YAML catalog (categories, tasks, actions, prompts, packs)
+database/seeders/catalog/ YAML catalog (categories, tasks, actions, prompts, packs — one default pack per phase)
 plugin/                  build output scaffolding (.claude-plugin/plugin.json, .mcp.json)
-routes/web.php  routes/ai.php (MCP)
+routes/workspace.php (tenant group) → routes/projects.php   routes/ai.php (MCP)
 ```
 
 ## Rules

@@ -32,37 +32,38 @@ Passport tables (`oauth_*`) — MCP clients (Claude registers via DCR); we read 
 
 **catalog_tasks**
 
-| column                                    | notes                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------- |
-| id, key                                   | `key` stable slug: `foundation.domain.secure-variations`                  |
-| category_id, parent_id                    | template tree                                                             |
-| title, summary (≤280), body_md, body_doc  |                                                                           |
-| applicability jsonb                       | `{stages:[...], business_models:[...], markets:[...]}` for recommendation |
-| priority_default, est_minutes, difficulty |                                                                           |
-| is_optional                               |                                                                           |
-| completion_criteria jsonb                 | `[{key, label, kind: manual                                               | evidence                | check, check_ref?}]` |
-| expected_outputs jsonb                    | `[{kind: document                                                         | file                    | value                | url, doc_type?, label}]` |
-| version, status (draft                    | published                                                                 | archived), published_at |                      |
+| column                                    | notes                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------- |
+| id, key                                   | `key` stable slug: `foundation.domain.secure-variations`                         |
+| category_id, parent_id                    | template tree                                                                    |
+| title, summary (≤280), body_md, body_doc  |                                                                                  |
+| applicability jsonb                       | `{stages:[...], business_models:[...], markets:[...]}` for recommendation        |
+| priority_default, est_minutes, difficulty |                                                                                  |
+| is_optional                               |                                                                                  |
+| completion_criteria jsonb                 | `[{key, label, kind: manual                                                      | evidence                | check, check_ref?}]` |
+| expected_outputs jsonb                    | `[{kind: document                                                                | file                    | value                | url, doc_type?, label}]` |
+| content_hash                              | sha256 of authored fields; `catalog:import` bumps `version` only when it changes |
+| version, status (draft                    | published                                                                        | archived), published_at |                      |
 
 **catalog_task_dependencies** — `task_id`, `depends_on_id`, `kind (hard|soft)`.
 
 **catalog_actions** — `id`, `catalog_task_id`, `key`, `title`, `type` (ai|research|browser|document|file|mcp|check|input|approval|manual|wait|scheduled), `executor` (claude_desktop|claude_chrome|app_ai|app_system|user), `instructions_md`, `prompt_template_id?`, `config jsonb` (input form schema, check params, wait rule, schedule rrule, deep-link target chat|cowork), `is_required`, `requires_approval`, `sort_order`, `version`.
 
-**prompt_templates** — `id`, `key`, `title`, `launcher_md`, `full_md` (Blade-like `{{ project.name }}` placeholders), `variables jsonb` (declared + required), `target (chat|cowork|code)`, `skill_keys jsonb`, `version`.
+**prompt_templates** — `id`, `key`, `title`, `launcher_md`, `full_md` (Blade-like `{{ project.name }}` placeholders), `variables jsonb` (declared + required), `target (chat|cowork|code)`, `skill_keys jsonb`, `version`, `content_hash`.
 
 **skills** — `id`, `key` (= SKILL.md `name`), `title`, `description` (≤200), `version`, `source_path` (`resources/skills/<key>`), `in_plugin bool`, `in_app_agents bool`.
 **catalog_task_skill** — `catalog_task_id`, `skill_id`, `required bool`.
 
 **resources** — `id`, `type (article|video|template|tool|vendor|affiliate|internal_doc)`, `title`, `url`, `description_md`, `is_affiliate`, `region jsonb`, `meta`. Pivot **catalog_task_resource** (sort_order, note).
 
-**packs** — `id`, `key`, `name`, `description_md`, `audience jsonb`, `is_default`, `version`, `status`.
+**packs** — `id`, `key`, `name`, `description_md`, `audience jsonb` (`{phase: planning|developing|selling, …}`), `is_default` (exactly one default per phase), `version`, `content_hash`, `status`.
 **pack_items** — `pack_id`, `catalog_task_id`, `include_subtree bool`, `sort_order`.
 
 ---
 
 ## C. Projects (instances)
 
-**projects** — `id ulid`, `workspace_id`, `owner_id`, profile columns from PROJECT_CONTEXT §5 (`name, slug, one_liner, description_md, website_url, primary_domain, business_model, industry, stage, pricing_model, revenue_band, primary_market, target_markets jsonb, languages jsonb, target_customer, problem_statement, solution_summary, legal_entity_status, entity_type, jurisdiction, founded_on, team_size, timezone, currency, goals jsonb, tech jsonb`), `status (active|archived)`, `context_snapshot_md` (cached), `context_built_at`, `settings jsonb`.
+**projects** — `id ulid`, `workspace_id`, `owner_id`, profile columns from PROJECT_CONTEXT §5 (`name, slug, one_liner, description_md, website_url, primary_domain, business_model, industry, stage, pricing_model, revenue_band, primary_market, target_markets jsonb, languages jsonb, target_customer, problem_statement, solution_summary, legal_entity_status, entity_type, jurisdiction, founded_on, team_size, timezone, currency, goals jsonb, tech jsonb`), `phase (planning|developing|selling)` (chosen at creation, picks the default pack), `status (draft|active|archived)` (new projects start `draft`; setup wizard → `active`), `activated_at`, `context_snapshot_md` (cached), `context_built_at`, `settings jsonb`.
 
 **project_brands** — `project_id` (1:1), `colors jsonb [{name, hex, role}]`, `fonts jsonb`, `voice_md`, `tone jsonb`, `logo_media_id`, `logo_variants jsonb`, `socials jsonb`.
 

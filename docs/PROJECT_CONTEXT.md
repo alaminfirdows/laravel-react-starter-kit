@@ -90,8 +90,8 @@ Strategy content (ICP, personas, positioning, messaging, pricing…) is **not** 
 ### 7.1 Onboarding & project creation
 
 1. Sign up → personal workspace created.
-2. Create project (wizard: identity → business → market → goals). Optional: paste website URL → in-app AI drafts description/industry (user confirms).
-3. Choose pack(s) (recommended by stage + business model) → **snapshot** catalog tasks/actions into project (`catalog_version` stored).
+2. Add project → pick phase (planning | developing | selling) + name → **draft** project is created and the phase's default pack is applied at once (**snapshot** of catalog tasks/actions, `catalog_version` stored).
+3. Setup wizard (identity → business → market → goals). Finishing it activates the project; skipping keeps it `draft` with a "Finish setup" link. Later: paste website URL → in-app AI drafts description/industry (user confirms). Extra packs can be added later (P5).
 4. "Connect Claude" checklist: install plugin zip → add/connect connector (OAuth) → run "test connection" prompt (calls `whoami` + `get_project_context`).
 
 ### 7.2 Executing a task
