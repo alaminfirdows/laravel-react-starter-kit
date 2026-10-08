@@ -4,10 +4,32 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+type SelectOption = { value: string; label: React.ReactNode }
+
+/**
+ * Pass `items` to render the options list; children then only hold the trigger.
+ */
 function Select({
+  items,
+  children,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+}: React.ComponentProps<typeof SelectPrimitive.Root> & {
+  items?: SelectOption[]
+}) {
+  return (
+    <SelectPrimitive.Root data-slot="select" {...props}>
+      {children}
+      {items && (
+        <SelectContent>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      )}
+    </SelectPrimitive.Root>
+  )
 }
 
 function SelectGroup({
@@ -178,6 +200,8 @@ function SelectScrollDownButton({
     </SelectPrimitive.ScrollDownButton>
   )
 }
+
+export type { SelectOption }
 
 export {
   Select,
