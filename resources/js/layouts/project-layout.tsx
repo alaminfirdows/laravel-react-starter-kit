@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { NotificationBell } from '@/components/notification-bell';
 import { ProjectProgress } from '@/components/project/project-progress';
 import { ProjectSidebar } from '@/components/project/project-sidebar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -44,10 +45,13 @@ export default function ProjectLayout({
                         <SidebarTrigger className="-ml-1" />
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
-                    <ProjectProgress
-                        value={task ? task.progressPct : tree.progressPct}
-                        label={task ? 'Task' : 'Project'}
-                    />
+                    <div className="flex items-center gap-2">
+                        <ProjectProgress
+                            value={task ? task.progressPct : tree.progressPct}
+                            label={task ? 'Task' : 'Project'}
+                        />
+                        <NotificationBell />
+                    </div>
                 </header>
                 {children}
             </AppContent>

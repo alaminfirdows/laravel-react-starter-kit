@@ -30,3 +30,11 @@ export type TwoFactorSetupData = {
 export type TwoFactorSecretKey = {
     secretKey: string;
 };
+
+export type AppNotification = {
+    id: string;
+    title: string;
+    body: string;
+    project: string | null;
+    createdAt: string | null;
+};

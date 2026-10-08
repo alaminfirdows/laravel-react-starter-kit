@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domain\Workspace\Models\WorkspaceInvitation;
+use App\Http\Resources\NotificationResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -17,6 +18,8 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    public const int LATEST_NOTIFICATIONS = 8;
 
     /**
      * Determines the current asset version.
@@ -44,6 +47,10 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             ...$this->workspaceProps($request),
+            'notifications' => fn (): ?array => $request->user() ? [
+                'unread' => $request->user()->unreadNotifications()->count(),
+                'latest' => NotificationResource::collection($request->user()->unreadNotifications()->latest()->limit(self::LATEST_NOTIFICATIONS)->get()),
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

@@ -6,6 +6,7 @@ use App\Domain\Workspace\Http\Controllers\WorkspaceInvitationController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceMemberController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceSettingsController;
 use App\Domain\Workspace\Http\Middleware\DiscoverWorkspace;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +23,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('invitations/{invitation}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [InvitationController::class, 'decline'])->name('invitations.decline');
+
+    Route::post('notifications/read', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 });
 
 /*

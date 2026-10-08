@@ -1,4 +1,4 @@
-import type { Auth } from '@/types/auth';
+import type { AppNotification, Auth } from '@/types/auth';
 import type { UserWorkspace, WorkspacePermissions } from '@/types/workspace';
 
 declare module 'react' {
@@ -17,6 +17,10 @@ declare module '@inertiajs/core' {
             workspaces: UserWorkspace[];
             workspacePermissions: WorkspacePermissions | null;
             pendingInvitationsCount: number;
+            notifications: {
+                unread: number;
+                latest: AppNotification[];
+            } | null;
             [key: string]: unknown;
         };
     }
