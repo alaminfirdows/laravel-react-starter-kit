@@ -33,6 +33,15 @@
 - `get_project_context` without `sections` returns the cached context snapshot (`projects.context_snapshot_md`, ≤ 6 000 chars: profile, goals, brand, approved singleton docs as summaries + IDs, last 10 decisions) + live progress.
 - Full prompts accept `{{ knowledge.<doc_type> }}` → latest approved doc body of that type, trimmed to 1 200 tokens; empty when none.
 
+### Shipped (P3, in-app runs)
+
+- Task page "Run with AI" (`executor=app_ai`) / "Run check" (`executor=app_system`) → `RunActionInApp` → run `channel=app_ai|system` → queued `RunAppAiActionJob` / `RunCheckJob` (unique per action, one try; failure → run `failed`, action back to `ready`). Page polls while an action is `running` (Reverb in P4).
+- Agents (`app/Ai/Agents`): `draft` (`ai.models.drafting`), `review`, `research` (`ai.models.default`); pick with `config.agent`, else by action type. Structured output `output_md` + `outputs[]` (`document` → draft knowledge doc, `url`/`value` → evidence). Skills = the action's launcher skills minus `founder-os-task-runner`.
+- Config: `AI_MODEL` (`claude-sonnet-5-5`), `AI_DRAFTING_MODEL` (`claude-opus-5-5`), `AI_RUN_TIMEOUT` (180 s), `AI_MONTHLY_TOKEN_BUDGET` (2 000 000; override per workspace in `workspaces.settings.ai_budget`). Usage `{provider, model, input_tokens, output_tokens, total_tokens}` on `action_runs.usage`; budget checked before each call.
+- Checks (`config.check`): `https`, `dns_spf`, `sitemap`, `robots`; target `config.url` or project `website_url`. Result → `evidence(kind=check_result, passed)` on the criterion whose `check_ref` (or key) matches.
+- `actions:process-scheduled` (every 5 min): `wait` actions complete when `config.wait.until` passed or `config.wait.days` after previous actions closed; `scheduled` in-app actions run once at `config.schedule.at`. **rrule not supported yet** (no library).
+- Approvals page per project (sidebar badge = pending count). Notifications (database + mail, bell menu): `ApprovalRequested` → owners/admins/members; `RunFinished` / `ActionFailed` → user who started the in-app run.
+
 Rows below = full target spec.
 
 ### Advertised (hot)

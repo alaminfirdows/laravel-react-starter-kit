@@ -128,7 +128,7 @@ Structured research tables (optional P2+, instead of docs when rows matter): **i
 **activity_log** — `id`, `workspace_id`, `project_id`, `actor_type (user|agent|system)`, `actor_id`, `client_name?`, `channel (web|mcp|queue|cli)`, `event` (e.g. `task.status_changed`, `action.completed`, `knowledge.saved`, `approval.requested`), `subject_type/_id`, `properties jsonb` (before/after diff, run id), `ip?`, `created_at`. Append-only; index `(project_id, created_at desc)`.
 Write through one `ActivityRecorder` service called from model observers/domain actions — never ad hoc.
 
-**notifications** — Laravel default table.
+**notifications** — Laravel default table (`ulidMorphs` notifiable). `data`: `{title, body, url, project}`.
 
 ---
 
