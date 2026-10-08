@@ -1,0 +1,76 @@
+<?php
+
+use App\Domain\Catalog\Actions\ImportCatalog;
+use App\Domain\Catalog\Models\CatalogTask;
+use App\Domain\Catalog\Models\Pack;
+use App\Domain\Project\Enums\ProjectPhase;
+use Illuminate\Support\Facades\File;
+
+function catalogFixture(): string
+{
+    $dir = storage_path('framework/testing/catalog-'.uniqid());
+    File::copyDirectory(base_path('tests/Fixtures/catalog'), $dir);
+
+    return $dir;
+}
+
+test('imports categories, task tree, actions, dependencies and packs', function () {
+    $counts = app(ImportCatalog::class)->handle(catalogFixture());
+
+    $root = CatalogTask::where('key', 'plan.interviews')->firstOrFail();
+    $run = CatalogTask::where('key', 'plan.interviews.run')->firstOrFail();
+
+    expect($counts)->toMatchArray(['categories' => 1, 'tasks' => 3, 'actions' => 2, 'prompts' => 1, 'packs' => 1])
+        ->and($root->children->pluck('key')->all())->toBe(['plan.interviews.recruit', 'plan.interviews.run'])
+        ->and($root->children->first()->category_id)->toBe($root->category_id)
+        ->and($root->actions->first()->promptTemplate->key)->toBe('generic')
+        ->and($run->dependencies->first()->key)->toBe('plan.interviews.recruit')
+        ->and(Pack::defaultForPhase(ProjectPhase::Planning)->items)->toHaveCount(1);
+});
+
+test('re-import is idempotent and bumps version only on change', function () {
+    $dir = catalogFixture();
+    app(ImportCatalog::class)->handle($dir);
+    app(ImportCatalog::class)->handle($dir);
+
+    expect(CatalogTask::count())->toBe(3)
+        ->and(CatalogTask::where('key', 'plan.interviews')->value('version'))->toBe(1);
+
+    File::put("{$dir}/tasks/sample.yaml", str_replace('Run interviews', 'Run 10 interviews', File::get("{$dir}/tasks/sample.yaml")));
+    app(ImportCatalog::class)->handle($dir);
+
+    expect(CatalogTask::where('key', 'plan.interviews')->value('version'))->toBe(2);
+});
+
+test('rejects unknown category with file and key in the message', function () {
+    $dir = catalogFixture();
+    File::put("{$dir}/tasks/bad.yaml", "tasks:\n  - {key: x.bad, category: nope, title: Bad}\n");
+
+    app(ImportCatalog::class)->handle($dir);
+})->throws(InvalidArgumentException::class, 'bad.yaml: task [x.bad] has unknown category [nope]');
+
+test('rejects tasks deeper than three levels', function () {
+    $dir = catalogFixture();
+    File::put("{$dir}/tasks/deep.yaml", <<<'YAML'
+    tasks:
+      - key: d.1
+        category: validation
+        title: L1
+        children:
+          - key: d.2
+            title: L2
+            children:
+              - key: d.3
+                title: L3
+                children:
+                  - {key: d.4, title: L4}
+    YAML);
+
+    app(ImportCatalog::class)->handle($dir);
+})->throws(InvalidArgumentException::class, 'task [d.4] is deeper than 3 levels');
+
+test('command imports the given path', function () {
+    $this->artisan('catalog:import', ['path' => catalogFixture()])
+        ->expectsOutputToContain('3 tasks')
+        ->assertSuccessful();
+});

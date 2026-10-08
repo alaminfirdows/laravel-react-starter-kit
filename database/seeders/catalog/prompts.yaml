@@ -1,0 +1,23 @@
+prompts:
+  - key: generic-task
+    title: Generic task prompt
+    target: chat
+    full_md: |
+      You are helping {{ project.name }} — {{ project.one_liner }}.
+
+      ## Task
+      {{ task.title }}
+
+      {{ task.body_md }}
+
+      ## Step
+      {{ action.title }}
+
+      {{ action.instructions_md }}
+
+      ## When you finish
+      1. Check the result against the completion criteria.
+      2. Save the outputs.
+      3. Attach evidence (links, files, screenshots).
+      4. Update the task status.
+      5. List follow-ups as a short checklist.

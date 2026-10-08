@@ -1,0 +1,69 @@
+tasks:
+  - key: planning.problem-customer
+    category: company-basics
+    title: Define the problem and customer
+    summary: Write down who has the problem and why it matters to them.
+    priority: p0
+    est_minutes: 120
+    body_md: |
+      ## Why
+      Every later task (positioning, pricing, launch) depends on a clear customer and problem.
+
+      ## Done when
+      - One-sentence problem statement
+      - First draft of your ideal customer profile (ICP)
+    children:
+      - key: planning.problem-customer.problem
+        title: Write the problem statement
+        summary: One sentence, in the customer's words.
+        actions:
+          - key: draft
+            title: Draft the problem statement
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft 3 versions of a one-sentence problem statement. Ask me questions first if you need to.
+      - key: planning.problem-customer.icp
+        title: Draft the ideal customer profile
+        summary: Role, company, trigger, current workaround.
+        actions:
+          - key: draft
+            title: Draft the ICP
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft an ICP with role, company size, buying trigger and the current workaround.
+  - key: planning.problem-interviews
+    category: idea-validation
+    title: Run 10 problem interviews
+    summary: Talk to people who have the problem before building.
+    priority: p1
+    est_minutes: 600
+    depends_on:
+      - {key: planning.problem-customer, kind: hard}
+    body_md: |
+      ## Why
+      Interviews show if the problem is real and painful enough to pay for.
+
+      ## How
+      Ask about past behaviour, not opinions about your idea.
+    children:
+      - key: planning.problem-interviews.script
+        title: Write the interview script
+        actions:
+          - key: write-script
+            title: Draft an interview script
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft 8 open questions about the problem. No questions about the solution.
+      - key: planning.problem-interviews.recruit
+        title: Recruit 10 interviewees
+        actions:
+          - {key: recruit, title: Book 10 calls, type: manual, executor: user}
+      - key: planning.problem-interviews.run
+        title: Hold the calls and take notes
+        depends_on:
+          - {key: planning.problem-interviews.recruit, kind: hard}
+        actions:
+          - {key: run, title: Hold the calls, type: manual, executor: user}

@@ -1,0 +1,61 @@
+tasks:
+  - key: selling.prepare-launch
+    category: launch
+    title: Prepare launch
+    summary: Landing page, launch list and announcement.
+    priority: p0
+    est_minutes: 480
+    body_md: |
+      ## Why
+      A prepared launch gets more first users than a quiet release.
+    children:
+      - key: selling.prepare-launch.landing
+        title: Publish the landing page
+        actions:
+          - key: copy
+            title: Draft landing page copy
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft a headline, subheadline, 3 benefits and a call to action.
+          - {key: publish, title: Publish the page, type: manual, executor: user}
+      - key: selling.prepare-launch.list
+        title: Build the launch list
+        actions:
+          - {key: list, title: Collect 50 people to tell on launch day, type: manual, executor: user}
+      - key: selling.prepare-launch.announce
+        title: Write the launch announcement
+        depends_on:
+          - {key: selling.prepare-launch.landing, kind: hard}
+        actions:
+          - key: draft
+            title: Draft the announcement
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Draft a short launch post for email and one for social.
+  - key: selling.pricing-payments
+    category: revenue
+    title: Set up pricing and payments
+    summary: Choose a price and take the first payment.
+    priority: p1
+    est_minutes: 240
+    body_md: |
+      ## Why
+      Charging early shows if the value is real.
+    children:
+      - key: selling.pricing-payments.price
+        title: Choose the pricing model
+        actions:
+          - key: draft
+            title: Draft pricing options
+            type: ai
+            executor: claude_desktop
+            prompt: generic-task
+            instructions_md: Suggest 3 pricing models with tiers and one line of reason for each.
+      - key: selling.pricing-payments.checkout
+        title: Connect a payment provider
+        depends_on:
+          - {key: selling.pricing-payments.price, kind: hard}
+        actions:
+          - {key: connect, title: Set up checkout and take a test payment, type: manual, executor: user}

@@ -1,0 +1,6 @@
+packs:
+  - key: planning-starter
+    name: Planning starter
+    phase: planning
+    is_default: true
+    items: [{task: plan.interviews}]
