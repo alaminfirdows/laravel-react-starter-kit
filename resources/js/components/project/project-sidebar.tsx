@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     BookOpen,
+    History,
     LayoutDashboard,
     Scale,
     ShieldQuestion,
@@ -24,6 +25,7 @@ import {
 import { WorkspaceAvatar } from '@/components/workspace-avatar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { index, show } from '@/routes/projects';
+import { index as activityIndex } from '@/routes/projects/activity';
 import { index as approvalsIndex } from '@/routes/projects/approvals';
 import { index as decisionsIndex } from '@/routes/projects/decisions';
 import { index as knowledgeIndex } from '@/routes/projects/knowledge';
@@ -60,6 +62,12 @@ export function ProjectSidebar() {
             icon: ShieldQuestion,
             exact: false,
             badge: pendingApprovals,
+        },
+        {
+            title: 'Activity',
+            href: activityIndex({ project: project.slug }),
+            icon: History,
+            exact: false,
         },
     ];
 

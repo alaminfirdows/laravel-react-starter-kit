@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
+import { index as activityIndex } from '@/routes/workspace/activity';
 import { index as invitationsIndex } from '@/routes/workspace/invitations';
 import { index as membersIndex } from '@/routes/workspace/members';
 import { edit as editGeneral } from '@/routes/workspace/settings';
@@ -24,6 +25,9 @@ export default function WorkspaceSettingsLayout({
             : [{ title: 'Members', href: membersIndex() }]),
         ...(workspacePermissions?.canCreateInvitation
             ? [{ title: 'Invitations', href: invitationsIndex() }]
+            : []),
+        ...(workspacePermissions?.canUpdateWorkspace
+            ? [{ title: 'Activity', href: activityIndex() }]
             : []),
     ];
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Activity\Http\Controllers\WorkspaceActivityController;
 use App\Domain\Task\Http\Controllers\MyTaskController;
 use App\Domain\Workspace\Http\Controllers\InvitationController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceConnectionController;
@@ -61,6 +62,7 @@ Route::prefix('{workspace}')
             Route::post('members/{member}/transfer', [WorkspaceMemberController::class, 'transferOwnership'])
                 ->name('members.transfer');
 
+            Route::get('activity', [WorkspaceActivityController::class, 'index'])->name('activity.index');
             Route::delete('connections/{token}', [WorkspaceConnectionController::class, 'destroy'])->name('connections.destroy');
 
             Route::get('invitations', [WorkspaceInvitationController::class, 'index'])->name('invitations.index');

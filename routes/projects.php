@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Activity\Http\Controllers\ProjectActivityController;
 use App\Domain\Comment\Http\Controllers\CommentResolutionController;
 use App\Domain\Comment\Http\Controllers\TaskCommentController;
 use App\Domain\Knowledge\Http\Controllers\DecisionController;
@@ -49,6 +50,8 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
 
     Route::get('{project}/decisions', [DecisionController::class, 'index'])->name('decisions.index');
     Route::post('{project}/decisions', [DecisionController::class, 'store'])->name('decisions.store');
+
+    Route::get('{project}/activity', [ProjectActivityController::class, 'index'])->name('activity.index');
 
     Route::get('{project}/approvals', [ApprovalController::class, 'index'])->name('approvals.index');
     Route::post('{project}/approvals/{approval}/decision', [ApprovalDecisionController::class, 'store'])->name('approvals.decision.store');

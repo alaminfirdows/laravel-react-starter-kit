@@ -163,7 +163,9 @@ export type Activity = {
     id: number;
     event: string;
     actorType: 'user' | 'agent' | 'system';
+    actorName?: string | null;
     clientName: string | null;
+    project?: { name: string; slug: string } | null;
     channel: string;
     properties: Record<string, unknown>;
     createdAt: string;
@@ -195,4 +197,25 @@ export type TaskComment = {
     clientName: string | null;
     resolvedAt: string | null;
     createdAt: string;
+};
+
+export type SelectItemOption = { value: string; label: string };
+
+export type ActivityFilterValues = {
+    actor: string | null;
+    channel: string | null;
+    event: string | null;
+};
+
+export type ActivityLogProps = {
+    activity: {
+        data: Activity[];
+        links: { prev: string | null; next: string | null };
+    };
+    filters: ActivityFilterValues;
+    options: {
+        actors: SelectItemOption[];
+        channels: SelectItemOption[];
+        events: SelectItemOption[];
+    };
 };
