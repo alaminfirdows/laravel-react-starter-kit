@@ -6,12 +6,13 @@ use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Enums\Verification;
+use App\Domain\Task\Jobs\RollupProgressJob;
 use App\Domain\Task\Models\Task;
 use Illuminate\Support\Collection;
 
 /**
  * DATA_MODEL §F.3: parent progress and status follow their leaves.
- * Synchronous in P0 (trees are small); becomes a debounced job in P1.
+ * Ancestors update synchronously (trees are small); the project total is cached by a debounced job.
  */
 class RollupTaskStatus
 {
@@ -19,6 +20,8 @@ class RollupTaskStatus
 
     public function handle(Task $changed, Actor $actor): void
     {
+        RollupProgressJob::debounce($changed->project_id);
+
         if ($changed->parent_id === null) {
             return;
         }

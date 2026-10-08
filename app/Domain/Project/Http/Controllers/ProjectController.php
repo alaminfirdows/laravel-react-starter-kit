@@ -15,7 +15,6 @@ use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Http\Resources\TaskSummaryResource;
 use App\Domain\Workspace\Models\Workspace;
 use App\Http\Controllers\Controller;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -30,7 +29,6 @@ class ProjectController extends Controller
 
         $projects = $workspace->projects()
             ->with('brand.logo')
-            ->withAvg(['tasks as leaf_progress' => fn (Builder $query) => $query->whereDoesntHave('children')], 'progress_pct')
             ->latest()
             ->get();
 

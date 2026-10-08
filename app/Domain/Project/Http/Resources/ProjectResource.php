@@ -26,7 +26,7 @@ class ProjectResource extends JsonResource
             'phaseLabel' => $this->phase->label(),
             'status' => $this->status,
             'logoUrl' => $this->logo_url,
-            'progressPct' => $this->whenHas('leaf_progress', fn (mixed $value): int => (int) round((float) $value)),
+            'progressPct' => $this->progress_pct,
             'setupStep' => $this->when(
                 $this->isDraft(),
                 fn (): string => (ProjectSetupStep::firstIncomplete($this->resource) ?? ProjectSetupStep::Goals)->value,

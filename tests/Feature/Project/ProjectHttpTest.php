@@ -4,6 +4,7 @@ use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Pack;
 use App\Domain\Project\Enums\ProjectPhase;
 use App\Domain\Project\Models\Project;
+use App\Domain\Task\Jobs\RollupProgressJob;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
@@ -64,12 +65,13 @@ test('overview renders tree and next task', function () {
             ->where('nextTask.title', 'First'));
 });
 
-test('index shows mean leaf progress per project', function () {
+test('index shows cached mean leaf progress per project', function () {
     app(WorkspaceDiscoveryService::class)->runAs($this->workspace, function () {
         $project = Project::factory()->forWorkspace($this->workspace)->create();
         $parent = Task::factory()->forProject($project)->create();
         Task::factory()->childOf($parent)->done()->create();
         Task::factory()->childOf($parent)->create();
+        (new RollupProgressJob($project->id))->handle();
     });
 
     $this->get('/acme/projects')

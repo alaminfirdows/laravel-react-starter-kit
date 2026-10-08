@@ -32,6 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $slug
  * @property ProjectPhase $phase
  * @property ProjectStatus $status
+ * @property int $progress_pct
  * @property string|null $one_liner
  * @property string|null $description_md
  * @property string|null $website_url
@@ -78,6 +79,7 @@ class Project extends Model
      */
     protected $attributes = [
         'status' => 'draft',
+        'progress_pct' => 0,
     ];
 
     protected function casts(): array
