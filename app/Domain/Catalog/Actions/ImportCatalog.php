@@ -93,7 +93,7 @@ class ImportCatalog
                 'target' => $row['target'] ?? 'chat',
                 'skill_keys' => $row['skills'] ?? null,
             ];
-            $prompt = $this->upsertVersioned(PromptTemplate::class, $row['key'], $attributes);
+            $prompt = $this->upsertVersioned(PromptTemplate::query()->firstOrNew(['key' => $row['key']]), $attributes);
             $this->promptIds[$prompt->key] = $prompt->id;
             $this->counts['prompts']++;
         }
@@ -108,14 +108,14 @@ class ImportCatalog
             throw new InvalidArgumentException("{$file}: task [{$key}] is deeper than 3 levels");
         }
 
-        $categoryId = $parent?->category_id ?? $this->categoryIds[$row['category'] ?? ''] ?? null;
+        $categoryId = $parent->category_id ?? $this->categoryIds[$row['category'] ?? ''] ?? null;
 
         if ($categoryId === null) {
             $category = $row['category'] ?? '';
             throw new InvalidArgumentException("{$file}: task [{$key}] has unknown category [{$category}]");
         }
 
-        $task = $this->upsertVersioned(CatalogTask::class, $key, [
+        $task = $this->upsertVersioned(CatalogTask::query()->firstOrNew(['key' => $key]), [
             'category_id' => $categoryId,
             'parent_id' => $parent?->id,
             'title' => $row['title'],
@@ -209,7 +209,7 @@ class ImportCatalog
                 $defaults[$row['phase']] = $row['key'];
             }
 
-            $pack = $this->upsertVersioned(Pack::class, $row['key'], [
+            $pack = $this->upsertVersioned(Pack::query()->firstOrNew(['key' => $row['key']]), [
                 'name' => $row['name'],
                 'description_md' => $row['description_md'] ?? null,
                 'audience' => ['phase' => $row['phase'], ...($row['audience'] ?? [])],
@@ -235,29 +235,29 @@ class ImportCatalog
     }
 
     /**
-     * Upsert by key; bump version when the authored content hash changes.
+     * Save a keyed catalog row; bump version when the authored content hash changes.
      *
      * @template TModel of CatalogTask|PromptTemplate|Pack
      *
-     * @param  class-string<TModel>  $model
+     * @param  TModel  $model  existing row or new instance with `key` set
      * @param  array<string, mixed>  $attributes
      * @param  list<string>  $except  hashed but not stored
      * @return TModel
      */
-    private function upsertVersioned(string $model, string $key, array $attributes, array $except = []): CatalogTask|PromptTemplate|Pack
+    private function upsertVersioned(CatalogTask|PromptTemplate|Pack $model, array $attributes, array $except = []): CatalogTask|PromptTemplate|Pack
     {
         $hash = hash('sha256', json_encode($attributes, JSON_THROW_ON_ERROR));
-        $stored = array_diff_key($attributes, array_flip($except));
-        $existing = $model::query()->where('key', $key)->first();
 
-        if ($existing === null) {
-            return $model::create(['key' => $key, ...$stored, 'version' => 1, 'content_hash' => $hash]);
+        if ($model->exists && $model->content_hash === $hash) {
+            return $model;
         }
 
-        if ($existing->content_hash !== $hash) {
-            $existing->fill([...$stored, 'content_hash' => $hash, 'version' => $existing->version + 1])->save();
-        }
+        $model->fill([
+            ...array_diff_key($attributes, array_flip($except)),
+            'content_hash' => $hash,
+            'version' => $model->exists ? $model->version + 1 : 1,
+        ])->save();
 
-        return $existing;
+        return $model;
     }
 }
