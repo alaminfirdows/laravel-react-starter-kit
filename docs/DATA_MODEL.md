@@ -97,7 +97,7 @@ Indexes: `(project_id, parent_id, sort_order)`, `(project_id, status)`, partial 
 
 **approvals** — `id ulid`, `project_id`, `subject_type/_id` (TaskAction|Task), `requested_by_type/_id`, `summary_md`, `payload jsonb`, `status (pending|approved|rejected|expired)`, `decided_by`, `decided_at`, `decision_note`.
 
-**comments** _(P4)_ — morph `commentable`, author morph, `body_md`, `resolved_at`.
+**comments** _(P4)_ — `workspace_id`, `project_id`, morph `commentable` (tasks), `author_type (user|agent|system)`, `author_id?`, `client_name?`, `body_md`, `resolved_at`, `resolved_by_id`. `@handle` mentions (name without spaces or email local part) of workspace members → `MentionedInComment` notification; others stay plain text. Viewers cannot comment.
 
 **decisions** — `id ulid`, `project_id`, `task_id?`, `title`, `decision_md`, `rationale_md`, `alternatives jsonb`, `owner_id`, `decided_on`, `source (user|claude_mcp|app_ai)`, `revisit_on?`.
 

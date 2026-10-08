@@ -35,3 +35,9 @@
 | 7   | Reverb                | `composer require laravel/reverb`; events `TaskStatusChanged`, `CommentPosted`, `RunFinished` (ShouldBroadcast); channel auth | `BroadcastAuthTest` (Review Focus 2) |
 | 8   | Live UI               | `useEcho` hooks → `router.reload({ only: ['tree','task'] })`; replace P1 polling                                              | manual smoke                         |
 | 9   | Docs + gate           | `composer ci:check`                                                                                                           | —                                    |
+
+## Shipped notes
+
+- Tasks 1–6 shipped. Comments use `author_type/author_id` (not an author morph); viewers cannot comment; removing a member unassigns their tasks and revokes their workspace MCP tokens.
+- Audit view: `projects/{project}/activity` (any member) and `settings/activity` (admins), filters actor / channel / event, 50 per page.
+- **Tasks 7–8 (Reverb, live UI) deferred:** `laravel/reverb` + `@laravel/echo-react` not installed (dependency change needs approval). UI keeps P1/P3 polling until then.
