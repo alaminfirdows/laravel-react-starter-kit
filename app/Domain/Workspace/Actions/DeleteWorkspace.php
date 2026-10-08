@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Domain\Workspace\Actions;
+
+use App\Domain\Workspace\Models\Workspace;
+use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+
+class DeleteWorkspace
+{
+    /**
+     * Soft delete. The slug stays reserved. Members currently in the
+     * workspace fall back to another workspace on their next request.
+     */
+    public function handle(Workspace $workspace): void
+    {
+        if ($workspace->isPersonal()) {
+            throw new InvalidArgumentException('Personal workspaces cannot be deleted.');
+        }
+
+        DB::transaction(function () use ($workspace): void {
+            Workspace::query()->lockForUpdate()->findOrFail($workspace->id);
+
+            $workspace->invitations()->delete();
+
+            User::query()
+                ->where('current_workspace_id', $workspace->id)
+                ->update(['current_workspace_id' => null]);
+
+            $workspace->delete();
+        });
+    }
+}

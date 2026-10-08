@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { UserWorkspace, WorkspacePermissions } from '@/types/workspace';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> {
@@ -12,6 +13,10 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             sidebarOpen: boolean;
+            currentWorkspace: UserWorkspace | null;
+            workspaces: UserWorkspace[];
+            workspacePermissions: WorkspacePermissions | null;
+            pendingInvitationsCount: number;
             [key: string]: unknown;
         };
     }

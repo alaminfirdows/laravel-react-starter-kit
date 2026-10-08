@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Workspace\Models\WorkspaceInvitation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,7 +43,42 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            ...$this->workspaceProps($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+        ];
+    }
+
+    /**
+     * Workspace data for the sidebar switcher and settings pages.
+     *
+     * @return array<string, mixed>
+     */
+    protected function workspaceProps(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user instanceof User) {
+            return [
+                'currentWorkspace' => null,
+                'workspaces' => [],
+                'workspacePermissions' => null,
+                'pendingInvitationsCount' => 0,
+            ];
+        }
+
+        // Resolved lazily: share() runs before DiscoverWorkspace sets the
+        // workspace from the URL. Off tenant routes, use the user's last one.
+        $workspace = fn () => currentWorkspace() ?? $user->currentWorkspace;
+
+        return [
+            'currentWorkspace' => fn () => ($ws = $workspace()) ? $user->toUserWorkspace($ws) : null,
+            'workspaces' => fn () => $user->toUserWorkspaces(),
+            'workspacePermissions' => fn () => ($ws = $workspace()) ? $user->toWorkspacePermissions($ws) : null,
+            'pendingInvitationsCount' => fn () => WorkspaceInvitation::query()
+                ->forEmail($user->email)
+                ->pending()
+                ->whereHas('workspace')
+                ->count(),
         ];
     }
 }
