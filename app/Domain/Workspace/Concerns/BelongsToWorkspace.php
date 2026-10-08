@@ -62,6 +62,6 @@ trait BelongsToWorkspace
         $id = $workspace instanceof Workspace ? $workspace->id : $workspace;
 
         return static::withoutWorkspaceScope()
-            ->where((new static)->qualifyColumn('workspace_id'), $id);
+            ->where(static::query()->qualifyColumn('workspace_id'), $id);
     }
 }
