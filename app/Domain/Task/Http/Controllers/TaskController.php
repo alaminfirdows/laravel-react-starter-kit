@@ -8,6 +8,7 @@ use App\Domain\Task\Http\Resources\TaskResource;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Models\Workspace;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
@@ -27,6 +28,7 @@ class TaskController extends Controller
 
         $task->load([
             'catalogTask.skills',
+            'assignee:id,name',
             'parent.parent',
             'children' => fn (HasMany $query) => $query->withCount('children')->orderBy('sort_order'),
             'actions' => fn (HasMany $query) => $query->with(['promptTemplate', 'evidence', 'approvals', 'runs' => fn (Relation $runs) => $runs->limit(self::RUN_HISTORY)])->orderBy('sort_order'),
@@ -36,6 +38,9 @@ class TaskController extends Controller
         return Inertia::render('projects/tasks/show', [
             new ProjectPageProps($project),
             'task' => TaskResource::make($task),
+            'assignees' => fn (): array => $workspace->editors()->orderBy('name')->get(['id', 'name'])
+                ->map(fn (User $user): array => ['value' => $user->id, 'label' => $user->name])
+                ->all(),
         ]);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\Data\Actor;
+use App\Domain\Task\Actions\AssignTask;
+use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
@@ -9,8 +12,10 @@ use Illuminate\Support\Facades\DB;
 
 class RemoveMember
 {
+    public function __construct(protected AssignTask $assign) {}
+
     /**
-     * Also used for "leave". The owner can never be removed.
+     * Also used for "leave". The owner can never be removed. Their tasks become unassigned.
      */
     public function handle(Workspace $workspace, User $member): void
     {
@@ -21,6 +26,12 @@ class RemoveMember
                 ->lockForUpdate()
                 ->firstOrFail()
                 ->delete();
+
+            Task::withoutWorkspaceScope()
+                ->where('workspace_id', $workspace->id)
+                ->where('assignee_id', $member->id)
+                ->get()
+                ->each(fn (Task $task) => $this->assign->handle($task, null, Actor::current()));
 
             if ($member->isCurrentWorkspace($workspace)) {
                 $member->forceFill(['current_workspace_id' => $member->fallbackWorkspace($workspace)?->id])->save();

@@ -156,6 +156,7 @@ export type Task = {
     children: TaskSummary[];
     actions: TaskAction[];
     hasActiveRun: boolean;
+    assignee?: { id: string; name: string } | null;
 };
 
 export type Activity = {

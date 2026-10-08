@@ -32,6 +32,16 @@ enum WorkspaceRole: string
         return $this->level() >= $role->level();
     }
 
+    /**
+     * Roles with at least the given authority, for `whereIn('role', …)`.
+     *
+     * @return list<self>
+     */
+    public static function atLeast(self $role): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $case): bool => $case->isAtLeast($role)));
+    }
+
     public function outranks(self $role): bool
     {
         return $this->level() > $role->level();

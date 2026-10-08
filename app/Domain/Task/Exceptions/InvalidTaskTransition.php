@@ -16,4 +16,9 @@ class InvalidTaskTransition extends DomainException
     {
         return new self(__('":title" is locked until its dependencies are done.', ['title' => $task->title]));
     }
+
+    public static function assigneeCannotEdit(): self
+    {
+        return new self(__('Only workspace members who can edit projects can be assigned.'));
+    }
 }

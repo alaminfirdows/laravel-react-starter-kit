@@ -4,6 +4,7 @@ namespace App\Domain\Workspace\Models;
 
 use App\Domain\Project\Models\Project;
 use App\Domain\Workspace\Concerns\GeneratesUniqueWorkspaceSlugs;
+use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Enums\WorkspaceStatus;
 use App\Domain\Workspace\Enums\WorkspaceType;
 use App\Domain\Workspace\Policies\WorkspacePolicy;
@@ -13,6 +14,7 @@ use Database\Factories\WorkspaceFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -109,6 +111,18 @@ class Workspace extends Model
     public function memberships(): HasMany
     {
         return $this->hasMany(WorkspaceMember::class);
+    }
+
+    /**
+     * Members who can work on projects (member and above): approvers and assignees.
+     *
+     * @return Builder<User>
+     */
+    public function editors(): Builder
+    {
+        return User::query()->whereIn('id', $this->memberships()
+            ->whereIn('role', WorkspaceRole::atLeast(WorkspaceRole::Member))
+            ->select('user_id'));
     }
 
     /**

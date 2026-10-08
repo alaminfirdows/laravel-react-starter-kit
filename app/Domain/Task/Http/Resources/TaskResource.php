@@ -32,6 +32,7 @@ class TaskResource extends JsonResource
             'progressPct' => $this->progress_pct,
             'depth' => $this->depth,
             'isLeaf' => $this->whenLoaded('children', fn (): bool => $this->children->isEmpty()),
+            'assignee' => $this->whenLoaded('assignee', fn (): ?array => $this->assignee ? ['id' => $this->assignee->id, 'name' => $this->assignee->name] : null),
             'completedAt' => $this->completed_at?->toIso8601String(),
             'ancestors' => $this->ancestors(),
             'parent' => TaskSummaryResource::make($this->whenLoaded('parent')),

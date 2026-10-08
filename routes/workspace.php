@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Task\Http\Controllers\MyTaskController;
 use App\Domain\Workspace\Http\Controllers\InvitationController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceInvitationController;
@@ -39,6 +40,7 @@ Route::prefix('{workspace}')
     ->scopeBindings()
     ->group(function () {
         Route::inertia('dashboard', 'dashboard')->name('dashboard');
+        Route::get('my-tasks', [MyTaskController::class, 'index'])->name('tasks.mine');
 
         require __DIR__.'/projects.php';
 

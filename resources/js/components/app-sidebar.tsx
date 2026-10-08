@@ -2,6 +2,7 @@ import {
     BookOpen,
     FolderGit2,
     FolderKanban,
+    ListTodo,
     LayoutGrid,
     Settings,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as projectsIndex } from '@/routes/projects';
+import { mine as myTasks } from '@/routes/tasks';
 import { edit as editWorkspaceSettings } from '@/routes/workspace/settings';
 import type { NavItem } from '@/types';
 
@@ -45,6 +47,11 @@ export function AppSidebar() {
             title: 'Projects',
             href: projectsIndex(),
             icon: FolderKanban,
+        },
+        {
+            title: 'My tasks',
+            href: myTasks(),
+            icon: ListTodo,
         },
         {
             title: 'Workspace settings',

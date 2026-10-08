@@ -9,6 +9,7 @@ use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Enums\Verification;
 use App\Domain\Task\Policies\TaskPolicy;
 use App\Domain\Workspace\Concerns\BelongsToWorkspace;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -53,6 +54,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Project $project
+ * @property-read User|null $assignee
  * @property-read Task|null $parent
  * @property-read Collection<int, Task> $children
  * @property-read Collection<int, TaskAction> $actions
@@ -111,6 +113,14 @@ class Task extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 
     /**

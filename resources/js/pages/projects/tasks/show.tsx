@@ -5,13 +5,15 @@ import { ActionCard } from '@/components/task/action-card';
 import { ParentTaskCard } from '@/components/task/parent-task-card';
 import { SubtaskList } from '@/components/task/subtask-list';
 import { TaskHeader } from '@/components/task/task-header';
+import type { AssigneeOption } from '@/components/task/assignee-picker';
 import type { ProjectPageProps, Task } from '@/types';
 
 export default function TaskShow({
     project,
     can,
     task,
-}: ProjectPageProps & { task: Task }) {
+    assignees,
+}: ProjectPageProps & { task: Task; assignees: AssigneeOption[] }) {
     const { start, stop } = usePoll(
         10_000,
         { only: ['task'] },
@@ -42,6 +44,7 @@ export default function TaskShow({
                     task={task}
                     canUpdate={can.update}
                     projectSlug={project.slug}
+                    assignees={assignees}
                 />
                 <Markdown source={task.bodyMd} />
                 {task.children.length > 0 && (

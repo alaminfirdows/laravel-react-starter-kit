@@ -10,10 +10,6 @@ use App\Domain\Task\Exceptions\InvalidActionTransition;
 use App\Domain\Task\Models\Approval;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Task\Notifications\ApprovalRequested;
-use App\Domain\Workspace\Enums\WorkspaceRole;
-use App\Domain\Workspace\Models\WorkspaceMember;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -54,24 +50,9 @@ class RequestApproval
 
             $this->activity->record('approval.requested', $action, ['approval_id' => $approval->id], $actor);
             $this->sync->handle($action->task, $actor);
-            Notification::send($this->editors($action), new ApprovalRequested($approval, $action));
+            Notification::send($action->task->project->workspace->editors()->get(), new ApprovalRequested($approval, $action));
 
             return $approval;
         });
-    }
-
-    /**
-     * Workspace members who can decide on the approval.
-     *
-     * @return Collection<int, User>
-     */
-    private function editors(TaskAction $action): Collection
-    {
-        return User::query()
-            ->whereIn('id', WorkspaceMember::query()
-                ->where('workspace_id', $action->task->project->workspace_id)
-                ->whereIn('role', [WorkspaceRole::Owner, WorkspaceRole::Admin, WorkspaceRole::Member])
-                ->select('user_id'))
-            ->get();
     }
 }

@@ -1,6 +1,10 @@
 import { Form } from '@inertiajs/react';
 import { Check, RotateCcw } from 'lucide-react';
 import TaskCompletionController from '@/actions/App/Domain/Task/Http/Controllers/TaskCompletionController';
+import {
+    AssigneePicker,
+    type AssigneeOption,
+} from '@/components/task/assignee-picker';
 import { TaskStatusIcon } from '@/components/project/task-status-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,10 +71,12 @@ export function TaskHeader({
     task,
     canUpdate,
     projectSlug,
+    assignees,
 }: {
     task: Task;
     canUpdate: boolean;
     projectSlug: string;
+    assignees?: AssigneeOption[];
 }) {
     return (
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -82,6 +88,20 @@ export function TaskHeader({
                 <div className="flex flex-wrap gap-2">
                     <Badge variant="secondary">{task.statusLabel}</Badge>
                     <Badge variant="outline">{task.priority}</Badge>
+                    {canUpdate && assignees ? (
+                        <AssigneePicker
+                            key={task.assignee?.id ?? 'none'}
+                            task={task}
+                            projectSlug={projectSlug}
+                            assignees={assignees}
+                        />
+                    ) : (
+                        task.assignee && (
+                            <Badge variant="outline">
+                                {task.assignee.name}
+                            </Badge>
+                        )
+                    )}
                 </div>
                 {task.summary && (
                     <p className="text-muted-foreground">{task.summary}</p>
