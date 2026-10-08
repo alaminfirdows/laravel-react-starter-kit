@@ -9,9 +9,9 @@ use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Pack;
 use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Catalog\Models\Skill;
+use App\Domain\Catalog\Support\SkillFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -99,49 +99,21 @@ class ImportCatalog
 
     private function importSkills(string $directory): void
     {
-        foreach (File::glob("{$directory}/*/SKILL.md") as $file) {
-            $folder = basename(dirname($file));
-            $front = $this->frontmatter($file);
-            $key = (string) ($front['name'] ?? '');
+        foreach (SkillFile::find($directory) as $file) {
+            $data = SkillFile::read($file);
 
-            if ($key !== $folder || ! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $key) || strlen($key) > 64 || preg_match('/claude|anthropic/', $key)) {
-                throw new InvalidArgumentException("skills/{$folder}: name [{$key}] must equal the folder, be kebab-case, ≤64 chars, without claude/anthropic");
-            }
-
-            $description = (string) ($front['description'] ?? '');
-
-            if ($description === '' || mb_strlen($description) > 200) {
-                throw new InvalidArgumentException("skills/{$folder}: description must be 1–200 chars");
-            }
-
-            $metadata = (array) ($front['metadata'] ?? []);
-
-            $skill = Skill::updateOrCreate(['key' => $key], [
-                'title' => $metadata['title'] ?? Str::headline($key),
-                'description' => $description,
-                'version' => (string) ($metadata['version'] ?? '1.0.0'),
-                'source_path' => "resources/skills/{$key}",
-                'in_plugin' => $metadata['in_plugin'] ?? true,
-                'in_app_agents' => $metadata['in_app_agents'] ?? false,
-                'content_hash' => hash('sha256', File::get($file)),
+            $skill = Skill::updateOrCreate(['key' => $data->name], [
+                'title' => $data->title,
+                'description' => $data->description,
+                'version' => $data->version,
+                'source_path' => "resources/skills/{$data->name}",
+                'in_plugin' => $data->inPlugin,
+                'in_app_agents' => $data->inAppAgents,
+                'content_hash' => $data->contentHash,
             ]);
-            $this->skillIds[$key] = $skill->id;
+            $this->skillIds[$data->name] = $skill->id;
             $this->counts['skills']++;
         }
-    }
-
-    /**
-     * YAML frontmatter between the leading `---` fences of a Markdown file.
-     *
-     * @return array<string, mixed>
-     */
-    private function frontmatter(string $file): array
-    {
-        if (! preg_match('/\A---\R(.*?)\R---/s', File::get($file), $matches)) {
-            return [];
-        }
-
-        return (array) Yaml::parse($matches[1]);
     }
 
     /** @param array<string, mixed> $data */
