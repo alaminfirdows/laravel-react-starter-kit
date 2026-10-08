@@ -183,3 +183,13 @@ export type McpConnection = {
     createdAt: string | null;
     expiresAt: string | null;
 };
+
+export type TaskComment = {
+    id: string;
+    bodyMd: string;
+    authorType: 'user' | 'agent' | 'system';
+    authorName: string | null;
+    clientName: string | null;
+    resolvedAt: string | null;
+    createdAt: string;
+};

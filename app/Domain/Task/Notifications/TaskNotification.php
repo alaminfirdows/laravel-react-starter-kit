@@ -2,14 +2,14 @@
 
 namespace App\Domain\Task\Notifications;
 
-use App\Domain\Task\Models\TaskAction;
+use App\Domain\Task\Models\Task;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * A notification about one action: same shape in the bell menu (database) and mail.
+ * A notification about one task: same shape in the bell menu (database) and mail.
  */
 abstract class TaskNotification extends Notification implements ShouldQueue
 {
@@ -20,7 +20,7 @@ abstract class TaskNotification extends Notification implements ShouldQueue
         $this->afterCommit();
     }
 
-    abstract protected function action(): TaskAction;
+    abstract protected function task(): Task;
 
     abstract protected function title(): string;
 
@@ -51,13 +51,13 @@ abstract class TaskNotification extends Notification implements ShouldQueue
             'title' => $this->title(),
             'body' => $this->body(),
             'url' => $this->url(),
-            'project' => $this->action()->task->project->name,
+            'project' => $this->task()->project->name,
         ];
     }
 
     protected function url(): string
     {
-        $task = $this->action()->task;
+        $task = $this->task();
 
         return route('projects.tasks.show', [
             'workspace' => $task->project->workspace->slug,

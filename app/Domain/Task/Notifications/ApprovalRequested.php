@@ -3,6 +3,7 @@
 namespace App\Domain\Task\Notifications;
 
 use App\Domain\Task\Models\Approval;
+use App\Domain\Task\Models\Task;
 use App\Domain\Task\Models\TaskAction;
 use Illuminate\Support\Str;
 
@@ -13,9 +14,9 @@ class ApprovalRequested extends TaskNotification
         parent::__construct();
     }
 
-    protected function action(): TaskAction
+    protected function task(): Task
     {
-        return $this->taskAction;
+        return $this->taskAction->task;
     }
 
     protected function title(): string

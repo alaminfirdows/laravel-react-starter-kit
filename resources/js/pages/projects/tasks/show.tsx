@@ -2,18 +2,24 @@ import { Head, usePoll } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { Markdown } from '@/components/markdown/markdown';
 import { ActionCard } from '@/components/task/action-card';
+import { CommentThread } from '@/components/task/comment-thread';
 import { ParentTaskCard } from '@/components/task/parent-task-card';
 import { SubtaskList } from '@/components/task/subtask-list';
 import { TaskHeader } from '@/components/task/task-header';
 import type { AssigneeOption } from '@/components/task/assignee-picker';
-import type { ProjectPageProps, Task } from '@/types';
+import type { ProjectPageProps, Task, TaskComment } from '@/types';
 
 export default function TaskShow({
     project,
     can,
     task,
     assignees,
-}: ProjectPageProps & { task: Task; assignees: AssigneeOption[] }) {
+    comments,
+}: ProjectPageProps & {
+    task: Task;
+    assignees: AssigneeOption[];
+    comments: TaskComment[];
+}) {
     const { start, stop } = usePoll(
         10_000,
         { only: ['task'] },
@@ -71,6 +77,12 @@ export default function TaskShow({
                         ))}
                     </section>
                 )}
+                <CommentThread
+                    comments={comments}
+                    taskId={task.id}
+                    projectSlug={project.slug}
+                    canUpdate={can.update}
+                />
             </div>
         </>
     );

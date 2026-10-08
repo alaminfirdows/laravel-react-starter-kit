@@ -3,6 +3,7 @@
 namespace App\Domain\Task\Models;
 
 use App\Domain\Catalog\Models\CatalogTask;
+use App\Domain\Comment\Models\Comment;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\TaskPriority;
 use App\Domain\Task\Enums\TaskStatus;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -191,5 +193,13 @@ class Task extends Model
     public function runs(): HasMany
     {
         return $this->hasMany(ActionRun::class)->latest('started_at');
+    }
+
+    /**
+     * @return MorphMany<Comment, $this>
+     */
+    public function comments(): MorphMany
+    {
+        return $this->morphMany(Comment::class, 'commentable')->oldest();
     }
 }

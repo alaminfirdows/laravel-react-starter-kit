@@ -2,6 +2,7 @@
 
 namespace App\Domain\Task\Http\Controllers;
 
+use App\Domain\Comment\Http\Resources\CommentResource;
 use App\Domain\Project\Http\ProjectPageProps;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Http\Resources\TaskResource;
@@ -38,6 +39,7 @@ class TaskController extends Controller
         return Inertia::render('projects/tasks/show', [
             new ProjectPageProps($project),
             'task' => TaskResource::make($task),
+            'comments' => fn () => CommentResource::collection($task->comments()->with('author:id,name')->get()),
             'assignees' => fn (): array => $workspace->editors()->orderBy('name')->get(['id', 'name'])
                 ->map(fn (User $user): array => ['value' => $user->id, 'label' => $user->name])
                 ->all(),

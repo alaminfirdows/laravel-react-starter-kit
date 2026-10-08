@@ -1,5 +1,7 @@
 <?php
 
+use App\Domain\Comment\Http\Controllers\CommentResolutionController;
+use App\Domain\Comment\Http\Controllers\TaskCommentController;
 use App\Domain\Knowledge\Http\Controllers\DecisionController;
 use App\Domain\Knowledge\Http\Controllers\KnowledgeController;
 use App\Domain\Project\Enums\ProjectSetupStep;
@@ -34,6 +36,9 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::post('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'store'])->name('tasks.completion.store');
     Route::delete('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'destroy'])->name('tasks.completion.destroy');
     Route::put('{project}/tasks/{task}/assignee', [TaskAssigneeController::class, 'update'])->name('tasks.assignee.update');
+    Route::post('{project}/tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('tasks.comments.store');
+    Route::post('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'store'])->scopeBindings()->name('tasks.comments.resolution.store');
+    Route::delete('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'destroy'])->scopeBindings()->name('tasks.comments.resolution.destroy');
     Route::post('{project}/tasks/{task}/actions/{action}/runs', [ActionRunController::class, 'store'])->scopeBindings()->name('tasks.actions.runs.store');
     Route::get('{project}/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
     Route::get('{project}/knowledge/create', [KnowledgeController::class, 'create'])->name('knowledge.create');

@@ -3,7 +3,7 @@
 namespace App\Domain\Task\Notifications;
 
 use App\Domain\Task\Models\ActionRun;
-use App\Domain\Task\Models\TaskAction;
+use App\Domain\Task\Models\Task;
 use Illuminate\Support\Str;
 
 class RunFinished extends TaskNotification
@@ -13,9 +13,9 @@ class RunFinished extends TaskNotification
         parent::__construct();
     }
 
-    protected function action(): TaskAction
+    protected function task(): Task
     {
-        return $this->run->action;
+        return $this->run->action->task;
     }
 
     protected function title(): string
