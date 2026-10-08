@@ -31,9 +31,9 @@ class InvalidActionTransition extends InvalidTaskTransition
         return new static(__('":title" has no started run. Call start_action first.', ['title' => $action->title]));
     }
 
-    public static function notAppAi(TaskAction $action): static
+    public static function notInApp(TaskAction $action): static
     {
-        return new static(__('":title" does not run with in-app AI.', ['title' => $action->title]));
+        return new static(__('":title" does not run inside the app.', ['title' => $action->title]));
     }
 
     public static function alreadyRunning(TaskAction $action): static

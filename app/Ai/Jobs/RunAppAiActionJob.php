@@ -15,14 +15,13 @@ use App\Domain\Task\Actions\CompleteAction;
 use App\Domain\Task\Actions\FinishRun;
 use App\Domain\Task\Actions\RequestApproval;
 use App\Domain\Task\Actions\SaveRunOutput;
+use App\Domain\Task\Concerns\ResolvesStartedRun;
 use App\Domain\Task\Data\EvidenceData;
 use App\Domain\Task\Enums\EvidenceKind;
 use App\Domain\Task\Enums\RunStatus;
 use App\Domain\Task\Exceptions\InvalidActionTransition;
 use App\Domain\Task\Models\ActionRun;
 use App\Domain\Task\Models\TaskAction;
-use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
-use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -38,7 +37,7 @@ use Throwable;
  */
 class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesStartedRun;
 
     public int $tries = 1;
 
@@ -59,7 +58,8 @@ class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(UsageMeter $usage, RenderLauncherPrompt $launcher, SaveRunOutput $saveOutput, RequestApproval $requestApproval, CompleteAction $complete, FinishRun $finish): void
     {
-        $this->withinWorkspace(function (ActionRun $run, Actor $actor) use ($usage, $launcher, $saveOutput, $requestApproval, $complete, $finish): void {
+        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run, User $user) use ($usage, $launcher, $saveOutput, $requestApproval, $complete, $finish): void {
+            $actor = Actor::appAi($user);
             $action = $run->action;
 
             $usage->ensureWithinBudget($run->project->workspace);
@@ -93,26 +93,10 @@ class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
-        $this->withinWorkspace(function (ActionRun $run, Actor $actor) use ($exception): void {
+        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run, User $user) use ($exception): void {
+            $actor = Actor::appAi($user);
             app(FinishRun::class)->handle($run, $actor, RunStatus::Failed, Str::limit($exception?->getMessage() ?? __('The AI run failed.'), 1000));
         });
-    }
-
-    /**
-     * @param  callable(ActionRun, Actor): void  $callback
-     */
-    private function withinWorkspace(callable $callback): void
-    {
-        $run = ActionRun::query()->with('project')->find($this->runId);
-        $user = User::query()->find($this->userId);
-
-        if ($run === null || $user === null || $run->status !== RunStatus::Started) {
-            return;
-        }
-
-        $workspace = Workspace::query()->findOrFail($run->project->workspace_id);
-
-        app(WorkspaceDiscoveryService::class)->runAs($workspace, fn () => $callback($run, Actor::appAi($user)));
     }
 
     /**

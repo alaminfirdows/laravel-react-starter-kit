@@ -4,6 +4,7 @@ namespace App\Domain\Task\Actions;
 
 use App\Ai\Jobs\RunAppAiActionJob;
 use App\Ai\Support\UsageMeter;
+use App\Checks\Jobs\RunCheckJob;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Prompt\Actions\RenderFullPrompt;
 use App\Domain\Task\Enums\ActionStatus;
@@ -16,7 +17,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
- * "Run with AI": checks budget, starts one run under a row lock and queues the agent.
+ * "Run in app": `app_ai` actions go to an agent (after the budget check), `app_system` actions to a machine check.
+ * One run at a time per action (row lock + running check).
  */
 class RunActionInApp
 {
@@ -28,23 +30,29 @@ class RunActionInApp
 
     public function handle(TaskAction $action, User $user): ActionRun
     {
-        if ($action->executor !== Executor::AppAi) {
-            throw InvalidActionTransition::notAppAi($action);
+        $isAi = $action->executor === Executor::AppAi;
+
+        if (! $isAi && $action->executor !== Executor::AppSystem) {
+            throw InvalidActionTransition::notInApp($action);
         }
 
-        $this->usage->ensureWithinBudget($action->task->project->workspace);
+        if ($isAi) {
+            $this->usage->ensureWithinBudget($action->task->project->workspace);
+        }
 
-        $run = DB::transaction(function () use ($action, $user): ActionRun {
+        $run = DB::transaction(function () use ($action, $user, $isAi): ActionRun {
             $locked = TaskAction::query()->whereKey($action->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status === ActionStatus::Running) {
                 throw InvalidActionTransition::alreadyRunning($locked);
             }
 
-            return $this->start->handle($locked, Actor::appAi($user), RunChannel::AppAi, $this->render->handle($locked, withProtocol: false));
+            return $isAi
+                ? $this->start->handle($locked, Actor::appAi($user), RunChannel::AppAi, $this->render->handle($locked, withProtocol: false))
+                : $this->start->handle($locked, Actor::user($user), RunChannel::System);
         });
 
-        RunAppAiActionJob::dispatch($run->id, $user->id)->afterCommit();
+        ($isAi ? RunAppAiActionJob::dispatch($run->id, $user->id) : RunCheckJob::dispatch($run->id, $user->id))->afterCommit();
 
         return $run;
     }
