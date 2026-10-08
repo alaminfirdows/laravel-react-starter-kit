@@ -1,4 +1,10 @@
-import { BookOpen, FolderGit2, LayoutGrid, Settings } from 'lucide-react';
+import {
+    BookOpen,
+    FolderGit2,
+    FolderKanban,
+    LayoutGrid,
+    Settings,
+} from 'lucide-react';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -10,6 +16,7 @@ import {
     SidebarHeader,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as projectsIndex } from '@/routes/projects';
 import { edit as editWorkspaceSettings } from '@/routes/workspace/settings';
 import type { NavItem } from '@/types';
 
@@ -33,6 +40,11 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'Projects',
+            href: projectsIndex(),
+            icon: FolderKanban,
         },
         {
             title: 'Workspace settings',
