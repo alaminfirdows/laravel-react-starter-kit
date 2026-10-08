@@ -10,6 +10,7 @@ use App\Domain\Catalog\Models\Pack;
 use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Catalog\Models\Skill;
 use App\Domain\Catalog\Support\SkillFile;
+use App\Domain\Catalog\Support\Versioning;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
@@ -146,7 +147,7 @@ class ImportCatalog
                 'target' => $row['target'] ?? 'chat',
                 'skill_keys' => $row['skills'] ?? null,
             ];
-            $prompt = $this->upsertVersioned(PromptTemplate::query()->firstOrNew(['key' => $row['key']]), $attributes);
+            $prompt = Versioning::import(PromptTemplate::query()->firstOrNew(['key' => $row['key']]), $attributes);
             $this->promptIds[$prompt->key] = $prompt->id;
             $this->counts['prompts']++;
         }
@@ -168,7 +169,7 @@ class ImportCatalog
             throw new InvalidArgumentException("{$file}: task [{$key}] has unknown category [{$category}]");
         }
 
-        $task = $this->upsertVersioned(CatalogTask::query()->firstOrNew(['key' => $key]), [
+        $task = Versioning::import(CatalogTask::query()->firstOrNew(['key' => $key]), [
             'category_id' => $categoryId,
             'parent_id' => $parent?->id,
             'title' => $row['title'],
@@ -307,7 +308,7 @@ class ImportCatalog
                 $defaults[$row['phase']] = $row['key'];
             }
 
-            $pack = $this->upsertVersioned(Pack::query()->firstOrNew(['key' => $row['key']]), [
+            $pack = Versioning::import(Pack::query()->firstOrNew(['key' => $row['key']]), [
                 'name' => $row['name'],
                 'description_md' => $row['description_md'] ?? null,
                 'audience' => ['phase' => $row['phase'], ...($row['audience'] ?? [])],
@@ -330,32 +331,5 @@ class ImportCatalog
 
             $this->counts['packs']++;
         }
-    }
-
-    /**
-     * Save a keyed catalog row; bump version when the authored content hash changes.
-     *
-     * @template TModel of CatalogTask|PromptTemplate|Pack
-     *
-     * @param  TModel  $model  existing row or new instance with `key` set
-     * @param  array<string, mixed>  $attributes
-     * @param  list<string>  $except  hashed but not stored
-     * @return TModel
-     */
-    private function upsertVersioned(CatalogTask|PromptTemplate|Pack $model, array $attributes, array $except = []): CatalogTask|PromptTemplate|Pack
-    {
-        $hash = hash('sha256', json_encode($attributes, JSON_THROW_ON_ERROR));
-
-        if ($model->exists && $model->content_hash === $hash) {
-            return $model;
-        }
-
-        $model->fill([
-            ...array_diff_key($attributes, array_flip($except)),
-            'content_hash' => $hash,
-            'version' => $model->exists ? $model->version + 1 : 1,
-        ])->save();
-
-        return $model;
     }
 }

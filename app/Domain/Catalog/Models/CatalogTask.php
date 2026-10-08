@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\Models;
 
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Task\Enums\TaskPriority;
+use Carbon\CarbonImmutable;
 use Database\Factories\CatalogTaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -26,13 +27,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<int, array<string, mixed>>|null $completion_criteria
  * @property array<int, array<string, mixed>>|null $expected_outputs
  * @property int $version
+ * @property CarbonImmutable|null $admin_edited_at not yet exported to YAML
  * @property CatalogStatus $status
+ * @property CarbonImmutable|null $published_at
  * @property int $sort_order
  * @property-read CatalogCategory $category
  * @property-read Collection<int, Skill> $skills
  * @property-read Collection<int, CatalogResource> $resources
  */
-#[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'status', 'published_at', 'sort_order'])]
+#[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'status', 'published_at', 'sort_order', 'admin_edited_at'])]
 #[UseFactory(CatalogTaskFactory::class)]
 class CatalogTask extends Model
 {
@@ -50,6 +53,7 @@ class CatalogTask extends Model
             'priority_default' => TaskPriority::class,
             'status' => CatalogStatus::class,
             'published_at' => 'immutable_datetime',
+            'admin_edited_at' => 'immutable_datetime',
         ];
     }
 

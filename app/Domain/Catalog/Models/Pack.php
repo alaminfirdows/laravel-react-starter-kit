@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\Models;
 
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Project\Enums\ProjectPhase;
+use Carbon\CarbonImmutable;
 use Database\Factories\PackFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -19,10 +20,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array<string, mixed>|null $audience
  * @property bool $is_default
  * @property int $version
+ * @property CarbonImmutable|null $admin_edited_at not yet exported to YAML
  * @property string|null $content_hash
  * @property CatalogStatus $status
  */
-#[Fillable(['key', 'name', 'description_md', 'audience', 'is_default', 'version', 'content_hash', 'status'])]
+#[Fillable(['key', 'name', 'description_md', 'audience', 'is_default', 'version', 'content_hash', 'status', 'admin_edited_at'])]
 #[UseFactory(PackFactory::class)]
 class Pack extends Model
 {
@@ -35,6 +37,7 @@ class Pack extends Model
             'audience' => 'array',
             'is_default' => 'boolean',
             'status' => CatalogStatus::class,
+            'admin_edited_at' => 'immutable_datetime',
         ];
     }
 

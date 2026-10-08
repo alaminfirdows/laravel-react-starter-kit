@@ -2,6 +2,7 @@
 
 namespace App\Domain\Catalog\Models;
 
+use Carbon\CarbonImmutable;
 use Database\Factories\PromptTemplateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
@@ -18,9 +19,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $target
  * @property array<int, string>|null $skill_keys
  * @property int $version
+ * @property CarbonImmutable|null $admin_edited_at not yet exported to YAML
  * @property string $content_hash
  */
-#[Fillable(['key', 'title', 'launcher_md', 'full_md', 'variables', 'target', 'skill_keys', 'version', 'content_hash'])]
+#[Fillable(['key', 'title', 'launcher_md', 'full_md', 'variables', 'target', 'skill_keys', 'version', 'content_hash', 'admin_edited_at'])]
 #[UseFactory(PromptTemplateFactory::class)]
 class PromptTemplate extends Model
 {
@@ -32,6 +34,7 @@ class PromptTemplate extends Model
         return [
             'variables' => 'array',
             'skill_keys' => 'array',
+            'admin_edited_at' => 'immutable_datetime',
         ];
     }
 }
