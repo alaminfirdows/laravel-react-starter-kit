@@ -4,6 +4,7 @@ namespace App\Domain\Project\Actions;
 
 use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Project\Enums\ProjectStatus;
+use App\Domain\Project\Jobs\RebuildContextSnapshotJob;
 use App\Domain\Project\Models\Project;
 use Illuminate\Validation\ValidationException;
 
@@ -35,6 +36,7 @@ class ActivateProject
 
         $project->forceFill(['status' => ProjectStatus::Active, 'activated_at' => now()])->save();
         $this->activity->record('project.activated', $project);
+        RebuildContextSnapshotJob::debounce($project->id);
 
         return $project;
     }

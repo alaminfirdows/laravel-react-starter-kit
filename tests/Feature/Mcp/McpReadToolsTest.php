@@ -3,6 +3,8 @@
 use App\Domain\Catalog\Models\CatalogResource;
 use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Skill;
+use App\Domain\Knowledge\Enums\DocType;
+use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\EvidenceKind;
 use App\Domain\Task\Enums\TaskStatus;
@@ -24,7 +26,7 @@ beforeEach(function () {
     $this->user = User::factory()->create();
     $this->workspace = Workspace::factory()->withMember($this->user, WorkspaceRole::Member)->create();
     $this->project = Project::factory()->forWorkspace($this->workspace)->create([
-        'name' => 'Acme', 'one_liner' => 'Rockets for cats', 'primary_market' => 'DE', 'goals' => ['Launch in Q1'],
+        'name' => 'Acme', 'one_liner' => 'Rockets for cats', 'primary_market' => 'DE', 'goals' => [['title' => 'Launch in Q1']],
     ]);
     $this->task = Task::factory()->forProject($this->project)->create(['title' => 'Pricing', 'body_md' => 'Find a price.']);
     $this->task->forceFill(['completion_criteria' => [['key' => 'page', 'label' => 'Pricing page URL', 'kind' => 'evidence']]])->save();
@@ -43,10 +45,12 @@ test('list_projects shows only projects of the token workspace', function () {
         ->assertDontSee('Elsewhere');
 });
 
-test('get_project_context returns profile, market and goals, limited by sections', function () {
+test('get_project_context returns the snapshot with approved documents, limited by sections', function () {
+    $icp = KnowledgeDocument::factory()->forProject($this->project)->approved()->create(['doc_type' => DocType::Icp, 'title' => 'Cat owners']);
+
     FounderServer::tool(GetProjectContextTool::class, ['project_id' => $this->project->id])
         ->assertOk()
-        ->assertSee(['Rockets for cats', 'Primary market: DE', 'Launch in Q1', '## Progress']);
+        ->assertSee(['Rockets for cats', 'Primary market: DE', 'Launch in Q1', 'Cat owners', $icp->id, '## Progress']);
 
     FounderServer::tool(GetProjectContextTool::class, ['project_id' => $this->project->id, 'sections' => ['goals']])
         ->assertSee('Launch in Q1')

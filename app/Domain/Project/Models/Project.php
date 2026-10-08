@@ -58,7 +58,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $team_size
  * @property string|null $timezone
  * @property string|null $currency
- * @property list<string>|null $goals
+ * @property list<array{title: string, metric?: string|null, target?: string|null, due?: string|null}>|null $goals
  * @property array<string, mixed>|null $tech
  * @property string|null $context_snapshot_md
  * @property array<string, mixed>|null $settings

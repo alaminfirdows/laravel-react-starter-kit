@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Mcp\Support;
+namespace App\Domain\Project\Support;
 
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\TaskStatus;
 use BackedEnum;
 
 /**
- * Compact Markdown project context for MCP (P2 swaps the profile for the cached context snapshot).
+ * Compact Markdown project profile for MCP and the context snapshot.
  */
 class ProjectMarkdown
 {
@@ -32,7 +32,7 @@ class ProjectMarkdown
                     'Primary market' => 'primary_market', 'Target markets' => 'target_markets',
                     'Target customer' => 'target_customer', 'Languages' => 'languages', 'Currency' => 'currency',
                 ]),
-                'goals' => $project->goals ? "## Goals\n- ".implode("\n- ", $project->goals) : null,
+                'goals' => $this->goals($project),
                 'brand' => $project->brand?->voice_md ? "## Brand voice\n{$project->brand->voice_md}" : null,
                 'progress' => $this->progress($project),
             };
@@ -65,7 +65,21 @@ class ProjectMarkdown
         return $lines === [] ? null : "## {$heading}\n".implode("\n", $lines);
     }
 
-    private function progress(Project $project): string
+    private function goals(Project $project): ?string
+    {
+        $lines = array_map(function (array $goal): string {
+            $details = array_filter([
+                trim(($goal['metric'] ?? '').' '.($goal['target'] ?? '')),
+                isset($goal['due']) ? "due {$goal['due']}" : '',
+            ]);
+
+            return '- '.$goal['title'].($details === [] ? '' : ' ('.implode(', ', $details).')');
+        }, $project->goals ?? []);
+
+        return $lines === [] ? null : "## Goals\n".implode("\n", $lines);
+    }
+
+    public function progress(Project $project): string
     {
         $counts = $project->tasks()->toBase()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status');
 

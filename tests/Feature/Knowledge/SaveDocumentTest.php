@@ -44,7 +44,7 @@ test('saving the same body twice adds no version and no embed job', function () 
     expect($document->version)->toBe(1)
         ->and($document->status)->toBe(DocStatus::Approved)
         ->and($document->versions()->count())->toBe(1);
-    Queue::assertNothingPushed();
+    Queue::assertNotPushed(EmbedDocumentJob::class);
 });
 
 test('changed body bumps the version and re-chunks', function () {

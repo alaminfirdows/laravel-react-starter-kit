@@ -2,8 +2,9 @@
 
 namespace App\Mcp\Tools;
 
+use App\Domain\Project\Actions\BuildContextSnapshot;
+use App\Domain\Project\Support\ProjectMarkdown;
 use App\Mcp\Support\McpActor;
-use App\Mcp\Support\ProjectMarkdown;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
@@ -14,11 +15,11 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[Name('get_project_context')]
-#[Description('Company context for a project: profile, market, goals, brand voice and progress. Read it before drafting anything for the founder.')]
+#[Description('Company context for a project: profile, market, goals, brand voice, approved documents (ICP, positioning, …), recent decisions and progress. Read it before drafting anything for the founder.')]
 #[IsReadOnly]
 class GetProjectContextTool extends Tool
 {
-    public function __construct(private ProjectMarkdown $markdown) {}
+    public function __construct(private ProjectMarkdown $markdown, private BuildContextSnapshot $snapshot) {}
 
     public function handle(Request $request): Response
     {
@@ -29,7 +30,13 @@ class GetProjectContextTool extends Tool
             'sections.*' => ['string', 'in:'.implode(',', ProjectMarkdown::SECTIONS)],
         ]);
 
-        return Response::text($this->markdown->context($mcp->project($validated['project_id']), $validated['sections'] ?? ProjectMarkdown::SECTIONS));
+        $project = $mcp->project($validated['project_id']);
+
+        if (isset($validated['sections'])) {
+            return Response::text($this->markdown->context($project, $validated['sections']));
+        }
+
+        return Response::text($this->snapshot->current($project)."\n\n".$this->markdown->progress($project));
     }
 
     /**
@@ -39,7 +46,7 @@ class GetProjectContextTool extends Tool
     {
         return [
             'project_id' => $schema->string()->description('Project ID (ULID) from list_projects or the launcher prompt.')->required(),
-            'sections' => $schema->array()->items($schema->string()->enum(ProjectMarkdown::SECTIONS))->description('Limit the output to these sections. Default: all.'),
+            'sections' => $schema->array()->items($schema->string()->enum(ProjectMarkdown::SECTIONS))->description('Only these profile sections, without documents and decisions. Default: full context snapshot.'),
         ];
     }
 }

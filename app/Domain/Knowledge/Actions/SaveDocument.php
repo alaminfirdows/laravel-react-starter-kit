@@ -8,6 +8,7 @@ use App\Domain\Knowledge\Data\DocumentData;
 use App\Domain\Knowledge\Enums\DocStatus;
 use App\Domain\Knowledge\Jobs\EmbedDocumentJob;
 use App\Domain\Knowledge\Models\KnowledgeDocument;
+use App\Domain\Project\Jobs\RebuildContextSnapshotJob;
 use App\Domain\Project\Models\Project;
 use Illuminate\Support\Facades\DB;
 
@@ -83,6 +84,8 @@ class SaveDocument
         if ($bodyChanged) {
             EmbedDocumentJob::dispatch($document->id, $document->version)->afterCommit();
         }
+
+        RebuildContextSnapshotJob::debounce($project->id);
 
         return $document;
     }

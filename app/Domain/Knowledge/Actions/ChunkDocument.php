@@ -4,6 +4,7 @@ namespace App\Domain\Knowledge\Actions;
 
 use App\Domain\Knowledge\Data\ChunkData;
 use App\Domain\Knowledge\Models\KnowledgeDocument;
+use App\Domain\Prompt\Support\TokenBudget;
 use App\Domain\Workspace\Scopes\WorkspaceScope;
 use Illuminate\Support\Facades\DB;
 
@@ -16,8 +17,6 @@ class ChunkDocument
     public const int MAX_TOKENS = 500;
 
     public const int OVERLAP_TOKENS = 50;
-
-    protected const int CHARS_PER_TOKEN = 4;
 
     public function handle(KnowledgeDocument $document): void
     {
@@ -48,16 +47,11 @@ class ChunkDocument
 
         foreach ($this->sections($markdown) as [$headingPath, $text]) {
             foreach ($this->pack($text) as $content) {
-                $chunks[] = new ChunkData(count($chunks), $headingPath, $content, self::tokens($content));
+                $chunks[] = new ChunkData(count($chunks), $headingPath, $content, TokenBudget::estimate($content));
             }
         }
 
         return $chunks;
-    }
-
-    public static function tokens(string $text): int
-    {
-        return (int) ceil(mb_strlen($text) / self::CHARS_PER_TOKEN);
     }
 
     /**
@@ -112,7 +106,7 @@ class ChunkDocument
      */
     protected function pack(string $text): array
     {
-        $limit = self::MAX_TOKENS * self::CHARS_PER_TOKEN;
+        $limit = self::MAX_TOKENS * TokenBudget::CHARS_PER_TOKEN;
 
         if (mb_strlen($text) <= $limit) {
             return [$text];
@@ -122,7 +116,7 @@ class ChunkDocument
         $current = '';
 
         // Room for the overlap and the paragraph separator in every chunk.
-        $unitLimit = $limit - self::OVERLAP_TOKENS * self::CHARS_PER_TOKEN - 2;
+        $unitLimit = $limit - self::OVERLAP_TOKENS * TokenBudget::CHARS_PER_TOKEN - 2;
 
         foreach ($this->units($text, $unitLimit) as $unit) {
             if ($current !== '' && mb_strlen($current) + mb_strlen($unit) + 2 > $limit) {
@@ -180,7 +174,7 @@ class ChunkDocument
 
     protected function overlap(string $chunk): string
     {
-        $tail = mb_substr($chunk, -self::OVERLAP_TOKENS * self::CHARS_PER_TOKEN);
+        $tail = mb_substr($chunk, -self::OVERLAP_TOKENS * TokenBudget::CHARS_PER_TOKEN);
         $space = mb_strpos($tail, ' ');
 
         return $space === false ? $tail : mb_substr($tail, $space + 1);
