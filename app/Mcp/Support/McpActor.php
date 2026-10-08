@@ -3,6 +3,9 @@
 namespace App\Mcp\Support;
 
 use App\Domain\Activity\Data\Actor;
+use App\Domain\Project\Models\Project;
+use App\Domain\Task\Models\Task;
+use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
@@ -10,6 +13,7 @@ use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Request;
 use Laravel\Passport\AccessToken;
 use Laravel\Passport\Passport;
@@ -60,6 +64,52 @@ final readonly class McpActor
     public function actor(): Actor
     {
         return Actor::agent($this->user, $this->clientName);
+    }
+
+    /**
+     * Project in the token's workspace the user may see (or edit), else "not found".
+     *
+     * @throws ValidationException
+     */
+    public function project(string $id, string $ability = 'view'): Project
+    {
+        $project = Project::query()->whereKey($id)->first();
+
+        return $project && $this->user->can($ability, $project)
+            ? $project
+            : $this->notFound('project_id', 'Project');
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function task(string $id, string $ability = 'view'): Task
+    {
+        $task = Task::query()->whereKey($id)->first();
+
+        return $task && $this->user->can($ability, $task)
+            ? $task
+            : $this->notFound('task_id', 'Task');
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function action(string $id, string $ability = 'view'): TaskAction
+    {
+        $action = TaskAction::query()->whereHas('task')->with('task')->whereKey($id)->first();
+
+        return $action && $this->user->can($ability, $action->task)
+            ? $action
+            : $this->notFound('action_id', 'Action');
+    }
+
+    /**
+     * Same answer for "missing" and "other workspace", so IDs leak nothing.
+     */
+    private function notFound(string $key, string $label): never
+    {
+        throw ValidationException::withMessages([$key => "{$label} not found."]);
     }
 
     private static function workspaceFromToken(mixed $token): ?Workspace

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * Mirror of `resources/skills/<key>/SKILL.md`; the file is the source of truth.
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $in_plugin
  * @property bool $in_app_agents
  * @property string $content_hash
+ * @property-read Pivot|null $pivot Set when loaded through CatalogTask
  */
 #[Fillable(['key', 'title', 'description', 'version', 'source_path', 'in_plugin', 'in_app_agents', 'content_hash'])]
 #[UseFactory(SkillFactory::class)]

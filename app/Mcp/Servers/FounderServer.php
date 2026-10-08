@@ -2,6 +2,11 @@
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Tools\GetActionTool;
+use App\Mcp\Tools\GetProjectContextTool;
+use App\Mcp\Tools\GetTaskTool;
+use App\Mcp\Tools\ListProjectsTool;
+use App\Mcp\Tools\ListTasksTool;
 use App\Mcp\Tools\WhoAmITool;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -15,6 +20,11 @@ class FounderServer extends Server
 {
     protected array $tools = [
         WhoAmITool::class,
+        ListProjectsTool::class,
+        GetProjectContextTool::class,
+        ListTasksTool::class,
+        GetTaskTool::class,
+        GetActionTool::class,
     ];
 
     protected array $resources = [

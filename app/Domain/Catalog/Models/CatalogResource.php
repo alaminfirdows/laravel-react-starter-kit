@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
  * @property int $id
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $is_affiliate
  * @property array<int, string>|null $region
  * @property array<string, mixed>|null $meta
+ * @property-read Pivot|null $pivot Set when loaded through CatalogTask
  */
 #[Table('resources')]
 #[Fillable(['key', 'type', 'title', 'url', 'description_md', 'is_affiliate', 'region', 'meta'])]

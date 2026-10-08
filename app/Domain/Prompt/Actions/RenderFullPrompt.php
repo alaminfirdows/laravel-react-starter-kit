@@ -42,7 +42,10 @@ class RenderFullPrompt
         'action' => ['title', 'instructions_md'],
     ];
 
-    public function handle(TaskAction $action): string
+    /**
+     * @param  bool  $withProtocol  false for MCP, where the task-runner skill owns the completion protocol
+     */
+    public function handle(TaskAction $action, bool $withProtocol = true): string
     {
         $action->loadMissing(['promptTemplate', 'task.project', 'task.catalogTask.skills']);
 
@@ -65,7 +68,7 @@ class RenderFullPrompt
         $skills = $action->task->catalogTask?->skills->pluck('key')->implode(', ');
         $skillLine = $skills ? "\n\nIf you have the Founder OS skills installed, use: {$skills}." : '';
 
-        $prompt = preg_replace("/\n{3,}/", "\n\n", trim($body).$skillLine."\n\n".self::COMPLETION_PROTOCOL) ?? '';
+        $prompt = preg_replace("/\n{3,}/", "\n\n", trim($body).$skillLine.($withProtocol ? "\n\n".self::COMPLETION_PROTOCOL : '')) ?? '';
 
         return (new TokenBudget(self::MAX_TOKENS))->trim($prompt);
     }
