@@ -33,7 +33,6 @@ class SkillRepository
             ->when($names !== [], fn (Collection $files) => $files->only($names))
             ->map(fn (SkillFileData $file): ?Skill => Skill::fromDirectory($file->directory))
             ->filter()
-
             ->all());
     }
 

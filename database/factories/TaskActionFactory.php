@@ -33,6 +33,11 @@ class TaskActionFactory extends Factory
         ];
     }
 
+    public function appAi(ActionType $type = ActionType::Document): static
+    {
+        return $this->state(['type' => $type, 'executor' => Executor::AppAi]);
+    }
+
     public function forTask(Task $task): static
     {
         return $this->state(['task_id' => $task->id, 'project_id' => $task->project_id]);
