@@ -25,6 +25,11 @@ final readonly class Actor
         return new self(ActorType::Agent, $user->id, ActivityChannel::Mcp, $clientName);
     }
 
+    public static function appAi(User $user): self
+    {
+        return new self(ActorType::Agent, $user->id, ActivityChannel::Queue, 'Founder OS AI');
+    }
+
     public static function system(ActivityChannel $channel = ActivityChannel::Queue): self
     {
         return new self(ActorType::System, null, $channel);
