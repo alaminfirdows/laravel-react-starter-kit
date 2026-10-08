@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
+import ProjectLayout from '@/layouts/project-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import WorkspaceSettingsLayout from '@/layouts/workspace-settings/layout';
 
@@ -22,6 +23,9 @@ void createInertiaApp({
                 return [AppLayout, SettingsLayout];
             case name.startsWith('workspace/settings/'):
                 return [AppLayout, WorkspaceSettingsLayout];
+            case name === 'projects/overview':
+            case name.startsWith('projects/tasks/'):
+                return ProjectLayout;
             default:
                 return AppLayout;
         }
