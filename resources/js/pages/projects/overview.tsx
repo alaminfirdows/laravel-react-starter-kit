@@ -101,7 +101,7 @@ export default function ProjectOverview({
                                 />
                             )}
                             {nextTask && (
-                                <Button asChild>
+                                <Button variant="primary" asChild>
                                     <Link
                                         href={showTask({
                                             project: project.slug,
@@ -128,8 +128,8 @@ export default function ProjectOverview({
                             ).length;
 
                             return (
-                                <Card key={group.key} className="gap-3 py-4">
-                                    <CardHeader className="flex flex-row items-center justify-between gap-3 px-4">
+                                <Card key={group.key} size="sm" className="gap-3">
+                                    <CardHeader className="flex flex-row items-center justify-between gap-3">
                                         <CardTitle className="truncate">
                                             {group.name}
                                         </CardTitle>
@@ -137,7 +137,7 @@ export default function ProjectOverview({
                                             {done}/{group.tasks.length}
                                         </span>
                                     </CardHeader>
-                                    <CardContent className="flex items-center gap-3 px-4">
+                                    <CardContent className="flex-row items-center">
                                         <Progress
                                             value={group.progressPct}
                                             className="h-1.5"

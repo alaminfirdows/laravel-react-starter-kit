@@ -87,6 +87,7 @@ export default function Invitations({
                                         <InputError message={errors.role} />
                                     </div>
                                     <Button
+                                        variant="primary"
                                         disabled={processing}
                                         data-test="invite-member-button"
                                     >

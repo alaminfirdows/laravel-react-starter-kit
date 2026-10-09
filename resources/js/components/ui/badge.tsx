@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 // Quiet chips ported from product-repo-ui. Status badges keep their word;
 // colour only reinforces it.
 const badgeVariants = cva(
-  "inline-flex min-h-6 w-fit shrink-0 items-center gap-1 rounded-[4px] border border-transparent px-2 font-mono text-xs whitespace-nowrap [&_svg]:pointer-events-none [&_svg]:size-3 [&_svg]:shrink-0",
+  "inline-flex min-h-6 w-fit shrink-0 items-center gap-1 rounded-[4px] border border-transparent px-2 font-mono text-xs leading-[1.35] font-[450] tracking-[0.01em] whitespace-nowrap [&_svg]:pointer-events-none [&_svg]:size-3 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

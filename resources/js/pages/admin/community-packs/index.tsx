@@ -94,6 +94,7 @@ export default function CommunityPackReviews({
                                         </Field>
                                         <div className="flex flex-wrap gap-2">
                                             <Button
+                                                variant="primary"
                                                 name="decision"
                                                 value="approved"
                                                 disabled={processing}

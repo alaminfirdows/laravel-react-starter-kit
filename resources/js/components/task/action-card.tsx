@@ -50,7 +50,7 @@ export function ActionCard({
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col gap-4">
+            <CardContent className="gap-4 empty:hidden">
                 {action.pendingApproval && (
                     <ApprovalBanner
                         approval={action.pendingApproval}

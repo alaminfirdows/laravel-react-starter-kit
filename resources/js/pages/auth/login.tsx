@@ -81,6 +81,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             </div>
 
                             <Button
+                                variant="primary"
                                 type="submit"
                                 className="w-full"
                                 tabIndex={4}

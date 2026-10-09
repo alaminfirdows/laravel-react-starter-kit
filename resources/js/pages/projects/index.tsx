@@ -19,7 +19,7 @@ export default function ProjectsIndex({
     can: { create: boolean };
 }) {
     const addButton = can.create && (
-        <Button asChild>
+        <Button variant="primary" asChild>
             <Link href={create()}>
                 <Plus /> New project
             </Link>
@@ -50,7 +50,7 @@ export default function ProjectsIndex({
                                 href={show({ project: project.slug })}
                                 className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                <Card size="sm" className="h-full px-(--card-spacing) transition-[border-color,box-shadow] duration-200 hover:border-border-strong hover:elev-2">
                                     <div className="flex items-center gap-3">
                                         <WorkspaceAvatar
                                             name={project.name}

@@ -130,12 +130,13 @@ export default function Authorize({
 
                     <div className="flex gap-2">
                         <Button
+                            variant="primary"
                             type="submit"
                             disabled={workspaces.length === 0}
                         >
                             Authorize
                         </Button>
-                        <Button type="submit" variant="outline" form="deny">
+                        <Button type="submit" variant="secondary" form="deny">
                             Cancel
                         </Button>
                     </div>

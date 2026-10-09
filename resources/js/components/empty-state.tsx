@@ -31,7 +31,7 @@ export function EmptyState({
     return (
         <Empty
             className={cn(
-                'border bg-card/50',
+                'border border-border-strong',
                 size === 'sm' && 'gap-3 p-6 md:p-8',
                 className,
             )}

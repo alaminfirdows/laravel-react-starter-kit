@@ -65,7 +65,7 @@ export default function CatalogIndex({
                     title="Catalog"
                     description="“Edited” rows are not yet exported to YAML."
                     actions={
-                        <Button size="sm" asChild>
+                        <Button variant="primary" size="sm" asChild>
                             <Link href={create()}>
                                 <Plus data-icon="inline-start" /> New task
                             </Link>

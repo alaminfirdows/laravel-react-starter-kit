@@ -42,7 +42,7 @@ export default function KnowledgeShow({
                     actions={
                         can.update &&
                         canEditDocument && (
-                            <Button variant="outline" size="sm" asChild>
+                            <Button variant="secondary" size="sm" asChild>
                                 <Link
                                     href={edit({
                                         project: project.slug,

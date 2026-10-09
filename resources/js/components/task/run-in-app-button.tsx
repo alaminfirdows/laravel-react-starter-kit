@@ -28,6 +28,7 @@ export function RunInAppButton({
         >
             {({ processing }) => (
                 <Button
+                    variant="secondary"
                     type="submit"
                     size="sm"
                     disabled={processing || isRunning}

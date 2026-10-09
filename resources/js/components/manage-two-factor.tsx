@@ -89,7 +89,7 @@ export default function ManageTwoFactor(props: Props) {
 
                         <div>
                             {hasSetupData ? (
-                                <Button onClick={() => setShowSetupModal(true)}>
+                                <Button variant="primary" onClick={() => setShowSetupModal(true)}>
                                     <ShieldCheck />
                                     Continue setup
                                 </Button>
@@ -100,6 +100,7 @@ export default function ManageTwoFactor(props: Props) {
                                 >
                                     {({ processing }) => (
                                         <Button
+                                            variant="primary"
                                             type="submit"
                                             disabled={processing}
                                         >

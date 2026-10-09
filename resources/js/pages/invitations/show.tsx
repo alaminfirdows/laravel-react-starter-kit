@@ -69,7 +69,7 @@ function Body({
             <>
                 <Notice>This invitation was already accepted.</Notice>
                 {workspaceSlug && (
-                    <Button asChild>
+                    <Button variant="primary" asChild>
                         <Link href={dashboard(workspaceSlug)}>
                             Open workspace
                         </Link>
@@ -90,10 +90,10 @@ function Body({
     if (isGuest) {
         return (
             <div className="flex w-full flex-col gap-2">
-                <Button asChild>
+                <Button variant="primary" asChild>
                     <Link href={login()}>Log in to accept</Link>
                 </Button>
-                <Button variant="outline" asChild>
+                <Button variant="secondary" asChild>
                     <Link href={register()}>Create an account</Link>
                 </Button>
                 <p className="text-xs text-muted-foreground">
@@ -111,7 +111,7 @@ function Body({
                     account to accept it.
                 </Notice>
                 <div className="flex gap-2">
-                    <Button variant="outline" asChild>
+                    <Button variant="secondary" asChild>
                         <Link href={workspacesIndex()}>Back</Link>
                     </Button>
                     <Button variant="secondary" asChild>
@@ -127,7 +127,7 @@ function Body({
     return (
         <div className="flex w-full gap-2">
             <Button
-                variant="outline"
+                variant="secondary"
                 className="flex-1"
                 onClick={() =>
                     router.visit(InvitationController.decline(invitation.code))
@@ -137,6 +137,7 @@ function Body({
                 Decline
             </Button>
             <Button
+                variant="primary"
                 className="flex-1"
                 onClick={() =>
                     router.visit(InvitationController.accept(invitation.code))

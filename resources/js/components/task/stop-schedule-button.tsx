@@ -27,7 +27,7 @@ export function StopScheduleButton({
                 <Button
                     type="submit"
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     disabled={processing}
                 >
                     {processing ? <Spinner /> : <CalendarX />}

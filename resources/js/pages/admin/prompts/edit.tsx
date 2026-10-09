@@ -43,7 +43,7 @@ export default function PromptEdit({ prompt, targetOptions }: Props) {
                         prompt ? `Version ${prompt.version}` : undefined
                     }
                     actions={
-                        <Button size="sm" variant="outline" asChild>
+                        <Button size="sm" variant="secondary" asChild>
                             <Link href={index()}>Back</Link>
                         </Button>
                     }
@@ -213,7 +213,7 @@ export default function PromptEdit({ prompt, targetOptions }: Props) {
                                 </CardContent>
                             </Card>
                             <div className="sticky bottom-0 z-10 -mx-4 flex items-center justify-end gap-2 border-t bg-background/90 px-4 py-3 backdrop-blur md:-mx-8 md:px-8">
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     Save prompt
                                 </Button>
                             </div>

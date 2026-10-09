@@ -42,7 +42,7 @@ export default function KnowledgeIndex({
                     description="ICP, positioning, research and notes. Claude and your prompts read these."
                     actions={
                         can.update && (
-                            <Button asChild>
+                            <Button variant="primary" asChild>
                                 <Link href={create({ project: project.slug })}>
                                     <Plus data-icon="inline-start" /> New
                                     document
@@ -111,7 +111,7 @@ export default function KnowledgeIndex({
                         description="Write your ICP or positioning here, or ask Claude to save it with the Founder OS connector."
                         action={
                             can.update && (
-                                <Button size="sm" asChild>
+                                <Button variant="secondary" size="sm" asChild>
                                     <Link
                                         href={create({ project: project.slug })}
                                     >

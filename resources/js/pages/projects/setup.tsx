@@ -63,7 +63,7 @@ export default function ProjectSetupPage({
         >
             <div className="flex flex-wrap gap-2">
                 {previous && (
-                    <Button variant="outline" asChild>
+                    <Button variant="secondary" asChild>
                         <Link
                             href={edit({
                                 project: project.slug,
@@ -80,7 +80,7 @@ export default function ProjectSetupPage({
                     </Link>
                 </Button>
             </div>
-            <Button type="submit" disabled={processing}>
+            <Button variant="primary" type="submit" disabled={processing}>
                 {isLast ? 'Finish setup' : 'Save and continue'}
             </Button>
         </Field>
@@ -105,7 +105,7 @@ export default function ProjectSetupPage({
                     projectSlug={project.slug}
                 />
 
-                <Card>
+                <Card className="px-(--card-spacing)">
                     {step === 'identity' && <LogoForm project={project} />}
 
                     {step === 'goals' ? (
@@ -173,7 +173,7 @@ function LogoForm({ project }: { project: ProjectSetup }) {
                         />
                         <Button
                             type="submit"
-                            variant="outline"
+                            variant="secondary"
                             disabled={processing}
                         >
                             Upload
@@ -515,7 +515,7 @@ function GoalsForm({
                     <Field orientation="horizontal">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={() =>
                                 form.setData('goals', [
                                     ...form.data.goals,

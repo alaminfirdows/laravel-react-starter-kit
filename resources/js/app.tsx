@@ -38,6 +38,8 @@ void createInertiaApp({
             case name.startsWith('workspace/settings/'):
                 return [AppLayout, WorkspaceSettingsLayout];
             case name === 'projects/overview':
+            case name === 'projects/activity':
+            case name.startsWith('projects/research/'):
             case name.startsWith('projects/tasks/'):
             case name.startsWith('projects/knowledge/'):
             case name.startsWith('projects/decisions/'):

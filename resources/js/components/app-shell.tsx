@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { CommandPaletteProvider } from '@/components/command-palette';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
@@ -7,9 +7,14 @@ import type { AppVariant } from '@/types';
 type Props = {
     children: ReactNode;
     variant?: AppVariant;
+    sidebarWidth?: string;
 };
 
-export function AppShell({ children, variant = 'sidebar' }: Props) {
+export function AppShell({
+    children,
+    variant = 'sidebar',
+    sidebarWidth,
+}: Props) {
     const isOpen = usePage().props.sidebarOpen;
 
     if (variant === 'header') {
@@ -24,7 +29,18 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     return (
         <CommandPaletteProvider>
-            <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>
+            <SidebarProvider
+                defaultOpen={isOpen}
+                style={
+                    sidebarWidth
+                        ? ({
+                              '--sidebar-width': sidebarWidth,
+                          } as CSSProperties)
+                        : undefined
+                }
+            >
+                {children}
+            </SidebarProvider>
         </CommandPaletteProvider>
     );
 }

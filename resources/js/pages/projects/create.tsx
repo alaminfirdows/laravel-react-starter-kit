@@ -26,7 +26,7 @@ export default function CreateProject({ phases }: { phases: PhaseOption[] }) {
                     title="New project"
                     description="Where are you right now? We build your plan from this."
                 />
-                <Card>
+                <Card className="px-(--card-spacing)">
                     <Form {...ProjectController.store.form()}>
                         {({ processing, errors }) => (
                             <FieldGroup>
@@ -51,6 +51,7 @@ export default function CreateProject({ phases }: { phases: PhaseOption[] }) {
                                 </Field>
                                 <Field orientation="horizontal">
                                     <Button
+                                        variant="primary"
                                         type="submit"
                                         disabled={processing}
                                         data-test="create-project-button"

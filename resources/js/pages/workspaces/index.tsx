@@ -31,7 +31,7 @@ export default function WorkspacesIndex({
                     title="Workspaces"
                     description="Switch between workspaces or start a new one."
                     actions={
-                        <Button onClick={() => setCreating(true)}>
+                        <Button variant="primary" onClick={() => setCreating(true)}>
                             <Plus />
                             New workspace
                         </Button>
@@ -77,6 +77,7 @@ export default function WorkspacesIndex({
                                             Decline
                                         </Button>
                                         <Button
+                                            variant="secondary"
                                             size="sm"
                                             onClick={() =>
                                                 router.visit(
@@ -112,7 +113,7 @@ export default function WorkspacesIndex({
                                     href={dashboard(workspace.slug)}
                                     className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                 >
-                                    <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                    <Card size="sm" className="h-full px-(--card-spacing) transition-[border-color,box-shadow] duration-200 hover:border-border-strong hover:elev-2">
                                         <div className="flex items-center gap-3">
                                             <WorkspaceAvatar
                                                 name={workspace.name}

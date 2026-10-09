@@ -5,7 +5,6 @@ import { AppTopbar } from '@/components/app-topbar';
 import { ProjectChannelListener } from '@/components/project/project-channel-listener';
 import { ProjectProgress } from '@/components/project/project-progress';
 import { ProjectSidebar } from '@/components/project/project-sidebar';
-import { ProjectTabs } from '@/components/project/project-tabs';
 import { useWorkspaceUrlDefaults } from '@/hooks/use-workspace-url-defaults';
 import { index, show } from '@/routes/projects';
 import { show as showTask } from '@/routes/projects/tasks';
@@ -17,7 +16,7 @@ export default function ProjectLayout({
     children: React.ReactNode;
 }) {
     useWorkspaceUrlDefaults();
-    const { project, tree, task, pendingApprovals } = usePage<
+    const { project, tree, task } = usePage<
         ProjectPageProps & { task?: Task }
     >().props;
 
@@ -37,7 +36,7 @@ export default function ProjectLayout({
     ];
 
     return (
-        <AppShell variant="sidebar">
+        <AppShell variant="sidebar" sidebarWidth="19rem">
             {import.meta.env.VITE_PUSHER_APP_KEY && (
                 <ProjectChannelListener projectId={project.id} />
             )}
@@ -49,10 +48,6 @@ export default function ProjectLayout({
                         label={task ? 'Task' : 'Project'}
                     />
                 </AppTopbar>
-                <ProjectTabs
-                    projectSlug={project.slug}
-                    pendingApprovals={pendingApprovals}
-                />
                 {children}
             </AppContent>
         </AppShell>

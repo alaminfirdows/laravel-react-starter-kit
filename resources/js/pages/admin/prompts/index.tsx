@@ -23,7 +23,7 @@ export default function PromptsIndex({
     prompts: AdminPromptTemplate[];
 }) {
     const newPrompt = (
-        <Button size="sm" asChild>
+        <Button variant="primary" size="sm" asChild>
             <Link href={create()}>
                 <Plus data-icon="inline-start" /> New prompt
             </Link>

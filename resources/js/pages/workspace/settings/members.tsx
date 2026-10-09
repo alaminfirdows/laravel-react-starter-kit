@@ -126,7 +126,7 @@ export default function Members({
                         <div>
                             <ConfirmActionDialog
                                 trigger={
-                                    <Button variant="outline">
+                                    <Button variant="secondary">
                                         <LogOut data-icon="inline-start" />
                                         Leave workspace
                                     </Button>

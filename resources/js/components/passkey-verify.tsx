@@ -44,7 +44,7 @@ export default function PasskeyVerify({
             <div className="grid gap-2">
                 <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     className="w-full"
                     onClick={verify}
                     disabled={isLoading}

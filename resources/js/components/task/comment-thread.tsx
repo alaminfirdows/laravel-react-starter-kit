@@ -146,7 +146,12 @@ export function CommentThread({
                                 </FieldDescription>
                                 <FieldError>{errors.body_md}</FieldError>
                             </Field>
-                            <Button type="submit" disabled={processing}>
+                            <Button
+                                type="submit"
+                                variant="secondary"
+                                className="self-end"
+                                disabled={processing}
+                            >
                                 {processing && <Spinner />} Comment
                             </Button>
                         </>

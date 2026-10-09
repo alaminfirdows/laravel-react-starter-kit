@@ -114,7 +114,7 @@ export default function ResearchIndex({
                         (tab === 'interviews' ? (
                             <ResearchFormDialog
                                 trigger={
-                                    <Button size="sm">
+                                    <Button variant="primary" size="sm">
                                         <Plus data-icon="inline-start" /> Add
                                         interview
                                     </Button>
@@ -130,7 +130,7 @@ export default function ResearchIndex({
                         ) : (
                             <ResearchFormDialog
                                 trigger={
-                                    <Button size="sm">
+                                    <Button variant="primary" size="sm">
                                         <Plus data-icon="inline-start" /> Add
                                         competitor
                                     </Button>

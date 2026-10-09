@@ -116,6 +116,7 @@ export default function Profile({
                             </SettingsCardBody>
                             <SettingsCardFooter helper="Used for sign-in and notifications.">
                                 <Button
+                                    variant="primary"
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >

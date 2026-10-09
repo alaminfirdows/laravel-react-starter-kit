@@ -219,7 +219,7 @@ export function CatalogActionDialog({
                                 </FieldLabel>
                             </Field>
                             <DialogFooter>
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     Save action
                                 </Button>
                             </DialogFooter>

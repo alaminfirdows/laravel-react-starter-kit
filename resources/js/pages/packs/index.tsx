@@ -18,7 +18,7 @@ export default function CommunityPacksIndex({
     can: { create: boolean };
 }) {
     const newButton = can.create && (
-        <Button asChild>
+        <Button variant="primary" asChild>
             <Link href={create()}>
                 <Plus /> New pack
             </Link>
@@ -49,7 +49,7 @@ export default function CommunityPacksIndex({
                                 href={edit({ pack: pack.key })}
                                 className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                <Card size="sm" className="h-full px-(--card-spacing) transition-[border-color,box-shadow] duration-200 hover:border-border-strong hover:elev-2">
                                     <span className="truncate text-sm font-semibold">
                                         {pack.name}
                                     </span>

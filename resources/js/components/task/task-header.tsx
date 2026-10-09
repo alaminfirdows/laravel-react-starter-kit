@@ -30,7 +30,7 @@ function CompletionButton({
             <Tooltip>
                 <TooltipTrigger asChild>
                     <span>
-                        <Button disabled>
+                        <Button variant="primary" disabled>
                             <Check /> Mark as done
                         </Button>
                     </span>

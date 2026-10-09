@@ -77,7 +77,7 @@ export default function Dashboard() {
                                 href={action.href}
                                 className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                <Card size="sm" className="h-full px-(--card-spacing) transition-[border-color,box-shadow] duration-200 hover:border-border-strong hover:elev-2">
                                     <div className="flex items-center gap-3">
                                         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                             <action.icon className="size-5" />

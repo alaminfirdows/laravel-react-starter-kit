@@ -119,6 +119,7 @@ export default function Security(props: Props) {
                             </SettingsCardBody>
                             <SettingsCardFooter helper="Use a long, random password.">
                                 <Button
+                                    variant="primary"
                                     disabled={processing}
                                     data-test="update-password-button"
                                 >

@@ -114,6 +114,7 @@ export default function DecisionsIndex({
                                         </Field>
                                         <Field orientation="horizontal">
                                             <Button
+                                                variant="primary"
                                                 type="submit"
                                                 disabled={processing}
                                             >

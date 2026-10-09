@@ -23,7 +23,7 @@ export type ProjectSection = {
 };
 
 /**
- * Project sub-pages, shared by the project tabs and the command palette.
+ * Project sub-pages, shared by the project rail and the command palette.
  */
 export function projectSections(projectSlug: string): ProjectSection[] {
     const project = projectSlug;

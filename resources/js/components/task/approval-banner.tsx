@@ -44,7 +44,7 @@ export function ApprovalBanner({
                                         type="submit"
                                         size="sm"
                                         variant={
-                                            approve ? 'default' : 'outline'
+                                            approve ? 'primary' : 'secondary'
                                         }
                                         disabled={processing}
                                     >

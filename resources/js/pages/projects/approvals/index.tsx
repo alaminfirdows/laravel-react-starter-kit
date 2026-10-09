@@ -172,6 +172,7 @@ function PendingApproval({
                     </Field>
                     <div className="flex flex-wrap gap-2">
                         <Button
+                            variant="primary"
                             size="sm"
                             disabled={form.processing}
                             onClick={() => decide(true)}
@@ -180,7 +181,7 @@ function PendingApproval({
                         </Button>
                         <Button
                             size="sm"
-                            variant="outline"
+                            variant="secondary"
                             disabled={form.processing}
                             onClick={() => decide(false)}
                         >

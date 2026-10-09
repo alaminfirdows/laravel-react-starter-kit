@@ -64,7 +64,7 @@ export function CatalogUpdateDialog({
                 The catalog has a newer version of this task.
                 <Dialog open={open} onOpenChange={changeOpen}>
                     <DialogTrigger asChild>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="secondary">
                             Review changes
                         </Button>
                     </DialogTrigger>
@@ -138,6 +138,7 @@ export function CatalogUpdateDialog({
                                         <FieldError>{errors.fields}</FieldError>
                                         <DialogFooter>
                                             <Button
+                                                variant="primary"
                                                 type="submit"
                                                 disabled={processing}
                                             >

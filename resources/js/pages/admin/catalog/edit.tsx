@@ -88,7 +88,7 @@ export default function CatalogEdit({
                                     options={{ preserveScroll: true }}
                                 >
                                     {({ processing }) => (
-                                        <Button size="sm" disabled={processing}>
+                                        <Button variant="secondary" size="sm" disabled={processing}>
                                             {task.status === 'published'
                                                 ? 'Publish update'
                                                 : 'Publish'}
@@ -96,7 +96,7 @@ export default function CatalogEdit({
                                     )}
                                 </Form>
                             )}
-                            <Button size="sm" variant="outline" asChild>
+                            <Button size="sm" variant="secondary" asChild>
                                 <Link href={index()}>Back</Link>
                             </Button>
                         </>
@@ -348,7 +348,7 @@ export default function CatalogEdit({
                                 </CardContent>
                             </Card>
                             <div className="sticky bottom-0 z-10 -mx-4 flex items-center justify-end gap-2 border-t bg-background/90 px-4 py-3 backdrop-blur md:-mx-8 md:px-8">
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     {task ? 'Save task' : 'Create draft'}
                                 </Button>
                             </div>
@@ -363,7 +363,7 @@ export default function CatalogEdit({
                                 Actions
                             </CardTitle>
                             <div className="flex gap-2">
-                                <Button size="sm" variant="outline" asChild>
+                                <Button size="sm" variant="secondary" asChild>
                                     <Link
                                         href={create({
                                             query: { parent: task.key },
@@ -377,7 +377,7 @@ export default function CatalogEdit({
                                     taskKey={task.key}
                                     {...actionOptions}
                                     trigger={
-                                        <Button size="sm">
+                                        <Button variant="secondary" size="sm">
                                             <Plus data-icon="inline-start" />{' '}
                                             Action
                                         </Button>

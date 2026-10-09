@@ -23,7 +23,7 @@ function formatDate(value: string | null) {
 
 function RevokeButton({ disabled }: { disabled: boolean }) {
     return (
-        <Button type="submit" size="sm" variant="outline" disabled={disabled}>
+        <Button type="submit" size="sm" variant="secondary" disabled={disabled}>
             <Unplug /> Revoke
         </Button>
     );
@@ -74,7 +74,7 @@ export default function ConnectClaude({
                                 value={connectorUrl}
                                 aria-label="Connector URL"
                             />
-                            <Button variant="outline" onClick={copyUrl}>
+                            <Button variant="secondary" onClick={copyUrl}>
                                 <Copy /> Copy
                             </Button>
                         </div>

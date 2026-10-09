@@ -75,6 +75,7 @@ export default function ResetPassword({ token, email, passwordRules }: Props) {
                         </div>
 
                         <Button
+                            variant="primary"
                             type="submit"
                             className="w-full"
                             disabled={processing}

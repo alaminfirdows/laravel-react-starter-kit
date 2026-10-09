@@ -34,12 +34,7 @@ export function SettingsCard({
             {...props}
         >
             <CardHeader className="gap-1.5 px-5 pt-5 pb-4">
-                <CardTitle
-                    className={cn(
-                        'text-sm font-semibold',
-                        destructive && 'text-destructive',
-                    )}
-                >
+                <CardTitle className={cn(destructive && 'text-destructive')}>
                     {title}
                 </CardTitle>
                 {description && (
@@ -75,7 +70,7 @@ export function SettingsCardFooter({
     return (
         <div
             className={cn(
-                'flex flex-wrap items-center justify-between gap-3 rounded-b-lg border-t bg-muted/30 px-5 py-3',
+                'flex flex-wrap items-center justify-between gap-3 border-t bg-muted/40 px-5 py-3',
                 className,
             )}
         >

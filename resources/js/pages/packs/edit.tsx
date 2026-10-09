@@ -50,7 +50,7 @@ export default function CommunityPackEdit({
                     actions={
                         <>
                             {pack && <PackReviewBadge pack={pack} />}
-                            <Button variant="outline" asChild>
+                            <Button variant="secondary" asChild>
                                 <Link href={index()}>Back</Link>
                             </Button>
                         </>
@@ -165,7 +165,7 @@ export default function CommunityPackEdit({
                                 <FieldError>{errors.items}</FieldError>
                             </FieldSet>
                             <Field orientation="horizontal">
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     Save pack
                                 </Button>
                             </Field>

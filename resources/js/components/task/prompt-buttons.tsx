@@ -48,12 +48,12 @@ export function PromptButtons({
 
     return (
         <div className="flex flex-wrap gap-2">
-            <Button size="sm" onClick={copyPrompt}>
+            <Button size="sm" variant="secondary" onClick={copyPrompt}>
                 <Copy /> Copy prompt
             </Button>
             <Dialog>
                 <DialogTrigger asChild>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="secondary">
                         <Eye /> Preview
                     </Button>
                 </DialogTrigger>
@@ -68,7 +68,7 @@ export function PromptButtons({
                     </ScrollArea>
                 </DialogContent>
             </Dialog>
-            <Button size="sm" variant="outline" onClick={openInClaude}>
+            <Button size="sm" variant="secondary" onClick={openInClaude}>
                 <ExternalLink />
                 {deepLink.target === 'cowork'
                     ? 'Open in Cowork'

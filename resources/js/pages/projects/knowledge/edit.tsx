@@ -136,7 +136,7 @@ export default function KnowledgeEdit({
                                 </Field>
                             )}
                             <Field orientation="horizontal">
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     Save document
                                 </Button>
                             </Field>

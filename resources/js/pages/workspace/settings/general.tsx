@@ -86,6 +86,7 @@ export default function General({
                             {canUpdate && (
                                 <SettingsCardFooter helper="Visible to all workspace members.">
                                     <Button
+                                        variant="primary"
                                         disabled={processing}
                                         data-test="update-workspace-button"
                                     >
@@ -149,7 +150,7 @@ function WorkspaceLogo({
                                     />
                                     <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="secondary"
                                         size="sm"
                                         disabled={processing}
                                         onClick={() =>

@@ -20,7 +20,7 @@ import type { AdminPack } from '@/types';
 
 export default function PacksIndex({ packs }: { packs: AdminPack[] }) {
     const newPack = (
-        <Button size="sm" asChild>
+        <Button variant="primary" size="sm" asChild>
             <Link href={create()}>
                 <Plus data-icon="inline-start" /> New pack
             </Link>

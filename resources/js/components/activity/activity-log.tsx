@@ -148,7 +148,7 @@ export function ActivityLog({
             )}
             <div className="flex items-center justify-between">
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     asChild={!!activity.links.prev}
                     disabled={!activity.links.prev}
@@ -162,7 +162,7 @@ export function ActivityLog({
                     )}
                 </Button>
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     asChild={!!activity.links.next}
                     disabled={!activity.links.next}

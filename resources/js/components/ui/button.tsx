@@ -5,7 +5,8 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 // Ported from product-repo-ui (src/components/ui/button.tsx, v2 look).
-// `default` is the one orange button per view; `ink` is the neutral solid.
+// `primary` (alias `default`) is the one orange button per view; `secondary`
+// (alias `outline`) is every other action; `ink` is the neutral solid.
 const buttonVariants = cva(
   [
     "group/button inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-clip-padding text-control whitespace-nowrap select-none",
@@ -20,11 +21,13 @@ const buttonVariants = cva(
       variant: {
         default:
           "border-brand-press bg-brand brand-fill text-primary-foreground hover:bg-brand-hover active:bg-brand-press",
+        primary:
+          "border-brand-press bg-brand brand-fill text-primary-foreground hover:bg-brand-hover active:bg-brand-press",
         ink: "bg-foreground text-background hover:bg-foreground/85",
         outline:
           "border-border-strong bg-card text-foreground elev-1 hover:border-input hover:bg-muted aria-expanded:border-input aria-expanded:bg-muted",
         secondary:
-          "border-border bg-muted text-foreground hover:border-border-strong aria-expanded:border-border-strong",
+          "border-border-strong bg-card text-foreground elev-1 hover:border-input hover:bg-muted aria-expanded:border-input aria-expanded:bg-muted",
         ghost:
           "bg-transparent text-ink-2 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive:

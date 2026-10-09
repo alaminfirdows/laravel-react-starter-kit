@@ -59,6 +59,7 @@ export function CreateWorkspaceDialog({
                                     </Button>
                                 </DialogClose>
                                 <Button
+                                    variant="primary"
                                     type="submit"
                                     disabled={processing}
                                     data-test="create-workspace-button"

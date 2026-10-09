@@ -14,8 +14,12 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
-export function NavUser() {
+/**
+ * User menu. `compact` shows only the avatar, for the project icon rail.
+ */
+export function NavUser({ compact = false }: { compact?: boolean }) {
     const { auth } = usePage().props;
     const { state } = useSidebar();
     const isMobile = useIsMobile();
@@ -31,11 +35,16 @@ export function NavUser() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            className={cn(
+                                'group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent',
+                                compact && 'size-8 justify-center p-0',
+                            )}
                             data-test="sidebar-menu-button"
                         >
-                            <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <UserInfo user={auth.user} showName={!compact} />
+                            {!compact && (
+                                <ChevronsUpDown className="ml-auto size-4" />
+                            )}
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
@@ -44,7 +53,7 @@ export function NavUser() {
                         side={
                             isMobile
                                 ? 'bottom'
-                                : state === 'collapsed'
+                                : compact || state === 'collapsed'
                                   ? 'left'
                                   : 'bottom'
                         }

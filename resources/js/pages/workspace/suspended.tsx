@@ -25,7 +25,7 @@ export default function Suspended({ statusLabel }: { statusLabel: string }) {
                             switch to another workspace.
                         </p>
                     </div>
-                    <Button variant="outline" asChild>
+                    <Button variant="secondary" asChild>
                         <Link href={workspacesIndex()}>All workspaces</Link>
                     </Button>
                 </div>

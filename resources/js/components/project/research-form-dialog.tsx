@@ -129,7 +129,7 @@ export function ResearchFormDialog({
                                         Cancel
                                     </Button>
                                 </DialogClose>
-                                <Button type="submit" disabled={processing}>
+                                <Button variant="primary" type="submit" disabled={processing}>
                                     {submitLabel}
                                 </Button>
                             </DialogFooter>

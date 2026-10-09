@@ -43,7 +43,7 @@ export function AddPackDialog({
     return (
         <Dialog open={open} onOpenChange={changeOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="secondary">
                     <Plus data-icon="inline-start" /> Add pack
                 </Button>
             </DialogTrigger>
@@ -93,6 +93,7 @@ export function AddPackDialog({
                                                     value={pack.key}
                                                 />
                                                 <Button
+                                                    variant="primary"
                                                     size="sm"
                                                     disabled={processing}
                                                 >
