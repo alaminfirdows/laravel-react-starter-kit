@@ -23,9 +23,7 @@ class WorkspaceConnectionController extends Controller
         $accessToken = $connections->workspaceTokens($workspace)->whereKey($token)->firstOrFail();
         $owner = User::query()->findOrFail($accessToken->user_id);
 
-        if (! $request->user()->is($owner)) {
-            Gate::authorize('removeMember', [$workspace, $owner]);
-        }
+        Gate::authorize('revokeConnection', [$workspace, $owner]);
 
         $revoke->handle($accessToken, Actor::user($request->user()));
 

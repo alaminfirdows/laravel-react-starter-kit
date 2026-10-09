@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Mcp\Http\ApproveWorkspaceAuthorizationController;
 use App\Mcp\Http\OAuthConsentView;
+use App\Mcp\Http\WorkspaceAuthorizationController;
+use App\Mcp\Support\McpScopeRepository;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -14,6 +17,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Passport\Bridge\ScopeRepository;
+use Laravel\Passport\Http\Controllers\ApproveAuthorizationController;
+use Laravel\Passport\Http\Controllers\AuthorizationController;
 use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,7 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ScopeRepository::class, McpScopeRepository::class);
+        $this->app->bind(AuthorizationController::class, WorkspaceAuthorizationController::class);
+        $this->app->bind(ApproveAuthorizationController::class, ApproveWorkspaceAuthorizationController::class);
     }
 
     /**
@@ -40,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * OAuth consent screen for the Claude connector, the MCP rate limit (120/min per token user)
      * and the client registration limit (10/hour per IP).
+     * Container bindings (register) make every token carry a "workspace:<id>" scope picked on the consent screen.
      */
     protected function configurePassport(): void
     {

@@ -104,7 +104,7 @@ export default function ConnectClaude({
                                         </p>
                                         <p className="text-muted-foreground">
                                             {connection.workspaceName ??
-                                                'Current workspace'}{' '}
+                                                'No workspace (reconnect)'}{' '}
                                             · since{' '}
                                             {formatDate(connection.createdAt)}
                                         </p>

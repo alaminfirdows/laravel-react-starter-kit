@@ -21,7 +21,8 @@ use Laravel\Passport\Passport;
 
 /**
  * Who is calling an MCP tool: the token's user, the OAuth client (e.g. "Claude"),
- * and the workspace the call runs in. Resolving it also sets the current workspace,
+ * and the workspace the call runs in. The workspace comes only from the token's "workspace:<id>" scope,
+ * never from the web UI's current workspace. Resolving it also sets the current workspace,
  * so tenant models are scoped the same way as in the web app.
  */
 final readonly class McpActor
@@ -50,10 +51,15 @@ final readonly class McpActor
         }
 
         $token = $user->token();
-        $workspace = self::workspaceFromToken($token) ?? $user->resolveCurrentWorkspace();
-        $role = $workspace ? $user->workspaceRole($workspace) : null;
+        $workspace = self::workspaceFromToken($token);
 
-        if ($workspace === null || $role === null || ! $workspace->isActive()) {
+        if ($workspace === null) {
+            throw new AuthorizationException('This token is not bound to a workspace. Reconnect the app to pick one.');
+        }
+
+        $role = $user->workspaceRole($workspace);
+
+        if ($role === null || ! $workspace->isActive()) {
             throw new AuthorizationException('This token has no access to a workspace.');
         }
 

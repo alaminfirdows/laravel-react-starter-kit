@@ -1,7 +1,9 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { approve, deny } from '@/routes/passport/authorizations';
 
 type Props = {
@@ -16,7 +18,8 @@ type Props = {
     state: string;
     authToken: string;
     csrfToken: string;
-    workspace: { id: string; name: string } | null;
+    workspaces: { id: string; name: string }[];
+    currentWorkspaceId: string | null;
 };
 
 /**
@@ -29,8 +32,16 @@ export default function Authorize({
     state,
     authToken,
     csrfToken,
-    workspace,
+    workspaces,
+    currentWorkspaceId,
 }: Props) {
+    const { errors } = usePage().props;
+    const defaultWorkspaceId = workspaces.some(
+        (workspace) => workspace.id === currentWorkspaceId,
+    )
+        ? (currentWorkspaceId ?? undefined)
+        : workspaces[0]?.id;
+
     const fields = (
         <>
             <input type="hidden" name="_token" value={csrfToken} />
@@ -72,16 +83,10 @@ export default function Authorize({
 
                 <p className="text-sm">
                     <strong>{client.name}</strong> wants to work on your
-                    projects
-                    {workspace && (
-                        <>
-                            {' '}
-                            in <strong>{workspace.name}</strong>
-                        </>
-                    )}
-                    . It can read tasks and context, start and complete actions,
-                    attach evidence and request approvals. It can not delete
-                    anything or approve its own requests.
+                    projects in the workspace you choose. It can read tasks and
+                    context, start and complete actions, attach evidence and
+                    request approvals. It can not delete anything or approve its
+                    own requests.
                 </p>
 
                 {scopes.length > 0 && (
@@ -95,19 +100,50 @@ export default function Authorize({
                     </ul>
                 )}
 
-                <div className="flex gap-2">
-                    <form method="post" action={approve.url()}>
-                        {fields}
-                        <Button type="submit">Authorize</Button>
-                    </form>
-                    <form method="post" action={deny.url()}>
-                        {fields}
-                        <input type="hidden" name="_method" value="DELETE" />
-                        <Button type="submit" variant="outline">
+                <form
+                    method="post"
+                    action={approve.url()}
+                    className="space-y-6"
+                >
+                    {fields}
+                    <Field data-invalid={!!errors.workspace}>
+                        <FieldLabel htmlFor="workspace">Workspace</FieldLabel>
+                        <Select
+                            name="workspace"
+                            required
+                            items={workspaces.map((workspace) => ({
+                                value: workspace.id,
+                                label: workspace.name,
+                            }))}
+                            defaultValue={defaultWorkspaceId}
+                        >
+                            <SelectTrigger
+                                id="workspace"
+                                className="w-full"
+                                aria-invalid={!!errors.workspace}
+                            >
+                                <SelectValue placeholder="Choose a workspace" />
+                            </SelectTrigger>
+                        </Select>
+                        <FieldError>{errors.workspace}</FieldError>
+                    </Field>
+
+                    <div className="flex gap-2">
+                        <Button
+                            type="submit"
+                            disabled={workspaces.length === 0}
+                        >
+                            Authorize
+                        </Button>
+                        <Button type="submit" variant="outline" form="deny">
                             Cancel
                         </Button>
-                    </form>
-                </div>
+                    </div>
+                </form>
+                <form id="deny" method="post" action={deny.url()}>
+                    {fields}
+                    <input type="hidden" name="_method" value="DELETE" />
+                </form>
             </div>
         </>
     );

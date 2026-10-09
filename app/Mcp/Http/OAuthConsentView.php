@@ -2,6 +2,7 @@
 
 namespace App\Mcp\Http;
 
+use App\Domain\Workspace\Models\Workspace;
 use App\Mcp\Support\ClientTrust;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Passport consent screen ("Connect Claude") rendered as an Inertia page.
+ * The user picks the one workspace the token is bound to; the current workspace is the default.
  */
 class OAuthConsentView
 {
@@ -44,7 +46,12 @@ class OAuthConsentView
             'state' => $request->string('state')->toString(),
             'authToken' => (string) $authToken,
             'csrfToken' => csrf_token(),
-            'workspace' => $user->resolveCurrentWorkspace()?->only(['id', 'name']),
+            'workspaces' => $user->workspaces()->orderBy('workspaces.name')->get()
+                ->filter(fn (Workspace $workspace): bool => $workspace->isActive())
+                ->map(fn (Workspace $workspace): array => ['id' => (string) $workspace->id, 'name' => $workspace->name])
+                ->values()
+                ->all(),
+            'currentWorkspaceId' => $user->resolveCurrentWorkspace()?->id,
         ])->toResponse($request);
     }
 }

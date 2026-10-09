@@ -64,8 +64,7 @@ class ConnectClaudeController extends Controller
             'workspace' => ['slug' => $workspace->slug, 'name' => $workspace->name],
             'connections' => array_map(fn (McpConnectionData $connection): array => [
                 ...$connection->toArray(),
-                'canRevoke' => $connection->userId === $user->id
-                    || Gate::forUser($user)->allows('removeMember', [$workspace, $members->get($connection->userId)]),
+                'canRevoke' => Gate::forUser($user)->allows('revokeConnection', [$workspace, $members->get($connection->userId)]),
             ], $connections->forWorkspace($workspace)),
         ];
     }

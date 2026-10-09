@@ -80,3 +80,16 @@ test('removing a member revokes their workspace tokens only', function () {
     expect($this->memberToken->fresh()->revoked)->toBeTrue()
         ->and(Token::query()->where('user_id', $this->member->id)->where('revoked', false)->count())->toBe(1);
 });
+
+test('viewer cannot see or revoke member tokens', function () {
+    $viewer = User::factory()->create();
+    $this->workspace->memberships()->create(['user_id' => $viewer->id, 'role' => WorkspaceRole::Viewer, 'joined_at' => now()]);
+    $viewer->forceFill(['current_workspace_id' => $this->workspace->id])->save();
+
+    $this->actingAs($viewer)
+        ->get(route('connect-claude.edit'))
+        ->assertInertia(fn (Assert $page) => $page->where('team', null));
+    $this->actingAs($viewer)->delete("/acme/settings/connections/{$this->memberToken->id}")->assertForbidden();
+
+    expect($this->memberToken->fresh()->revoked)->toBeFalse();
+});

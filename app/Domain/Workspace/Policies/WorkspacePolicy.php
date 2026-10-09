@@ -93,6 +93,14 @@ class WorkspacePolicy
             && $this->outranks($user, $member, $workspace);
     }
 
+    /**
+     * Revoke an MCP connection bound to this workspace: your own, or one of a member you may remove.
+     */
+    public function revokeConnection(User $user, Workspace $workspace, User $owner): bool
+    {
+        return $user->is($owner) || $this->removeMember($user, $workspace, $owner);
+    }
+
     protected function outranks(User $user, User $member, Workspace $workspace): bool
     {
         if ($user->is($member)) {
