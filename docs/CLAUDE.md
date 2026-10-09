@@ -61,7 +61,7 @@ routes/workspace.php (tenant group) → routes/projects.php   routes/ai.php (MCP
 10. **Vectors:** `vector(1536)` + `->index()` (HNSW cosine), `AsVector` cast, `whereVectorSimilarTo`. Hybrid search = vector + `tsvector`, merged with reciprocal rank fusion. Re-embed on document version change only.
 11. **MCP tools:** small, typed schemas; descriptive parameter names (tool search scores them); return compact Markdown; paginate; annotate read-only tools; hide with `shouldRegister`.
 12. **Security:** no secrets in prompts/skills; sanitize Markdown on render; throttle MCP; no token passthrough.
-13. **Frontend:** shadcn components, server-driven pages via Inertia props, optimistic UI only for checkbox-style status; use Inertia partial reloads/polling (Reverb in P4) to reflect MCP-made changes.
+13. **Frontend:** shadcn components, server-driven pages via Inertia props, optimistic UI only for checkbox-style status; use Inertia partial reloads/polling (Pusher via Echo in P4) to reflect MCP-made changes.
 14. **Tests required** for: status rules, criteria evaluation, pack application, MCP tool auth (user A cannot touch B's project), prompt rendering, hybrid search ranking (with `Embeddings::fake()`).
 
 ## Definition of done (per PR)
