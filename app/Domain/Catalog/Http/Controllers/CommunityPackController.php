@@ -4,12 +4,11 @@ namespace App\Domain\Catalog\Http\Controllers;
 
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Catalog\Actions\SaveCommunityPack;
-use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Enums\PackVisibility;
 use App\Domain\Catalog\Http\Requests\SaveCommunityPackRequest;
 use App\Domain\Catalog\Http\Resources\CommunityPackResource;
-use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Pack;
+use App\Domain\Catalog\Queries\PackFormOptions;
 use App\Domain\Project\Enums\ProjectPhase;
 use App\Domain\Workspace\Models\Workspace;
 use App\Http\Controllers\Controller;
@@ -84,20 +83,7 @@ class CommunityPackController extends Controller
         return [
             'phaseOptions' => ProjectPhase::options(),
             'visibilityOptions' => PackVisibility::options(),
-            'rootTasks' => CatalogTask::query()
-                ->whereNull('parent_id')
-                ->where('status', CatalogStatus::Published)
-                ->with('category:id,name')
-                ->orderBy('category_id')
-                ->orderBy('sort_order')
-                ->get(['id', 'key', 'title', 'category_id', 'status'])
-                ->map(fn (CatalogTask $task): array => [
-                    'key' => $task->key,
-                    'title' => $task->title,
-                    'category' => $task->category->name,
-                    'status' => $task->status->value,
-                ])
-                ->all(),
+            'rootTasks' => app(PackFormOptions::class)->rootTasks(true),
         ];
     }
 }

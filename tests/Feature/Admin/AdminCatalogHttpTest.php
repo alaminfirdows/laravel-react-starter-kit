@@ -220,3 +220,11 @@ test('pack requires at least one existing task', function () {
         ->post('/admin/packs', ['key' => 'empty', 'name' => 'Empty', 'phase' => 'planning', 'status' => 'draft', 'items' => ['missing']])
         ->assertSessionHasErrors('items.0');
 });
+
+test('resubmitting the own key on update is not a duplicate', function () {
+    $this->actingAs($this->admin)->post('/admin/prompts', ['key' => 'same-key', 'title' => 'P', 'target' => 'chat', 'full_md' => 'Body'])->assertRedirect();
+
+    $this->actingAs($this->admin)
+        ->patch('/admin/prompts/same-key', ['key' => 'same-key', 'title' => 'P2', 'target' => 'chat', 'full_md' => 'Body'])
+        ->assertSessionDoesntHaveErrors('key');
+});

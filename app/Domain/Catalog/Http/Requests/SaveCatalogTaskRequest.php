@@ -24,7 +24,7 @@ class SaveCatalogTaskRequest extends FormRequest
         $creating = $this->task() === null;
 
         return [
-            'key' => [Rule::requiredIf($creating), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(CatalogTask::class, 'key')],
+            'key' => [Rule::requiredIf($creating), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(CatalogTask::class, 'key')->ignore($this->task())],
             'parent' => ['nullable', 'string', Rule::exists(CatalogTask::class, 'key')],
             'category_id' => [Rule::requiredIf($creating && ! $this->filled('parent')), 'nullable', 'integer', Rule::exists(CatalogCategory::class, 'id')],
             'title' => ['required', 'string', 'max:255'],

@@ -21,7 +21,7 @@ class SavePromptTemplateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key' => [Rule::requiredIf($this->prompt() === null), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(PromptTemplate::class, 'key')],
+            'key' => [Rule::requiredIf($this->prompt() === null), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(PromptTemplate::class, 'key')->ignore($this->prompt())],
             'title' => ['required', 'string', 'max:255'],
             'target' => ['required', Rule::enum(DeepLinkTarget::class)],
             'launcher_md' => ['nullable', 'string', 'max:4000'],

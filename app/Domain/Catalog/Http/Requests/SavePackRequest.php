@@ -23,7 +23,7 @@ class SavePackRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'key' => [Rule::requiredIf($this->pack() === null), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(Pack::class, 'key')],
+            'key' => [Rule::requiredIf($this->pack() === null), 'string', 'max:120', 'regex:/^[a-z0-9]+(?:[-.][a-z0-9]+)*$/', Rule::unique(Pack::class, 'key')->ignore($this->pack())],
             'name' => ['required', 'string', 'max:255'],
             'description_md' => ['nullable', 'string', 'max:10000'],
             'phase' => ['required', Rule::enum(ProjectPhase::class)],

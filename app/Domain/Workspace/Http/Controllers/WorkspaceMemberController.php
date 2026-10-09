@@ -9,6 +9,7 @@ use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Http\Controllers\Concerns\RedirectsToFallbackWorkspace;
 use App\Domain\Workspace\Http\Requests\TransferOwnershipRequest;
 use App\Domain\Workspace\Http\Requests\UpdateMemberRoleRequest;
+use App\Domain\Workspace\Http\Resources\MemberResource;
 use App\Domain\Workspace\Models\Workspace;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -33,24 +34,11 @@ class WorkspaceMemberController extends Controller
         $canRemoveAny = $actor->can('removeAnyMember', $workspace);
 
         $members = $workspace->members()
-            ->orderBy('workspace_members.created_at')
             ->get()
-            ->map(function (User $member) use ($actor, $actorRole, $canUpdateAny, $canRemoveAny): array {
-                $role = $member->membership->role;
-                $outranked = ! $actor->is($member) && $actorRole?->outranks($role) === true;
-
-                return [
-                    'id' => $member->id,
-                    'name' => $member->name,
-                    'email' => $member->email,
-                    'role' => $role->value,
-                    'roleLabel' => $role->label(),
-                    'joinedAt' => $member->membership->joined_at?->toIso8601String(),
-                    'isCurrentUser' => $actor->is($member),
-                    'canUpdate' => $canUpdateAny && $outranked,
-                    'canRemove' => $canRemoveAny && $outranked,
-                ];
-            });
+            ->sort(fn (User $a, User $b): int => [$b->membership->role->level(), $a->name, $a->id] <=> [$a->membership->role->level(), $b->name, $b->id])
+            ->values()
+            ->map(fn (User $member): MemberResource => new MemberResource($member, $actor, $actorRole, $canUpdateAny, $canRemoveAny))
+            ->all();
 
         return Inertia::render('workspace/settings/members', [
             'members' => $members,

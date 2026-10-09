@@ -8,6 +8,7 @@ use App\Domain\Workspace\Actions\RevokeInvitation;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Exceptions\InvalidInvitationException;
 use App\Domain\Workspace\Http\Requests\InviteMemberRequest;
+use App\Domain\Workspace\Http\Resources\InvitationResource;
 use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
 use App\Http\Controllers\Controller;
@@ -35,21 +36,13 @@ class WorkspaceInvitationController extends Controller
         $canManage = $actor->can('inviteMember', $workspace) || $actor->can('cancelInvitation', $workspace);
 
         return Inertia::render('workspace/settings/invitations', [
-            'invitations' => ! $canManage ? [] : $workspace->invitations()
-                ->whereNull('accepted_at')
-                ->with('inviter:id,name')
-                ->latest()
-                ->get()
-                ->map(fn (WorkspaceInvitation $invitation): array => [
-                    'code' => $invitation->code,
-                    'email' => $invitation->email,
-                    'role' => $invitation->role->value,
-                    'roleLabel' => $invitation->role->label(),
-                    'inviterName' => $invitation->inviter?->name,
-                    'isExpired' => $invitation->isExpired(),
-                    'expiresAt' => $invitation->expires_at?->toIso8601String(),
-                    'createdAt' => $invitation->created_at?->toIso8601String(),
-                ]),
+            'invitations' => $canManage
+                ? InvitationResource::collection($workspace->invitations()
+                    ->whereNull('accepted_at')
+                    ->with('inviter:id,name')
+                    ->latest()
+                    ->get())
+                : [],
             'assignableRoles' => WorkspaceRole::options(
                 $actor->workspaceRole($workspace)?->assignableRoles() ?? [],
             ),

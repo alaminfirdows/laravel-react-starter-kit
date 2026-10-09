@@ -24,9 +24,12 @@ test('members page lists members with what the actor can do', function () {
         ->assertInertia(fn (Assert $page) => $page
             ->component('workspace/settings/members')
             ->has('members', 3)
+            ->where('members.0.id', $this->owner->id)
             ->where('members.0.role', 'owner')
             ->where('members.0.canUpdate', false)
+            ->where('members.1.id', $this->admin->id)
             ->where('members.1.isCurrentUser', true)
+            ->where('members.2.id', $this->member->id)
             ->where('members.2.canUpdate', true)
             ->where('members.2.canRemove', true)
             ->has('assignableRoles', 2));
