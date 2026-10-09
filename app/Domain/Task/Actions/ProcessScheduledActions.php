@@ -13,17 +13,21 @@ use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use Carbon\CarbonImmutable;
+use Cron\CronExpression;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
 /**
  * Time rules, checked by the scheduler:
  * - `wait`: `config.wait.until` (date) or `config.wait.days` after the previous step closed → completes itself.
  * - `scheduled`: `config.schedule.at` (date-time) → an in-app action runs once (as the workspace owner).
+ * - `scheduled` with `config.schedule.cron` (+ optional `timezone`) → runs once per due occurrence; missed occurrences collapse into one run.
  */
 class ProcessScheduledActions
 {
     public function __construct(
         protected CompleteAction $complete,
+        protected ReopenRecurringAction $reopen,
         protected RunActionInApp $runInApp,
         protected WorkspaceDiscoveryService $workspaces,
     ) {}
@@ -37,7 +41,13 @@ class ProcessScheduledActions
 
         TaskAction::query()
             ->whereIn('type', [ActionType::Wait, ActionType::Scheduled])
-            ->whereIn('status', [ActionStatus::Pending, ActionStatus::Ready])
+            ->where(function (Builder $query): void {
+                $query->whereIn('status', [ActionStatus::Pending, ActionStatus::Ready])
+                    ->orWhere(fn (Builder $recurring) => $recurring
+                        ->where('type', ActionType::Scheduled)
+                        ->where('status', ActionStatus::Done)
+                        ->whereNotNull('config->schedule->cron'));
+            })
             ->lazyById()
             ->each(function (TaskAction $action) use (&$counts): void {
                 $workspace = Workspace::query()->whereIn('id', Project::withoutWorkspaceScope()->whereKey($action->project_id)->select('workspace_id'))->first();
@@ -52,7 +62,9 @@ class ProcessScheduledActions
                             $this->complete->handle($action, Actor::system(ActivityChannel::Cli));
                             $counts['waits']++;
                         } elseif ($action->type === ActionType::Scheduled && $this->scheduleIsDue($action)) {
-                            $this->runInApp->handle($action, $workspace->owner()->firstOrFail());
+                            $owner = $workspace->owner()->firstOrFail();
+                            $this->reopen->handle($action, Actor::user($owner));
+                            $this->runInApp->handle($action, $owner);
                             $counts['scheduled']++;
                         }
                     } catch (InvalidTaskTransition $e) {
@@ -89,14 +101,47 @@ class ProcessScheduledActions
 
     private function scheduleIsDue(TaskAction $action): bool
     {
+        if (! in_array($action->executor, [Executor::AppAi, Executor::AppSystem], true)) {
+            return false;
+        }
+
+        $cron = $action->config['schedule']['cron'] ?? null;
+
+        if ($cron !== null) {
+            return $this->cronIsDue($action, $cron);
+        }
+
         $at = $action->config['schedule']['at'] ?? null;
 
-        if (! is_string($at) || ! in_array($action->executor, [Executor::AppAi, Executor::AppSystem], true)) {
+        if (! is_string($at)) {
             return false;
         }
 
         $at = CarbonImmutable::parse($at);
 
         return $at->isPast() && $action->runs()->where('started_at', '>=', $at)->doesntExist();
+    }
+
+    private function cronIsDue(TaskAction $action, mixed $cron): bool
+    {
+        if (! is_string($cron) || ! CronExpression::isValidExpression($cron)) {
+            Log::info('Scheduled action skipped', ['action' => $action->id, 'reason' => 'invalid cron expression']);
+
+            return false;
+        }
+
+        $timezone = $action->config['schedule']['timezone'] ?? config('app.timezone');
+
+        if (! is_string($timezone) || ! in_array($timezone, timezone_identifiers_list(), true)) {
+            Log::info('Scheduled action skipped', ['action' => $action->id, 'reason' => 'invalid timezone']);
+
+            return false;
+        }
+
+        $lastRun = $action->runs()->max('started_at');
+        $anchor = CarbonImmutable::parse($lastRun ?? $action->created_at);
+        $next = new CronExpression($cron)->getNextRunDate($anchor, 0, false, $timezone);
+
+        return CarbonImmutable::instance($next)->lessThanOrEqualTo(now());
     }
 }

@@ -47,7 +47,7 @@ Passport tables (`oauth_*`) — MCP clients (Claude registers via DCR); we read 
 
 **catalog_task_dependencies** — `task_id`, `depends_on_id`, `kind (hard|soft)`.
 
-**catalog_actions** — `id`, `catalog_task_id`, `key`, `title`, `type` (ai|research|browser|document|file|mcp|check|input|approval|manual|wait|scheduled), `executor` (claude_desktop|claude_chrome|app_ai|app_system|user), `instructions_md`, `prompt_template_id?`, `config jsonb` (input form schema, check params, wait rule, schedule rrule, deep-link target chat|cowork), `is_required`, `requires_approval`, `sort_order`, `version`.
+**catalog_actions** — `id`, `catalog_task_id`, `key`, `title`, `type` (ai|research|browser|document|file|mcp|check|input|approval|manual|wait|scheduled), `executor` (claude_desktop|claude_chrome|app_ai|app_system|user), `instructions_md`, `prompt_template_id?`, `config jsonb` (input form schema, check params, wait rule, schedule (`at` one-off or `cron` recurring), deep-link target chat|cowork), `is_required`, `requires_approval`, `sort_order`, `version`.
 
 **prompt_templates** — `id`, `key`, `title`, `launcher_md`, `full_md` (Blade-like `{{ project.name }}` placeholders), `variables jsonb` (declared + required), `target (chat|cowork|code)`, `skill_keys jsonb`, `version`, `content_hash`.
 

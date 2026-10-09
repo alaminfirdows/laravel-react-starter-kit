@@ -93,3 +93,62 @@ test('a scheduled action in the future or for the user does nothing', function (
 
     expect($future->runs()->count() + $manual->runs()->count())->toBe(0);
 });
+
+function cronAction(Task $task, array $schedule): TaskAction
+{
+    return TaskAction::factory()->forTask($task)->create([
+        'type' => ActionType::Scheduled,
+        'executor' => Executor::AppSystem,
+        'config' => ['check' => 'https', 'schedule' => $schedule],
+    ]);
+}
+
+test('a cron action runs at its first occurrence, once per window', function () {
+    Http::fake(['https://acme.test/' => Http::response('', 200)]);
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *', 'timezone' => config('app.timezone')]);
+
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(0);
+
+    $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
+    processScheduled();
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(1);
+});
+
+test('a cron action runs again at the next occurrence, even after completing', function () {
+    Http::fake(['https://acme.test/' => Http::response('', 200)]);
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+
+    $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
+    processScheduled();
+    $recurring->refresh()->forceFill(['status' => ActionStatus::Done, 'completed_at' => now()])->save();
+
+    $this->travel(1)->days();
+    processScheduled();
+
+    expect($recurring->runs()->count())->toBe(2);
+});
+
+test('several missed cron occurrences run once', function () {
+    Http::fake(['https://acme.test/' => Http::response('', 200)]);
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+
+    $this->travel(5)->days();
+    processScheduled();
+    processScheduled();
+
+    expect($recurring->runs()->count())->toBe(1);
+});
+
+test('an invalid cron expression is skipped without crashing', function () {
+    $broken = cronAction($this->task, ['cron' => 'not a cron']);
+    $this->travel(2)->days();
+
+    processScheduled();
+
+    expect($broken->runs()->count())->toBe(0);
+});
