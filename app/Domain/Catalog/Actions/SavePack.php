@@ -52,7 +52,7 @@ class SavePack
                 $this->activity->record($created ? 'catalog.pack_created' : 'catalog.pack_updated', $pack, [
                     'key' => $pack->key,
                     'version' => $pack->version,
-                ]);
+                ], global: true);
             }
 
             return $pack;

@@ -23,7 +23,7 @@ class SavePromptTemplate
                 $this->activity->record($created ? 'catalog.prompt_created' : 'catalog.prompt_updated', $prompt, [
                     'key' => $prompt->key,
                     'version' => $prompt->version,
-                ]);
+                ], global: true);
             }
 
             return $prompt;

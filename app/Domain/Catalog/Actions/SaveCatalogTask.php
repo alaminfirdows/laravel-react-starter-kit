@@ -46,7 +46,7 @@ class SaveCatalogTask
                 $this->activity->record($created ? 'catalog.task_created' : 'catalog.task_updated', $task, [
                     'key' => $task->key,
                     'version' => $task->version,
-                ]);
+                ], global: true);
             }
 
             return $task;

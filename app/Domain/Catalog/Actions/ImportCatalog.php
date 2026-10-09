@@ -83,7 +83,7 @@ class ImportCatalog
             $this->importDependencies();
             $this->importPacks($this->read("{$directory}/packs.yaml"));
 
-            $this->activity->record('catalog.imported', null, $this->counts);
+            $this->activity->record('catalog.imported', null, $this->counts, global: true);
         });
 
         foreach ($this->changedTaskIds as $taskId) {

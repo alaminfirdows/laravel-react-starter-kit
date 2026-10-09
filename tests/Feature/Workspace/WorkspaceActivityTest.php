@@ -1,11 +1,16 @@
 <?php
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Models\Activity;
+use App\Domain\Workspace\Actions\CreateWorkspace;
 use App\Domain\Workspace\Enums\WorkspaceRole;
+use App\Domain\Workspace\Exceptions\WorkspaceNotSetException;
 use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Notification::fake();
@@ -104,4 +109,29 @@ test('settings update and delete record activity', function () {
 
     expect($this->workspace->fresh()->trashed())->toBeTrue()
         ->and(($this->events)('workspace.deleted')->sole()->properties)->toEqual(['name' => 'Acme Inc', 'slug' => 'acme']);
+});
+
+test('creating a workspace and changing its logo record activity', function () {
+    $created = app(CreateWorkspace::class)->handle($this->owner, 'Beta Co');
+    $event = Activity::withoutWorkspaceScope()->where('workspace_id', $created->id)->where('event', 'workspace.created')->sole();
+
+    expect($event->actor_id)->toBe($this->owner->id)
+        ->and($event->properties)->toEqual(['name' => 'Beta Co', 'slug' => $created->slug]);
+
+    Storage::fake('public');
+    $this->actingAs($this->viewer)
+        ->post(route('workspace.settings.logo.update', $this->workspace), ['logo' => UploadedFile::fake()->image('l.png')])
+        ->assertForbidden();
+    expect(($this->events)('workspace.logo_updated')->exists())->toBeFalse();
+
+    $this->actingAs($this->owner)
+        ->post(route('workspace.settings.logo.update', $this->workspace), ['logo' => UploadedFile::fake()->image('l.png')]);
+    $this->actingAs($this->owner)->delete(route('workspace.settings.logo.destroy', $this->workspace));
+
+    expect(($this->events)('workspace.logo_updated')->orderBy('id')->get()->pluck('properties')->all())
+        ->toEqual([['removed' => false], ['removed' => true]]);
+});
+
+test('a non-global event without any workspace throws instead of going global', function () {
+    expect(fn () => app(ActivityRecorder::class)->record('x.y', new User))->toThrow(WorkspaceNotSetException::class);
 });

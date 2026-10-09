@@ -39,7 +39,7 @@ class SaveCatalogAction
                 'catalog_task_id' => $task->id,
                 'task_key' => $task->key,
                 'task_version' => $task->version,
-            ]);
+            ], global: true);
 
             return $action;
         });

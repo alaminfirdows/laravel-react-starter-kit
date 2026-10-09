@@ -27,7 +27,7 @@ class PublishCatalogTask
             $this->activity->record('catalog.task_published', $task, [
                 'key' => $task->key,
                 'version' => $task->version,
-            ]);
+            ], global: true);
 
             FlagCatalogUpdates::dispatch($task->id)->afterCommit();
         });
