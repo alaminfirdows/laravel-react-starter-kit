@@ -1,5 +1,6 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { CommandPaletteProvider } from '@/components/command-palette';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import type { AppVariant } from '@/types';
 
@@ -13,9 +14,17 @@ export function AppShell({ children, variant = 'sidebar' }: Props) {
 
     if (variant === 'header') {
         return (
-            <div className="flex min-h-screen w-full flex-col">{children}</div>
+            <CommandPaletteProvider>
+                <div className="flex min-h-screen w-full flex-col">
+                    {children}
+                </div>
+            </CommandPaletteProvider>
         );
     }
 
-    return <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>;
+    return (
+        <CommandPaletteProvider>
+            <SidebarProvider defaultOpen={isOpen}>{children}</SidebarProvider>
+        </CommandPaletteProvider>
+    );
 }

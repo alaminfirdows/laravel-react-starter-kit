@@ -6,6 +6,7 @@ use App\Domain\Workspace\Models\WorkspaceInvitation;
 use App\Http\Resources\NotificationResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -86,6 +87,13 @@ class HandleInertiaRequests extends Middleware
                 ->pending()
                 ->whereHas('workspace')
                 ->count(),
+            'paletteProjects' => Inertia::optional(fn (): array => ($ws = $workspace()) && $user->workspaceRole($ws) !== null
+                ? $ws->projects()
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'slug'])
+                    ->map(fn ($project): array => ['id' => $project->id, 'name' => $project->name, 'slug' => $project->slug])
+                    ->all()
+                : []),
         ];
     }
 }

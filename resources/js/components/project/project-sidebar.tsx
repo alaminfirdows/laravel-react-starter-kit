@@ -8,6 +8,8 @@ import {
     Scale,
     ShieldQuestion,
 } from 'lucide-react';
+import { CommandPaletteTrigger } from '@/components/command-palette';
+import { navItemClassName } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { TaskTree } from '@/components/project/task-tree';
 import { Badge } from '@/components/ui/badge';
@@ -119,6 +121,7 @@ export function ProjectSidebar() {
                         </Link>
                     </Button>
                 )}
+                <CommandPaletteTrigger className="w-full" />
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
@@ -127,6 +130,7 @@ export function ProjectSidebar() {
                             <SidebarMenuItem key={link.title}>
                                 <SidebarMenuButton
                                     asChild
+                                    className={navItemClassName}
                                     isActive={
                                         link.exact
                                             ? isCurrentUrl(link.href)

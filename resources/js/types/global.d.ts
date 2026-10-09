@@ -17,6 +17,7 @@ declare module '@inertiajs/core' {
             workspaces: UserWorkspace[];
             workspacePermissions: WorkspacePermissions | null;
             pendingInvitationsCount: number;
+            paletteProjects?: { id: string; name: string; slug: string }[];
             notifications: {
                 unread: number;
                 latest: AppNotification[];

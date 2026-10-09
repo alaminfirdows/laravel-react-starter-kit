@@ -1,12 +1,10 @@
 import { usePage } from '@inertiajs/react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
-import { Breadcrumbs } from '@/components/breadcrumbs';
-import { NotificationBell } from '@/components/notification-bell';
+import { AppTopbar } from '@/components/app-topbar';
 import { ProjectChannelListener } from '@/components/project/project-channel-listener';
 import { ProjectProgress } from '@/components/project/project-progress';
 import { ProjectSidebar } from '@/components/project/project-sidebar';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useWorkspaceUrlDefaults } from '@/hooks/use-workspace-url-defaults';
 import { index, show } from '@/routes/projects';
 import { show as showTask } from '@/routes/projects/tasks';
@@ -44,19 +42,12 @@ export default function ProjectLayout({
             )}
             <ProjectSidebar />
             <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
-                <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b px-4">
-                    <div className="flex min-w-0 items-center gap-2">
-                        <SidebarTrigger className="-ml-1" />
-                        <Breadcrumbs breadcrumbs={breadcrumbs} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <ProjectProgress
-                            value={task ? task.progressPct : tree.progressPct}
-                            label={task ? 'Task' : 'Project'}
-                        />
-                        <NotificationBell />
-                    </div>
-                </header>
+                <AppTopbar breadcrumbs={breadcrumbs}>
+                    <ProjectProgress
+                        value={task ? task.progressPct : tree.progressPct}
+                        label={task ? 'Task' : 'Project'}
+                    />
+                </AppTopbar>
                 {children}
             </AppContent>
         </AppShell>

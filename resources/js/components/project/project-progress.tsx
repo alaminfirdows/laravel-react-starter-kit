@@ -15,8 +15,8 @@ export function ProjectProgress({
             <span className="hidden text-xs text-muted-foreground sm:inline">
                 {label}
             </span>
-            <Progress value={value} className="w-32 md:w-40" />
-            <span className="w-10 text-right text-sm font-medium tabular-nums">
+            <Progress value={value} className="h-1.5 w-20 md:w-28" />
+            <span className="w-9 text-right font-mono text-xs font-medium text-muted-foreground tabular-nums">
                 {value}%
             </span>
         </div>
