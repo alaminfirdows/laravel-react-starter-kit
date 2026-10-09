@@ -28,7 +28,7 @@ import type { CatalogFieldDiff } from '@/types';
 
 function Value({ title, text }: { title: string; text: string }) {
     return (
-        <div className="min-w-0 space-y-1">
+        <div className="flex min-w-0 flex-col gap-1">
             <p className="text-xs text-muted-foreground">{title}</p>
             <pre className="max-h-40 overflow-auto rounded-md bg-muted p-2 text-xs whitespace-pre-wrap">
                 {text || '—'}
@@ -77,7 +77,7 @@ export function CatalogUpdateDialog({
                             </DialogDescription>
                         </DialogHeader>
                         {diff === undefined ? (
-                            <div className="space-y-2">
+                            <div className="flex flex-col gap-2">
                                 <Skeleton className="h-16 w-full" />
                                 <Skeleton className="h-16 w-full" />
                             </div>

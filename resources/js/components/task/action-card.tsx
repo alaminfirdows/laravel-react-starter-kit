@@ -37,20 +37,20 @@ export function ActionCard({
                 <CardTitle className="flex flex-wrap items-center gap-2">
                     {action.title}
                     <Badge
-                        variant={
-                            action.status === 'done' ? 'default' : 'secondary'
-                        }
+                        variant={action.status === 'done' ? 'success' : 'muted'}
                     >
                         {action.statusLabel}
                     </Badge>
-                    <Badge variant="secondary">{action.type}</Badge>
+                    <Badge variant="muted" className="font-mono">
+                        {action.type}
+                    </Badge>
                     <Badge variant="outline">{action.executorLabel}</Badge>
                     {action.isRequired && (
                         <Badge variant="outline">Required</Badge>
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="flex flex-col gap-4">
                 {action.pendingApproval && (
                     <ApprovalBanner
                         approval={action.pendingApproval}

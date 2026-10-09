@@ -1,15 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
-import Heading from '@/components/heading';
+import { FolderKanban, Plus } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { WorkspaceAvatar } from '@/components/workspace-avatar';
 import { create, index, show } from '@/routes/projects';
@@ -33,64 +29,70 @@ export default function ProjectsIndex({
     return (
         <>
             <Head title="Projects" />
-            <div className="space-y-6 p-4 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <Heading
-                        title="Projects"
-                        description="Each project is one company or product."
-                    />
-                    {projects.length > 0 && addButton}
-                </div>
+            <Page>
+                <PageHeader
+                    title="Projects"
+                    description="Each project is one company or product."
+                    actions={projects.length > 0 ? addButton : undefined}
+                />
                 {projects.length === 0 ? (
-                    <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed p-12 text-center">
-                        <p className="text-muted-foreground">
-                            No projects yet.
-                        </p>
-                        {addButton}
-                    </div>
+                    <EmptyState
+                        icon={FolderKanban}
+                        title="No projects yet."
+                        description="Create a project to get a plan for your company or product."
+                        action={addButton || undefined}
+                    />
                 ) : (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {projects.map((project) => (
                             <Link
                                 key={project.id}
                                 href={show({ project: project.slug })}
+                                className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
                             >
-                                <Card className="h-full hover:border-primary">
-                                    <CardHeader className="flex items-center gap-3">
+                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                    <div className="flex items-center gap-3">
                                         <WorkspaceAvatar
                                             name={project.name}
                                             logoUrl={project.logoUrl}
                                             className="size-10"
                                         />
-                                        <div className="min-w-0">
-                                            <CardTitle className="truncate">
+                                        <div className="flex min-w-0 flex-col">
+                                            <span className="truncate text-sm font-semibold">
                                                 {project.name}
-                                            </CardTitle>
-                                            <CardDescription className="truncate">
+                                            </span>
+                                            <span className="truncate text-sm text-muted-foreground">
                                                 {project.oneLiner}
-                                            </CardDescription>
+                                            </span>
                                         </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-3">
-                                        <div className="flex gap-2">
-                                            <Badge>{project.phaseLabel}</Badge>
+                                    </div>
+                                    <div className="mt-auto flex flex-col gap-3">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Badge variant="primary">
+                                                {project.phaseLabel}
+                                            </Badge>
                                             {project.status === 'draft' && (
                                                 <Badge variant="outline">
                                                     Draft
                                                 </Badge>
                                             )}
                                         </div>
-                                        <Progress
-                                            value={project.progressPct ?? 0}
-                                            aria-label={`${project.progressPct ?? 0}% done`}
-                                        />
-                                    </CardContent>
+                                        <div className="flex items-center gap-3">
+                                            <Progress
+                                                value={project.progressPct ?? 0}
+                                                aria-label={`${project.progressPct ?? 0}% done`}
+                                            />
+                                            <span className="font-mono text-xs text-muted-foreground">
+                                                {project.progressPct ?? 0}%
+                                            </span>
+                                        </div>
+                                    </div>
                                 </Card>
                             </Link>
                         ))}
                     </div>
                 )}
-            </div>
+            </Page>
         </>
     );
 }

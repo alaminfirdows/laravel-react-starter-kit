@@ -3,10 +3,12 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import ProjectLogoController from '@/actions/App/Domain/Project/Http/Controllers/ProjectLogoController';
 import ProjectSetupController from '@/actions/App/Domain/Project/Http/Controllers/ProjectSetupController';
-import Heading from '@/components/heading';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { MarkdownEditor } from '@/components/markdown/markdown-editor';
 import { SetupSteps } from '@/components/project/setup-steps';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
     Field,
     FieldDescription,
@@ -55,8 +57,11 @@ export default function ProjectSetupPage({
     });
 
     const footer = (processing: boolean) => (
-        <Field orientation="horizontal" className="justify-between">
-            <div className="flex gap-2">
+        <Field
+            orientation="horizontal"
+            className="sticky bottom-0 -mx-5 mt-2 -mb-5 flex-wrap justify-between gap-2 rounded-b-xl border-t bg-card/95 px-5 py-3 backdrop-blur"
+        >
+            <div className="flex flex-wrap gap-2">
                 {previous && (
                     <Button variant="outline" asChild>
                         <Link
@@ -89,8 +94,8 @@ export default function ProjectSetupPage({
     return (
         <>
             <Head title={`Set up ${project.name}`} />
-            <div className="mx-auto w-full max-w-3xl space-y-8 p-4 md:p-8">
-                <Heading
+            <Page size="narrow">
+                <PageHeader
                     title="Set up your project"
                     description="We use this to tailor tasks and prompts."
                 />
@@ -100,43 +105,45 @@ export default function ProjectSetupPage({
                     projectSlug={project.slug}
                 />
 
-                {step === 'identity' && <LogoForm project={project} />}
+                <Card>
+                    {step === 'identity' && <LogoForm project={project} />}
 
-                {step === 'goals' ? (
-                    <GoalsForm project={project} footer={footer} />
-                ) : (
-                    <Form
-                        key={step}
-                        {...action}
-                        options={{ preserveScroll: true }}
-                    >
-                        {({ processing, errors }) => (
-                            <FieldGroup>
-                                {step === 'identity' && (
-                                    <IdentityFields
-                                        project={project}
-                                        errors={errors}
-                                    />
-                                )}
-                                {step === 'business' && (
-                                    <BusinessFields
-                                        project={project}
-                                        options={options}
-                                        errors={errors}
-                                    />
-                                )}
-                                {step === 'market' && (
-                                    <MarketFields
-                                        project={project}
-                                        errors={errors}
-                                    />
-                                )}
-                                {footer(processing)}
-                            </FieldGroup>
-                        )}
-                    </Form>
-                )}
-            </div>
+                    {step === 'goals' ? (
+                        <GoalsForm project={project} footer={footer} />
+                    ) : (
+                        <Form
+                            key={step}
+                            {...action}
+                            options={{ preserveScroll: true }}
+                        >
+                            {({ processing, errors }) => (
+                                <FieldGroup>
+                                    {step === 'identity' && (
+                                        <IdentityFields
+                                            project={project}
+                                            errors={errors}
+                                        />
+                                    )}
+                                    {step === 'business' && (
+                                        <BusinessFields
+                                            project={project}
+                                            options={options}
+                                            errors={errors}
+                                        />
+                                    )}
+                                    {step === 'market' && (
+                                        <MarketFields
+                                            project={project}
+                                            errors={errors}
+                                        />
+                                    )}
+                                    {footer(processing)}
+                                </FieldGroup>
+                            )}
+                        </Form>
+                    )}
+                </Card>
+            </Page>
         </>
     );
 }
@@ -516,7 +523,7 @@ function GoalsForm({
                                 ])
                             }
                         >
-                            <Plus /> Add goal
+                            <Plus data-icon="inline-start" /> Add goal
                         </Button>
                     </Field>
                 )}

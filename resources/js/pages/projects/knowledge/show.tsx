@@ -1,11 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { Pencil } from 'lucide-react';
-import Heading from '@/components/heading';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { DocStatusBadge } from '@/components/knowledge/doc-status-badge';
 import { Markdown } from '@/components/markdown/markdown';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { formatDateTime, formatRelativeTime } from '@/lib/format';
 import { edit } from '@/routes/projects/knowledge';
 import type { KnowledgeDocument, ProjectPageProps } from '@/types';
 
@@ -23,64 +25,76 @@ export default function KnowledgeShow({
     return (
         <>
             <Head title={document.title} />
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
-                        <Heading
-                            title={document.title}
-                            description={`${document.docTypeLabel} · version ${document.version}`}
-                        />
-                        <div className="flex gap-2">
+            <Page size="narrow">
+                <PageHeader
+                    title={document.title}
+                    meta={
+                        <>
+                            <span className="font-mono text-xs text-muted-foreground">
+                                {document.docTypeLabel} · v{document.version}
+                            </span>
                             <DocStatusBadge status={document.status} />
                             {!document.isEmbedded && (
                                 <Badge variant="outline">Indexing…</Badge>
                             )}
-                        </div>
-                    </div>
-                    {can.update && canEditDocument && (
-                        <Button variant="outline" asChild>
-                            <Link
-                                href={edit({
-                                    project: project.slug,
-                                    knowledgeDocument: document.id,
-                                })}
-                            >
-                                <Pencil /> Edit
-                            </Link>
-                        </Button>
-                    )}
-                </div>
+                        </>
+                    }
+                    actions={
+                        can.update &&
+                        canEditDocument && (
+                            <Button variant="outline" size="sm" asChild>
+                                <Link
+                                    href={edit({
+                                        project: project.slug,
+                                        knowledgeDocument: document.id,
+                                    })}
+                                >
+                                    <Pencil data-icon="inline-start" /> Edit
+                                </Link>
+                            </Button>
+                        )
+                    }
+                />
 
                 <Markdown source={document.bodyMd ?? null} />
 
                 {document.versions && document.versions.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Versions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
+                    <section className="flex flex-col gap-3">
+                        <h2 className="text-sm font-semibold">Versions</h2>
+                        <Card className="gap-0 py-0">
                             {document.versions.map((version) => (
                                 <div
                                     key={version.id}
-                                    className="flex flex-wrap items-baseline gap-x-2"
+                                    className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b px-4 py-3 text-sm last:border-b-0"
                                 >
-                                    <span className="font-medium">
+                                    <span className="font-mono text-xs font-medium">
                                         v{version.version}
                                     </span>
                                     <span className="text-muted-foreground">
                                         {authors[version.createdByType]}
-                                        {version.createdAt &&
-                                            ` · ${new Date(version.createdAt).toLocaleString()}`}
                                     </span>
+                                    {version.createdAt && (
+                                        <time
+                                            dateTime={version.createdAt}
+                                            title={formatDateTime(
+                                                version.createdAt,
+                                            )}
+                                            className="font-mono text-xs text-muted-foreground"
+                                        >
+                                            {formatRelativeTime(
+                                                version.createdAt,
+                                            )}
+                                        </time>
+                                    )}
                                     {version.changeNote && (
                                         <span>— {version.changeNote}</span>
                                     )}
                                 </div>
                             ))}
-                        </CardContent>
-                    </Card>
+                        </Card>
+                    </section>
                 )}
-            </div>
+            </Page>
         </>
     );
 }

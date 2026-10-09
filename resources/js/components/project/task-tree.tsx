@@ -36,7 +36,12 @@ function Node({
     activeTaskId?: string;
 }) {
     const link = (
-        <SidebarMenuButton asChild isActive={node.id === activeTaskId}>
+        <SidebarMenuButton
+            asChild
+            size="sm"
+            className="data-[active=true]:bg-card data-[active=true]:shadow-xs data-[active=true]:ring-1 data-[active=true]:ring-sidebar-border"
+            isActive={node.id === activeTaskId}
+        >
             <Link href={show({ project: projectSlug, task: node.id })} prefetch>
                 <TaskStatusIcon status={node.status} />
                 <span className="truncate">{node.title}</span>
@@ -54,7 +59,7 @@ function Node({
                 {link}
                 <CollapsibleTrigger asChild>
                     <SidebarMenuAction
-                        className="data-[state=open]:rotate-90"
+                        className="text-muted-foreground transition-transform data-[state=open]:rotate-90"
                         aria-label={`Toggle ${node.title}`}
                     >
                         <ChevronRight />
@@ -90,7 +95,9 @@ export function TaskTree({
         <SidebarGroup key={group.key}>
             <SidebarGroupLabel className="justify-between">
                 <span>{group.name}</span>
-                <span className="tabular-nums">{group.progressPct}%</span>
+                <span className="font-mono tabular-nums">
+                    {group.progressPct}%
+                </span>
             </SidebarGroupLabel>
             <SidebarMenu>
                 {group.tasks.map((node) => (

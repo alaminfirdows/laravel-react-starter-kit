@@ -1,16 +1,12 @@
 import { Form, Head, Link, WhenVisible } from '@inertiajs/react';
 import { FileText, Plus, Search } from 'lucide-react';
 import KnowledgeController from '@/actions/App/Domain/Knowledge/Http/Controllers/KnowledgeController';
-import Heading from '@/components/heading';
+import { EmptyState } from '@/components/empty-state';
 import { DocStatusBadge } from '@/components/knowledge/doc-status-badge';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { create, show } from '@/routes/projects/knowledge';
@@ -40,20 +36,21 @@ export default function KnowledgeIndex({
     return (
         <>
             <Head title={`Knowledge · ${project.name}`} />
-            <div className="mx-auto w-full max-w-4xl space-y-8 p-4 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <Heading
-                        title="Knowledge"
-                        description="ICP, positioning, research and notes. Claude and your prompts read these."
-                    />
-                    {can.update && (
-                        <Button asChild>
-                            <Link href={create({ project: project.slug })}>
-                                <Plus /> New document
-                            </Link>
-                        </Button>
-                    )}
-                </div>
+            <Page>
+                <PageHeader
+                    title="Knowledge"
+                    description="ICP, positioning, research and notes. Claude and your prompts read these."
+                    actions={
+                        can.update && (
+                            <Button asChild>
+                                <Link href={create({ project: project.slug })}>
+                                    <Plus data-icon="inline-start" /> New
+                                    document
+                                </Link>
+                            </Button>
+                        )
+                    }
+                />
 
                 <Form
                     {...KnowledgeController.index.form({
@@ -80,15 +77,17 @@ export default function KnowledgeIndex({
                                 variant="secondary"
                                 disabled={processing}
                             >
-                                <Search /> Search
+                                <Search data-icon="inline-start" /> Search
                             </Button>
                         </>
                     )}
                 </Form>
 
                 {query !== '' && (
-                    <section className="space-y-3">
-                        <h2 className="font-semibold">Results for “{query}”</h2>
+                    <section className="flex flex-col gap-3">
+                        <h2 className="text-sm font-semibold">
+                            Results for “{query}”
+                        </h2>
                         {results === undefined ? (
                             <WhenVisible
                                 data="results"
@@ -106,50 +105,54 @@ export default function KnowledgeIndex({
                 )}
 
                 {groups.length === 0 ? (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>No documents yet</CardTitle>
-                            <CardDescription>
-                                Write your ICP or positioning here, or ask
-                                Claude to save it with the Founder OS connector.
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                    <EmptyState
+                        icon={FileText}
+                        title="No documents yet"
+                        description="Write your ICP or positioning here, or ask Claude to save it with the Founder OS connector."
+                        action={
+                            can.update && (
+                                <Button size="sm" asChild>
+                                    <Link
+                                        href={create({ project: project.slug })}
+                                    >
+                                        <Plus data-icon="inline-start" /> New
+                                        document
+                                    </Link>
+                                </Button>
+                            )
+                        }
+                    />
                 ) : (
                     groups.map(([label, items]) => (
-                        <section key={label} className="space-y-2">
-                            <h2 className="text-sm font-medium text-muted-foreground">
-                                {label}
-                            </h2>
-                            <Card className="py-2">
-                                <CardContent className="divide-y px-2">
-                                    {items?.map((document) => (
-                                        <Link
-                                            key={document.id}
-                                            href={show({
-                                                project: project.slug,
-                                                knowledgeDocument: document.id,
-                                            })}
-                                            className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-muted"
-                                        >
-                                            <FileText className="size-4 text-muted-foreground" />
-                                            <span className="min-w-0 flex-1 truncate">
-                                                {document.title}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                v{document.version}
-                                            </span>
-                                            <DocStatusBadge
-                                                status={document.status}
-                                            />
-                                        </Link>
-                                    ))}
-                                </CardContent>
+                        <section key={label} className="flex flex-col gap-2">
+                            <h2 className="text-sm font-semibold">{label}</h2>
+                            <Card className="gap-0 py-0">
+                                {items?.map((document) => (
+                                    <Link
+                                        key={document.id}
+                                        href={show({
+                                            project: project.slug,
+                                            knowledgeDocument: document.id,
+                                        })}
+                                        className="flex items-center gap-3 border-b px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/50"
+                                    >
+                                        <FileText className="size-4 shrink-0 text-muted-foreground" />
+                                        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                                            {document.title}
+                                        </span>
+                                        <span className="font-mono text-xs text-muted-foreground">
+                                            v{document.version}
+                                        </span>
+                                        <DocStatusBadge
+                                            status={document.status}
+                                        />
+                                    </Link>
+                                ))}
                             </Card>
                         </section>
                     ))
                 )}
-            </div>
+            </Page>
         </>
     );
 }
@@ -162,13 +165,11 @@ function SearchResults({
     projectSlug: string;
 }) {
     if (results.length === 0) {
-        return (
-            <p className="text-sm text-muted-foreground">No matches found.</p>
-        );
+        return <EmptyState size="sm" icon={Search} title="No matches found" />;
     }
 
     return (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
             {results.map((result) => (
                 <Link
                     key={result.chunkId}
@@ -176,7 +177,7 @@ function SearchResults({
                         project: projectSlug,
                         knowledgeDocument: result.documentId,
                     })}
-                    className="block rounded-md border p-3 hover:bg-muted"
+                    className="block rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-muted/50"
                 >
                     <div className="text-sm font-medium">
                         {result.documentTitle}

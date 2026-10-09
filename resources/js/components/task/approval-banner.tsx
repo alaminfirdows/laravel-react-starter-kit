@@ -28,7 +28,7 @@ export function ApprovalBanner({
                 {approval.requestedByClient &&
                     ` by ${approval.requestedByClient}`}
             </AlertTitle>
-            <AlertDescription className="space-y-3">
+            <AlertDescription className="flex flex-col gap-3">
                 <Markdown source={approval.summaryMd} />
                 {canDecide && (
                     <div className="flex gap-2">

@@ -1,16 +1,13 @@
 import { Form, Head } from '@inertiajs/react';
+import { Gavel } from 'lucide-react';
 import DecisionController from '@/actions/App/Domain/Knowledge/Http/Controllers/DecisionController';
-import Heading from '@/components/heading';
+import { EmptyState } from '@/components/empty-state';
 import { Markdown } from '@/components/markdown/markdown';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Field,
     FieldError,
@@ -29,8 +26,8 @@ export default function DecisionsIndex({
     return (
         <>
             <Head title={`Decisions · ${project.name}`} />
-            <div className="mx-auto w-full max-w-4xl space-y-8 p-4 md:p-8">
-                <Heading
+            <Page size="narrow">
+                <PageHeader
                     title="Decisions"
                     description="What you decided and why. Recent decisions go into the project context."
                 />
@@ -38,7 +35,9 @@ export default function DecisionsIndex({
                 {can.update && (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Log a decision</CardTitle>
+                            <CardTitle className="text-sm">
+                                Log a decision
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <Form
@@ -129,51 +128,63 @@ export default function DecisionsIndex({
                 )}
 
                 {decisions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No decisions yet.
-                    </p>
+                    <EmptyState
+                        icon={Gavel}
+                        size="sm"
+                        title="No decisions yet."
+                        description="Log what you decided and why."
+                    />
                 ) : (
-                    decisions.map((decision) => (
-                        <Card key={decision.id}>
-                            <CardHeader>
-                                <CardTitle>{decision.title}</CardTitle>
-                                <CardDescription className="flex flex-wrap items-center gap-2">
-                                    {decision.decidedOn}
-                                    {decision.owner && ` · ${decision.owner}`}
-                                    {decision.source === 'claude_mcp' && (
-                                        <Badge variant="outline">Claude</Badge>
-                                    )}
-                                    {decision.revisitOn && (
-                                        <Badge variant="secondary">
-                                            Revisit {decision.revisitOn}
-                                        </Badge>
-                                    )}
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                <Markdown source={decision.decisionMd} />
-                                {decision.rationaleMd && (
-                                    <div>
-                                        <h3 className="text-sm font-medium">
-                                            Why
-                                        </h3>
-                                        <Markdown
-                                            source={decision.rationaleMd}
-                                            className="text-muted-foreground"
-                                        />
+                    <div className="flex flex-col gap-3">
+                        {decisions.map((decision) => (
+                            <Card key={decision.id} className="gap-0 py-0">
+                                <div className="flex flex-col gap-1 border-b px-4 py-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <h2 className="text-sm font-semibold">
+                                            {decision.title}
+                                        </h2>
+                                        {decision.source === 'claude_mcp' && (
+                                            <Badge variant="outline">
+                                                Claude
+                                            </Badge>
+                                        )}
+                                        {decision.revisitOn && (
+                                            <Badge variant="warning">
+                                                Revisit {decision.revisitOn}
+                                            </Badge>
+                                        )}
                                     </div>
-                                )}
-                                {decision.alternatives.length > 0 && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Rejected:{' '}
-                                        {decision.alternatives.join(' · ')}
+                                    <p className="font-mono text-xs text-muted-foreground">
+                                        {decision.decidedOn}
+                                        {decision.owner &&
+                                            ` · ${decision.owner}`}
                                     </p>
-                                )}
-                            </CardContent>
-                        </Card>
-                    ))
+                                </div>
+                                <div className="flex flex-col gap-3 px-4 py-3">
+                                    <Markdown source={decision.decisionMd} />
+                                    {decision.rationaleMd && (
+                                        <div className="flex flex-col gap-1">
+                                            <h3 className="text-xs font-medium text-muted-foreground">
+                                                Why
+                                            </h3>
+                                            <Markdown
+                                                source={decision.rationaleMd}
+                                                className="text-muted-foreground"
+                                            />
+                                        </div>
+                                    )}
+                                    {decision.alternatives.length > 0 && (
+                                        <p className="text-sm text-muted-foreground">
+                                            Rejected:{' '}
+                                            {decision.alternatives.join(' · ')}
+                                        </p>
+                                    )}
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
                 )}
-            </div>
+            </Page>
         </>
     );
 }

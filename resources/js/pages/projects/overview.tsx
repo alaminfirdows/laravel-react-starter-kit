@@ -1,18 +1,17 @@
 import { Head, Link, WhenVisible } from '@inertiajs/react';
-import { ArrowRight, Info } from 'lucide-react';
+import { ArrowRight, History, Info } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { AddPackDialog } from '@/components/project/add-pack-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WorkspaceAvatar } from '@/components/workspace-avatar';
+import { formatDateTime, formatRelativeTime } from '@/lib/format';
 import { edit } from '@/routes/projects/setup';
 import { show as showTask } from '@/routes/projects/tasks';
 import type {
@@ -36,10 +35,20 @@ export default function ProjectOverview({
     activity,
     availablePacks,
 }: OverviewProps) {
+    const totalTasks = tree.groups.reduce(
+        (sum, group) => sum + group.tasks.length,
+        0,
+    );
+    const doneTasks = tree.groups.reduce(
+        (sum, group) =>
+            sum + group.tasks.filter((task) => task.status === 'done').length,
+        0,
+    );
+
     return (
         <>
             <Head title={project.name} />
-            <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8">
+            <Page>
                 {project.setupStep && (
                     <Alert>
                         <Info />
@@ -53,7 +62,7 @@ export default function ProjectOverview({
                                         project: project.slug,
                                         step: project.setupStep,
                                     })}
-                                    className="underline"
+                                    className="font-medium text-foreground underline underline-offset-4"
                                 >
                                     Continue setup
                                 </Link>
@@ -62,127 +71,165 @@ export default function ProjectOverview({
                     </Alert>
                 )}
 
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-2xl font-semibold">
-                                {project.name}
-                            </h1>
-                            <Badge variant="secondary">
+                <PageHeader
+                    leading={
+                        <WorkspaceAvatar
+                            name={project.name}
+                            logoUrl={project.logoUrl}
+                            className="size-10 rounded-lg"
+                        />
+                    }
+                    title={project.name}
+                    description={project.oneLiner}
+                    meta={
+                        <>
+                            <Badge variant="primary">
                                 {project.phaseLabel}
                             </Badge>
-                        </div>
-                        {project.oneLiner && (
-                            <p className="text-muted-foreground">
-                                {project.oneLiner}
-                            </p>
-                        )}
+                            <span className="font-mono text-xs text-muted-foreground tabular">
+                                {doneTasks}/{totalTasks} tasks done ·{' '}
+                                {tree.progressPct}%
+                            </span>
+                        </>
+                    }
+                    actions={
+                        <>
+                            {can.update && (
+                                <AddPackDialog
+                                    projectSlug={project.slug}
+                                    packs={availablePacks}
+                                />
+                            )}
+                            {nextTask && (
+                                <Button asChild>
+                                    <Link
+                                        href={showTask({
+                                            project: project.slug,
+                                            task: nextTask.id,
+                                        })}
+                                    >
+                                        <span className="max-w-56 truncate">
+                                            Continue: {nextTask.title}
+                                        </span>
+                                        <ArrowRight data-icon="inline-end" />
+                                    </Link>
+                                </Button>
+                            )}
+                        </>
+                    }
+                />
+
+                <section className="flex flex-col gap-3">
+                    <h2 className="text-sm font-semibold">Workstreams</h2>
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {tree.groups.map((group) => {
+                            const done = group.tasks.filter(
+                                (task) => task.status === 'done',
+                            ).length;
+
+                            return (
+                                <Card key={group.key} className="gap-3 py-4">
+                                    <CardHeader className="flex-row items-center justify-between gap-3 px-4">
+                                        <CardTitle className="truncate">
+                                            {group.name}
+                                        </CardTitle>
+                                        <span className="shrink-0 font-mono text-xs text-muted-foreground tabular">
+                                            {done}/{group.tasks.length}
+                                        </span>
+                                    </CardHeader>
+                                    <CardContent className="flex items-center gap-3 px-4">
+                                        <Progress
+                                            value={group.progressPct}
+                                            className="h-1.5"
+                                            aria-label={`${group.name}: ${group.progressPct}%`}
+                                        />
+                                        <span className="w-9 shrink-0 text-right font-mono text-xs text-muted-foreground tabular">
+                                            {group.progressPct}%
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            );
+                        })}
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        {can.update && (
-                            <AddPackDialog
-                                projectSlug={project.slug}
-                                packs={availablePacks}
-                            />
-                        )}
-                        {nextTask && (
-                            <Button asChild>
-                                <Link
-                                    href={showTask({
-                                        project: project.slug,
-                                        task: nextTask.id,
-                                    })}
-                                >
-                                    Continue: {nextTask.title} <ArrowRight />
-                                </Link>
-                            </Button>
-                        )}
-                    </div>
-                </div>
+                </section>
 
-                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    {tree.groups.map((group) => {
-                        const done = group.tasks.filter(
-                            (task) => task.status === 'done',
-                        ).length;
-
-                        return (
-                            <Card key={group.key}>
-                                <CardHeader>
-                                    <CardTitle>{group.name}</CardTitle>
-                                    <CardDescription>
-                                        {done} of {group.tasks.length} tasks
-                                        done
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Progress
-                                        value={group.progressPct}
-                                        aria-label={`${group.name}: ${group.progressPct}%`}
-                                    />
-                                </CardContent>
-                            </Card>
-                        );
-                    })}
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Recent activity</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <WhenVisible
-                            data="activity"
-                            fallback={<ActivitySkeleton />}
-                        >
-                            <ActivityList items={activity ?? []} />
-                        </WhenVisible>
-                    </CardContent>
-                </Card>
-            </div>
+                <section className="flex flex-col gap-3">
+                    <h2 className="text-sm font-semibold">Recent activity</h2>
+                    <WhenVisible
+                        data="activity"
+                        fallback={<ActivitySkeleton />}
+                    >
+                        <ActivityList items={activity ?? []} />
+                    </WhenVisible>
+                </section>
+            </Page>
         </>
     );
 }
 
 function ActivitySkeleton() {
     return (
-        <div className="space-y-3">
-            {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-5 w-full animate-pulse" />
+        <Card className="gap-0 py-0">
+            {[0, 1, 2, 3].map((i) => (
+                <div
+                    key={i}
+                    className="flex items-center gap-3 border-b px-4 py-3 last:border-b-0"
+                >
+                    <Skeleton className="size-2 rounded-full" />
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-4 w-16" />
+                </div>
             ))}
-        </div>
+        </Card>
     );
 }
 
 function ActivityList({ items }: { items: Activity[] }) {
     if (items.length === 0) {
         return (
-            <p className="text-sm text-muted-foreground">No activity yet.</p>
+            <EmptyState
+                icon={History}
+                size="sm"
+                title="No activity yet"
+                description="Task updates, decisions, and research show up here."
+            />
         );
     }
 
     return (
-        <ul className="space-y-2 text-sm">
-            {items.map((item) => (
-                <li key={item.id} className="flex justify-between gap-4">
-                    <span>
-                        {describe(item)}
-                        {item.clientName && (
-                            <span className="text-muted-foreground">
-                                {' '}
-                                via {item.clientName}
-                            </span>
-                        )}
-                    </span>
-                    <time
-                        dateTime={item.createdAt}
-                        className="shrink-0 text-muted-foreground"
+        <Card className="gap-0 py-0">
+            <ul>
+                {items.map((item) => (
+                    <li
+                        key={item.id}
+                        className="flex items-center gap-3 border-b px-4 py-3 text-sm last:border-b-0"
                     >
-                        {new Date(item.createdAt).toLocaleString()}
-                    </time>
-                </li>
-            ))}
-        </ul>
+                        <span
+                            aria-hidden
+                            className="size-1.5 shrink-0 rounded-full bg-primary/60"
+                        />
+                        <span className="min-w-0 flex-1 truncate">
+                            <span className="first-letter:uppercase">
+                                {describe(item)}
+                            </span>
+                            {item.clientName && (
+                                <span className="text-muted-foreground">
+                                    {' '}
+                                    via {item.clientName}
+                                </span>
+                            )}
+                        </span>
+                        <time
+                            dateTime={item.createdAt}
+                            title={formatDateTime(item.createdAt)}
+                            className="shrink-0 font-mono text-xs text-muted-foreground"
+                        >
+                            {formatRelativeTime(item.createdAt)}
+                        </time>
+                    </li>
+                ))}
+            </ul>
+        </Card>
     );
 }
 

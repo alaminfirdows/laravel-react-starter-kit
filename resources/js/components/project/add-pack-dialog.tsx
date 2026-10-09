@@ -1,7 +1,8 @@
 import { Form, router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Package, Plus } from 'lucide-react';
 import { useState } from 'react';
 import ProjectPackController from '@/actions/App/Domain/Project/Http/Controllers/ProjectPackController';
+import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -43,7 +44,7 @@ export function AddPackDialog({
         <Dialog open={open} onOpenChange={changeOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline">
-                    <Plus /> Add pack
+                    <Plus data-icon="inline-start" /> Add pack
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl">
@@ -55,18 +56,20 @@ export function AddPackDialog({
                     </DialogDescription>
                 </DialogHeader>
                 {packs === undefined ? (
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                         <Skeleton className="h-20 w-full animate-pulse" />
                         <Skeleton className="h-20 w-full animate-pulse" />
                     </div>
                 ) : packs.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No more packs for this phase.
-                    </p>
+                    <EmptyState
+                        size="sm"
+                        icon={Package}
+                        title="No more packs for this phase."
+                    />
                 ) : (
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-3">
                         {packs.map((pack) => (
-                            <Card key={pack.key}>
+                            <Card key={pack.key} className="gap-3 py-4">
                                 <CardHeader>
                                     <CardTitle>{pack.name}</CardTitle>
                                     <CardDescription>

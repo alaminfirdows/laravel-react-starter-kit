@@ -1,18 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
-import {
-    BookOpen,
-    ClipboardList,
-    FolderKanban,
-    History,
-    LayoutDashboard,
-    Monitor,
-    Moon,
-    Scale,
-    Search,
-    ShieldQuestion,
-    Sun,
-    User,
-} from 'lucide-react';
+import { FolderKanban, Monitor, Moon, Search, Sun, User } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { WorkspaceAvatar } from '@/components/workspace-avatar';
@@ -31,12 +18,8 @@ import { useMainNav } from '@/hooks/use-main-nav';
 import { cn, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
+import { projectSections } from '@/lib/project-sections';
 import { show as showProject } from '@/routes/projects';
-import { index as activityIndex } from '@/routes/projects/activity';
-import { index as approvalsIndex } from '@/routes/projects/approvals';
-import { index as decisionsIndex } from '@/routes/projects/decisions';
-import { index as knowledgeIndex } from '@/routes/projects/knowledge';
-import { index as researchIndex } from '@/routes/projects/research';
 import type { Project } from '@/types';
 
 type CommandPaletteContextValue = {
@@ -104,40 +87,7 @@ function CommandPalette({
         router.visit(toUrl(href));
     };
 
-    const projectSections = project
-        ? [
-              {
-                  title: 'Overview',
-                  href: showProject({ project: project.slug }),
-                  icon: LayoutDashboard,
-              },
-              {
-                  title: 'Knowledge',
-                  href: knowledgeIndex({ project: project.slug }),
-                  icon: BookOpen,
-              },
-              {
-                  title: 'Research',
-                  href: researchIndex({ project: project.slug }),
-                  icon: ClipboardList,
-              },
-              {
-                  title: 'Decisions',
-                  href: decisionsIndex({ project: project.slug }),
-                  icon: Scale,
-              },
-              {
-                  title: 'Approvals',
-                  href: approvalsIndex({ project: project.slug }),
-                  icon: ShieldQuestion,
-              },
-              {
-                  title: 'Activity',
-                  href: activityIndex({ project: project.slug }),
-                  icon: History,
-              },
-          ]
-        : [];
+    const sections = project ? projectSections(project.slug) : [];
 
     return (
         <CommandDialog
@@ -154,7 +104,7 @@ function CommandPalette({
 
                 {project && (
                     <CommandGroup heading={project.name}>
-                        {projectSections.map((item) => (
+                        {sections.map((item) => (
                             <CommandItem
                                 key={item.title}
                                 value={`${project.name} ${item.title}`}

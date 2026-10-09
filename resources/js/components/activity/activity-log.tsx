@@ -1,8 +1,12 @@
 import { Link, router } from '@inertiajs/react';
+import { Activity as ActivityIcon } from 'lucide-react';
 import type { RouteDefinition } from '@/wayfinder';
+import { EmptyState } from '@/components/empty-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatDateTime, formatRelativeTime } from '@/lib/format';
 import type {
     Activity,
     ActivityFilterValues,
@@ -75,8 +79,8 @@ export function ActivityLog({
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-2">
                 <FilterSelect
                     label="actors"
                     value={filters.actor}
@@ -97,41 +101,52 @@ export function ActivityLog({
                 />
             </div>
             {activity.data.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    No activity found.
-                </p>
+                <EmptyState
+                    icon={ActivityIcon}
+                    size="sm"
+                    title="No activity found"
+                    description="Changes will show up here as they happen."
+                />
             ) : (
-                <ul className="divide-y rounded-md border text-sm">
-                    {activity.data.map((item) => (
-                        <li
-                            key={item.id}
-                            className="flex flex-wrap items-center justify-between gap-2 p-3"
-                        >
-                            <div className="min-w-0 space-y-1">
-                                <p className="font-medium">
-                                    {describeActivity(item)}
-                                </p>
-                                <p className="text-muted-foreground">
-                                    {actorLabel(item)}
-                                    {showProject && item.project && (
-                                        <> · {item.project.name}</>
-                                    )}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Badge variant="outline">{item.channel}</Badge>
-                                <time
-                                    dateTime={item.createdAt}
-                                    className="text-muted-foreground"
-                                >
-                                    {new Date(item.createdAt).toLocaleString()}
-                                </time>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
+                <Card className="gap-0 py-0">
+                    <ul className="flex flex-col text-sm">
+                        {activity.data.map((item) => (
+                            <li
+                                key={item.id}
+                                className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 last:border-b-0"
+                            >
+                                <div className="flex min-w-0 flex-col gap-0.5">
+                                    <p className="font-medium capitalize">
+                                        {describeActivity(item)}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {actorLabel(item)}
+                                        {showProject && item.project && (
+                                            <> · {item.project.name}</>
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Badge
+                                        variant="muted"
+                                        className="font-mono"
+                                    >
+                                        {item.channel}
+                                    </Badge>
+                                    <time
+                                        dateTime={item.createdAt}
+                                        title={formatDateTime(item.createdAt)}
+                                        className="font-mono text-xs text-muted-foreground"
+                                    >
+                                        {formatRelativeTime(item.createdAt)}
+                                    </time>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </Card>
             )}
-            <div className="flex justify-between">
+            <div className="flex items-center justify-between">
                 <Button
                     variant="outline"
                     size="sm"

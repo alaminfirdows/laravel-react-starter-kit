@@ -48,7 +48,7 @@ function EvidenceItem({ evidence }: { evidence: Evidence }) {
 
 function RunItem({ run }: { run: ActionRun }) {
     return (
-        <li className="space-y-2 text-sm">
+        <li className="flex flex-col gap-2 text-sm">
             <div className="flex flex-wrap items-center gap-2">
                 <Badge
                     variant={
@@ -90,21 +90,21 @@ export function ActionActivity({
     }
 
     return (
-        <Collapsible className="w-full space-y-3">
+        <Collapsible className="flex w-full flex-col gap-3">
             <CollapsibleTrigger className="flex items-center gap-1 text-sm text-muted-foreground">
                 <ChevronDown className="size-4" />
                 {runs.length} runs · {evidence.length} evidence
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-4">
+            <CollapsibleContent className="flex flex-col gap-4">
                 {evidence.length > 0 && (
-                    <ul className="space-y-1">
+                    <ul className="flex flex-col gap-1">
                         {evidence.map((item) => (
                             <EvidenceItem key={item.id} evidence={item} />
                         ))}
                     </ul>
                 )}
                 {runs.length > 0 && (
-                    <ul className="space-y-3">
+                    <ul className="flex flex-col gap-3">
                         {runs.map((run) => (
                             <RunItem key={run.id} run={run} />
                         ))}

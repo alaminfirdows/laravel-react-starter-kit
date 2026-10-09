@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { ActivityLog } from '@/components/activity/activity-log';
-import Heading from '@/components/heading';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { index } from '@/routes/projects/activity';
 import type { ActivityLogProps, ProjectPageProps } from '@/types';
 
@@ -11,8 +12,8 @@ export default function ProjectActivity({
     return (
         <>
             <Head title={`Activity · ${project.name}`} />
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
-                <Heading
+            <Page>
+                <PageHeader
                     title="Activity"
                     description="Who changed what, from the web, Claude (MCP) or background jobs."
                 />
@@ -22,7 +23,7 @@ export default function ProjectActivity({
                     options={log.options}
                     href={index({ project: project.slug })}
                 />
-            </div>
+            </Page>
         </>
     );
 }

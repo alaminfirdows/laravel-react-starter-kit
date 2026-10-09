@@ -20,7 +20,7 @@ export function ParentTaskCard({
 }) {
     return (
         <Link href={show({ project: projectSlug, task: parent.id })}>
-            <Card className="py-4 hover:border-primary">
+            <Card className="gap-0 py-3 transition-colors hover:bg-muted/50">
                 <CardHeader className="flex items-center gap-3">
                     <CornerLeftUp className="size-4 text-muted-foreground" />
                     <TaskStatusIcon status={parent.status} />
@@ -31,7 +31,7 @@ export function ParentTaskCard({
                         </CardTitle>
                     </div>
                     <Progress value={parent.progressPct} className="w-24" />
-                    <span className="text-sm tabular-nums">
+                    <span className="font-mono text-xs text-muted-foreground tabular-nums">
                         {parent.progressPct}%
                     </span>
                 </CardHeader>

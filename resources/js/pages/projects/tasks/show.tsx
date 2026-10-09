@@ -1,5 +1,6 @@
 import { Head, usePoll } from '@inertiajs/react';
 import { useEffect } from 'react';
+import { Page } from '@/components/page';
 import { Markdown } from '@/components/markdown/markdown';
 import { ActionCard } from '@/components/task/action-card';
 import { CatalogUpdateDialog } from '@/components/task/catalog-update-dialog';
@@ -46,10 +47,12 @@ export default function TaskShow({
         return stop;
     }, [shouldPoll, start, stop]);
 
+    const hasSubtasks = task.children.length > 0;
+
     return (
         <>
             <Head title={task.title} />
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
+            <Page>
                 {task.parent && (
                     <ParentTaskCard
                         parent={task.parent}
@@ -69,38 +72,50 @@ export default function TaskShow({
                         diff={catalogDiff}
                     />
                 )}
-                <Markdown source={task.bodyMd} />
-                {task.children.length > 0 && (
-                    <section className="space-y-3">
-                        <h2 className="font-semibold">Subtasks</h2>
-                        <SubtaskList
-                            items={task.children}
+                <div
+                    className={
+                        hasSubtasks
+                            ? 'grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start'
+                            : 'flex flex-col gap-8'
+                    }
+                >
+                    <div className="flex min-w-0 flex-col gap-8">
+                        {task.bodyMd && <Markdown source={task.bodyMd} />}
+                        {task.actions.length > 0 && (
+                            <section className="flex flex-col gap-3">
+                                <h2 className="text-sm font-semibold">
+                                    How to get it done
+                                </h2>
+                                {task.actions.map((action) => (
+                                    <ActionCard
+                                        key={action.id}
+                                        taskId={task.id}
+                                        action={action}
+                                        projectSlug={project.slug}
+                                        canUpdate={can.update}
+                                    />
+                                ))}
+                            </section>
+                        )}
+                        <CommentThread
+                            comments={comments}
+                            taskId={task.id}
                             projectSlug={project.slug}
                             canUpdate={can.update}
                         />
-                    </section>
-                )}
-                {task.actions.length > 0 && (
-                    <section className="space-y-3">
-                        <h2 className="font-semibold">How to get it done</h2>
-                        {task.actions.map((action) => (
-                            <ActionCard
-                                key={action.id}
-                                taskId={task.id}
-                                action={action}
+                    </div>
+                    {hasSubtasks && (
+                        <aside className="flex flex-col gap-3 lg:sticky lg:top-6">
+                            <h2 className="text-sm font-semibold">Subtasks</h2>
+                            <SubtaskList
+                                items={task.children}
                                 projectSlug={project.slug}
                                 canUpdate={can.update}
                             />
-                        ))}
-                    </section>
-                )}
-                <CommentThread
-                    comments={comments}
-                    taskId={task.id}
-                    projectSlug={project.slug}
-                    canUpdate={can.update}
-                />
-            </div>
+                        </aside>
+                    )}
+                </div>
+            </Page>
         </>
     );
 }

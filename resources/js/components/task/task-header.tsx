@@ -6,6 +6,7 @@ import {
     type AssigneeOption,
 } from '@/components/task/assignee-picker';
 import { TaskStatusIcon } from '@/components/project/task-status-icon';
+import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -79,15 +80,18 @@ export function TaskHeader({
     assignees?: AssigneeOption[];
 }) {
     return (
-        <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="min-w-0 space-y-2">
-                <h1 className="flex items-center gap-2 text-2xl font-semibold">
-                    <TaskStatusIcon status={task.status} className="size-5" />
-                    {task.title}
-                </h1>
-                <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{task.statusLabel}</Badge>
-                    <Badge variant="outline">{task.priority}</Badge>
+        <PageHeader
+            leading={
+                <TaskStatusIcon status={task.status} className="mt-1 size-5" />
+            }
+            title={task.title}
+            description={task.summary}
+            meta={
+                <>
+                    <Badge variant="muted">{task.statusLabel}</Badge>
+                    <Badge variant="outline" className="font-mono">
+                        {task.priority}
+                    </Badge>
                     {canUpdate && assignees ? (
                         <AssigneePicker
                             key={task.assignee?.id ?? 'none'}
@@ -102,14 +106,13 @@ export function TaskHeader({
                             </Badge>
                         )
                     )}
-                </div>
-                {task.summary && (
-                    <p className="text-muted-foreground">{task.summary}</p>
-                )}
-            </div>
-            {task.isLeaf && canUpdate && (
-                <CompletionButton task={task} projectSlug={projectSlug} />
-            )}
-        </div>
+                </>
+            }
+            actions={
+                task.isLeaf && canUpdate ? (
+                    <CompletionButton task={task} projectSlug={projectSlug} />
+                ) : undefined
+            }
+        />
     );
 }

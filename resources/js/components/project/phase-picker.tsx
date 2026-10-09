@@ -35,10 +35,13 @@ export function PhasePicker({
                     <FieldLabel
                         key={phase.value}
                         htmlFor={`phase-${phase.value}`}
+                        className="transition-colors hover:bg-muted/50 has-data-[state=checked]:ring-1 has-data-[state=checked]:ring-primary"
                     >
                         <Field orientation="horizontal">
                             <FieldContent>
-                                <Icon className="size-5" />
+                                <span className="flex size-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+                                    <Icon className="size-4" />
+                                </span>
                                 <FieldTitle>{phase.label}</FieldTitle>
                                 <FieldDescription>
                                     {phase.description}

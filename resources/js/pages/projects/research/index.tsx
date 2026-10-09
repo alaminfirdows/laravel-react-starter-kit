@@ -1,20 +1,17 @@
 import { Head, Link } from '@inertiajs/react';
-import { FileText, Plus } from 'lucide-react';
+import { Building2, FileText, MessagesSquare, Plus } from 'lucide-react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import CompetitorController from '@/actions/App/Domain/Knowledge/Http/Controllers/CompetitorController';
 import InterviewController from '@/actions/App/Domain/Knowledge/Http/Controllers/InterviewController';
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
-import Heading from '@/components/heading';
+import { EmptyState } from '@/components/empty-state';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { ResearchFormDialog } from '@/components/project/research-form-dialog';
 import type { ResearchField } from '@/components/project/research-form-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { show as knowledgeShow } from '@/routes/projects/knowledge';
 import type { Competitor, Interview, ProjectPageProps } from '@/types';
@@ -98,32 +95,23 @@ export default function ResearchIndex({
     competitors,
 }: ResearchIndexProps) {
     const projectArgs = { project: project.slug };
+    const [tab, setTab] = useState('interviews');
 
     return (
         <>
             <Head title={`Research · ${project.name}`} />
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
-                <Heading
+            <Page size="narrow">
+                <PageHeader
                     title="Research"
                     description="Customer interviews and competitors. Each row is also saved as a knowledge document, so search finds it."
-                />
-
-                <Tabs defaultValue="interviews">
-                    <TabsList>
-                        <TabsTrigger value="interviews">
-                            Interviews ({interviews.length})
-                        </TabsTrigger>
-                        <TabsTrigger value="competitors">
-                            Competitors ({competitors.length})
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="interviews" className="space-y-4">
-                        {can.update && (
+                    actions={
+                        can.update &&
+                        (tab === 'interviews' ? (
                             <ResearchFormDialog
                                 trigger={
                                     <Button size="sm">
-                                        <Plus /> Add interview
+                                        <Plus data-icon="inline-start" /> Add
+                                        interview
                                     </Button>
                                 }
                                 title="Add interview"
@@ -134,11 +122,47 @@ export default function ResearchIndex({
                                 )}
                                 fields={interviewFields}
                             />
-                        )}
+                        ) : (
+                            <ResearchFormDialog
+                                trigger={
+                                    <Button size="sm">
+                                        <Plus data-icon="inline-start" /> Add
+                                        competitor
+                                    </Button>
+                                }
+                                title="Add competitor"
+                                description="What they sell, to whom, and what their customers complain about."
+                                submitLabel="Save competitor"
+                                form={CompetitorController.store.form(
+                                    projectArgs,
+                                )}
+                                fields={competitorFields}
+                            />
+                        ))
+                    }
+                />
+
+                <Tabs value={tab} onValueChange={setTab}>
+                    <TabsList>
+                        <TabsTrigger value="interviews">
+                            Interviews ({interviews.length})
+                        </TabsTrigger>
+                        <TabsTrigger value="competitors">
+                            Competitors ({competitors.length})
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent
+                        value="interviews"
+                        className="mt-4 flex flex-col gap-3"
+                    >
                         {interviews.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                No interviews yet.
-                            </p>
+                            <EmptyState
+                                icon={MessagesSquare}
+                                size="sm"
+                                title="No interviews yet."
+                                description="Add what customers told you, in their words."
+                            />
                         ) : (
                             interviews.map((interview) => (
                                 <ResearchCard
@@ -223,27 +247,17 @@ export default function ResearchIndex({
                         )}
                     </TabsContent>
 
-                    <TabsContent value="competitors" className="space-y-4">
-                        {can.update && (
-                            <ResearchFormDialog
-                                trigger={
-                                    <Button size="sm">
-                                        <Plus /> Add competitor
-                                    </Button>
-                                }
-                                title="Add competitor"
-                                description="What they sell, to whom, and what their customers complain about."
-                                submitLabel="Save competitor"
-                                form={CompetitorController.store.form(
-                                    projectArgs,
-                                )}
-                                fields={competitorFields}
-                            />
-                        )}
+                    <TabsContent
+                        value="competitors"
+                        className="mt-4 flex flex-col gap-3"
+                    >
                         {competitors.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                No competitors yet.
-                            </p>
+                            <EmptyState
+                                icon={Building2}
+                                size="sm"
+                                title="No competitors yet."
+                                description="Track what they sell and what customers complain about."
+                            />
                         ) : (
                             competitors.map((competitor) => (
                                 <ResearchCard
@@ -325,7 +339,7 @@ export default function ResearchIndex({
                         )}
                     </TabsContent>
                 </Tabs>
-            </div>
+            </Page>
         </>
     );
 }
@@ -347,38 +361,40 @@ function ResearchCard({
     const filledSections = sections.filter(([, body]) => !!body);
 
     return (
-        <Card>
-            <CardHeader className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0 space-y-1.5">
-                    <CardTitle>{title}</CardTitle>
+        <Card className="gap-0 py-0">
+            <div className="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
+                <div className="flex min-w-0 flex-col gap-0.5">
+                    <h2 className="text-sm font-semibold">{title}</h2>
                     {filledMeta && (
-                        <CardDescription className="break-all">
+                        <p className="font-mono text-xs break-all text-muted-foreground">
                             {filledMeta}
-                        </CardDescription>
+                        </p>
                     )}
                 </div>
-                <div className="flex gap-1">
+                <div className="flex items-center gap-1">
                     {documentHref && (
                         <Button variant="ghost" size="sm" asChild>
                             <Link href={documentHref}>
-                                <FileText /> Doc
+                                <FileText data-icon="inline-start" /> Doc
                             </Link>
                         </Button>
                     )}
                     {actions}
                 </div>
-            </CardHeader>
+            </div>
             {filledSections.length > 0 && (
-                <CardContent className="space-y-3">
+                <div className="flex flex-col gap-3 border-t px-4 py-3">
                     {filledSections.map(([heading, body]) => (
-                        <div key={heading}>
-                            <h3 className="text-sm font-medium">{heading}</h3>
-                            <p className="text-sm whitespace-pre-line text-muted-foreground">
+                        <div key={heading} className="flex flex-col gap-0.5">
+                            <h3 className="text-xs font-medium text-muted-foreground">
+                                {heading}
+                            </h3>
+                            <p className="text-sm whitespace-pre-line">
                                 {body}
                             </p>
                         </div>
                     ))}
-                </CardContent>
+                </div>
             )}
         </Card>
     );

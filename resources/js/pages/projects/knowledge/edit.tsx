@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 import KnowledgeController from '@/actions/App/Domain/Knowledge/Http/Controllers/KnowledgeController';
-import Heading from '@/components/heading';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { MarkdownEditor } from '@/components/markdown/markdown-editor';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,8 +44,8 @@ export default function KnowledgeEdit({
             <Head
                 title={document ? `Edit ${document.title}` : 'New document'}
             />
-            <div className="mx-auto w-full max-w-4xl space-y-8 p-4 md:p-8">
-                <Heading
+            <Page size="narrow">
+                <PageHeader
                     title={document ? 'Edit document' : 'New document'}
                     description="Markdown is saved as a new version when the text changes."
                 />
@@ -142,7 +143,7 @@ export default function KnowledgeEdit({
                         </FieldGroup>
                     )}
                 </Form>
-            </div>
+            </Page>
         </>
     );
 }
