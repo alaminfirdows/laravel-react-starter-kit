@@ -7,12 +7,13 @@ use App\Domain\Project\Broadcasting\ProjectChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Foundation\Events\Dispatchable;
 
 /**
  * A comment was posted on a project task. Carries ids only, no body.
  */
-class CommentPosted implements ShouldBroadcast
+class CommentPosted implements ShouldBroadcast, ShouldDispatchAfterCommit
 {
     use Dispatchable, InteractsWithSockets;
 

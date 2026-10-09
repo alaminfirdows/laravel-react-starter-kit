@@ -17,7 +17,9 @@ use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
@@ -90,4 +92,39 @@ test('events use stable broadcast names', function () {
 
 test('pusher connection is configured', function () {
     expect(config('broadcasting.connections.pusher.driver'))->toBe('pusher');
+});
+
+test('broadcast events dispatch only after commit', function () {
+    $run = ActionRun::factory()->forAction(TaskAction::factory()->forTask($this->task)->create())->create();
+    $comment = app(PostComment::class)->handle($this->task, 'Hi', Actor::user($this->owner));
+
+    expect(new TaskStatusChanged($this->task))->toBeInstanceOf(ShouldDispatchAfterCommit::class)
+        ->and(new RunFinished($run))->toBeInstanceOf(ShouldDispatchAfterCommit::class)
+        ->and(new CommentPosted($comment))->toBeInstanceOf(ShouldDispatchAfterCommit::class);
+});
+
+test('rolled back status change does not dispatch', function () {
+    Event::fake([TaskStatusChanged::class]);
+
+    DB::beginTransaction();
+    $this->task->forceFill(['status' => TaskStatus::InProgress])->save();
+    DB::rollBack();
+
+    Event::assertNotDispatched(TaskStatusChanged::class);
+});
+
+test('broadcasting auth endpoint admits members only', function () {
+    config([
+        'broadcasting.default' => 'pusher',
+        'broadcasting.connections.pusher.key' => 'test-key',
+        'broadcasting.connections.pusher.secret' => 'test-secret',
+        'broadcasting.connections.pusher.app_id' => 'test-app',
+    ]);
+    Broadcast::purge();
+    require base_path('routes/channels.php');
+
+    $payload = ['channel_name' => "private-projects.{$this->project->id}", 'socket_id' => '1234.5678'];
+
+    $this->actingAs($this->owner)->postJson('/broadcasting/auth', $payload)->assertOk();
+    $this->actingAs(User::factory()->create())->postJson('/broadcasting/auth', $payload)->assertForbidden();
 });

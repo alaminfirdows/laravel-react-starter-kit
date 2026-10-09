@@ -1,4 +1,5 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePoll } from '@inertiajs/react';
+import { useEffect } from 'react';
 import { Markdown } from '@/components/markdown/markdown';
 import { ActionCard } from '@/components/task/action-card';
 import { CatalogUpdateDialog } from '@/components/task/catalog-update-dialog';
@@ -27,6 +28,24 @@ export default function TaskShow({
     comments: TaskComment[];
     catalogDiff?: CatalogFieldDiff[];
 }) {
+    const { start, stop } = usePoll(
+        10_000,
+        { only: ['task'] },
+        { autoStart: false },
+    );
+    const shouldPoll =
+        task.hasActiveRun && !import.meta.env.VITE_PUSHER_APP_KEY;
+
+    useEffect(() => {
+        if (shouldPoll) {
+            start();
+        } else {
+            stop();
+        }
+
+        return stop;
+    }, [shouldPoll, start, stop]);
+
     return (
         <>
             <Head title={task.title} />
