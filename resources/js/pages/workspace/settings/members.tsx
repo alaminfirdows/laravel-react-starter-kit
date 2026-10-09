@@ -120,7 +120,7 @@ function MemberInfo({ member }: { member: WorkspaceMember }) {
     return (
         <>
             <Avatar className="size-8 rounded-full">
-                <AvatarFallback className="bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                <AvatarFallback className="bg-primary/10 font-medium text-primary dark:bg-primary/20">
                     {getInitials(member.name)}
                 </AvatarFallback>
             </Avatar>

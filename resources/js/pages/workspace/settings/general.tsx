@@ -198,8 +198,8 @@ function DeleteWorkspace({ workspace }: { workspace: WorkspaceDetails }) {
                 title="Delete workspace"
                 description="Delete this workspace, its members and its data"
             />
-            <div className="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10">
-                <div className="space-y-0.5 text-red-600 dark:text-red-100">
+            <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4 dark:bg-destructive/10">
+                <div className="space-y-0.5 text-destructive-foreground">
                     <p className="font-medium">Warning</p>
                     <p className="text-sm">This cannot be undone.</p>
                 </div>

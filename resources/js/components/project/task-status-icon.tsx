@@ -9,8 +9,8 @@ import { cn } from '@/lib/utils';
 import type { TaskStatus } from '@/types';
 
 const icons: Partial<Record<TaskStatus, [typeof Circle, string]>> = {
-    done: [CheckCircle2, 'text-emerald-600'],
-    in_progress: [CircleDot, 'text-amber-500'],
+    done: [CheckCircle2, 'text-success'],
+    in_progress: [CircleDot, 'text-warning'],
     locked: [Lock, 'text-muted-foreground'],
     skipped: [CircleSlash, 'text-muted-foreground'],
 };
