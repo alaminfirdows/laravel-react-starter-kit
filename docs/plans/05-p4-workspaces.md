@@ -40,4 +40,4 @@
 
 - Tasks 1–6 shipped. Comments use `author_type/author_id` (not an author morph); viewers cannot comment; removing a member unassigns their tasks and revokes their workspace MCP tokens.
 - Audit view: `projects/{project}/activity` (any member) and `settings/activity` (admins), filters actor / channel / event, 50 per page.
-- **Tasks 7–8 (Reverb, live UI) deferred:** `laravel/reverb` + `@laravel/echo-react` not installed (dependency change needs approval). UI keeps P1/P3 polling until then.
+- **Tasks 7–8 (Reverb, live UI) deferred:** `laravel/reverb` + `@laravel/echo-react` not installed (dependency change needs approval). UI keeps P1/P3 polling until then. Install attempt 2026-10-09 failed: every `laravel/reverb` 1.x requires `guzzlehttp/psr7 ^2`, but `guzzlehttp/guzzle 8` locks psr7 3.x. Unblock = Reverb release with psr7 3 support, or downgrade Guzzle to 7 (needs approval).
