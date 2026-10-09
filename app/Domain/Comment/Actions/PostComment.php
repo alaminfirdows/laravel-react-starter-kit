@@ -4,6 +4,7 @@ namespace App\Domain\Comment\Actions;
 
 use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
+use App\Domain\Comment\Events\CommentPosted;
 use App\Domain\Comment\Models\Comment;
 use App\Domain\Comment\Notifications\MentionedInComment;
 use App\Domain\Comment\Support\MentionParser;
@@ -39,6 +40,7 @@ class PostComment
         ], $actor);
 
         Notification::send($mentioned, new MentionedInComment($comment));
+        CommentPosted::dispatch($comment);
 
         return $comment;
     }

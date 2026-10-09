@@ -6,6 +6,7 @@ use App\Domain\Activity\Enums\ActorType;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\RunChannel;
 use App\Domain\Task\Enums\RunStatus;
+use App\Domain\Task\Events\RunFinished;
 use Carbon\CarbonImmutable;
 use Database\Factories\ActionRunFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -44,6 +45,15 @@ class ActionRun extends Model
 {
     /** @use HasFactory<ActionRunFactory> */
     use HasFactory, HasUlids;
+
+    protected static function booted(): void
+    {
+        static::updated(function (ActionRun $run): void {
+            if ($run->wasChanged('status') && $run->status !== RunStatus::Started) {
+                RunFinished::dispatch($run);
+            }
+        });
+    }
 
     protected function casts(): array
     {

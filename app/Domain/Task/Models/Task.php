@@ -8,6 +8,7 @@ use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\TaskPriority;
 use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Enums\Verification;
+use App\Domain\Task\Events\TaskStatusChanged;
 use App\Domain\Task\Policies\TaskPolicy;
 use App\Domain\Workspace\Concerns\BelongsToWorkspace;
 use App\Models\User;
@@ -84,6 +85,15 @@ class Task extends Model
         'depth' => 0,
         'progress_pct' => 0,
     ];
+
+    protected static function booted(): void
+    {
+        static::updated(function (Task $task): void {
+            if ($task->wasChanged('status')) {
+                TaskStatusChanged::dispatch($task);
+            }
+        });
+    }
 
     protected function casts(): array
     {
