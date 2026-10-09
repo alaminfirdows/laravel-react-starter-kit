@@ -1,10 +1,17 @@
 import { Head } from '@inertiajs/react';
 import { Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { approve, deny } from '@/routes/passport/authorizations';
 
 type Props = {
-    client: { id: string; name: string };
+    client: {
+        id: string;
+        name: string;
+        verified: boolean;
+        redirectHosts: string[];
+        createdAt: string | null;
+    };
     scopes: { id: string; description: string }[];
     state: string;
     authToken: string;
@@ -38,6 +45,31 @@ export default function Authorize({
             <Head title="Authorize" />
 
             <div className="space-y-6">
+                <div className="space-y-1 text-sm">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <strong>{client.name}</strong>
+                        {client.verified ? (
+                            <Badge variant="secondary">Verified</Badge>
+                        ) : (
+                            <Badge variant="destructive">Unverified app</Badge>
+                        )}
+                    </div>
+                    <p className="text-muted-foreground">
+                        Sends you back to{' '}
+                        <strong className="text-foreground">
+                            {client.redirectHosts.join(', ')}
+                        </strong>
+                        {client.createdAt &&
+                            ` · Registered ${new Date(client.createdAt).toLocaleDateString()}`}
+                    </p>
+                    {!client.verified && (
+                        <p className="text-muted-foreground">
+                            Only continue if you trust this app and this
+                            address.
+                        </p>
+                    )}
+                </div>
+
                 <p className="text-sm">
                     <strong>{client.name}</strong> wants to work on your
                     projects

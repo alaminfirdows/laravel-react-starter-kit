@@ -72,6 +72,8 @@ test('consent screen shows the client and workspace', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page->component('oauth/authorize')
             ->where('client.name', 'Claude')
+            ->where('client.verified', true)
+            ->where('client.redirectHosts', ['claude.ai'])
             ->where('state', 'xyz')
             ->where('workspace.name', 'Personal'));
 });

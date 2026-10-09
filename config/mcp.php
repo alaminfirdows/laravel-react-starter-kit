@@ -11,15 +11,28 @@ return [
     | for redirect URIs. Each domain should be specified with its scheme
     | and host. Domains not in this list will raise validation errors.
     |
-    | An "*" may be used to allow all domains.
+    | Only Claude hosts by default (comma list in MCP_REDIRECT_DOMAINS).
+    | Localhost is added for the local and testing environments only.
     |
     */
 
     'redirect_domains' => [
-        '*',
-        // 'https://example.com',
-        // 'http://localhost',
+        ...array_values(array_filter(array_map('trim', explode(',', (string) env('MCP_REDIRECT_DOMAINS', 'https://claude.ai,https://claude.com'))))),
+        ...(in_array(env('APP_ENV'), ['local', 'testing'], true) ? ['http://localhost', 'http://127.0.0.1'] : []),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reserved Client Names
+    |--------------------------------------------------------------------------
+    |
+    | Dynamically registered clients may use these names (case-insensitive,
+    | also as part of a longer name) only with Claude redirect URIs. Such
+    | clients show as verified on the consent screen; others do not.
+    |
+    */
+
+    'reserved_client_names' => ['Claude', 'Founder OS'],
 
     /*
     |--------------------------------------------------------------------------

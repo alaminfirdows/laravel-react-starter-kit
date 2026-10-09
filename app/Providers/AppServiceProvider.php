@@ -38,11 +38,13 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * OAuth consent screen for the Claude connector and the MCP rate limit (120/min per token user).
+     * OAuth consent screen for the Claude connector, the MCP rate limit (120/min per token user)
+     * and the client registration limit (10/hour per IP).
      */
     protected function configurePassport(): void
     {
         RateLimiter::for('mcp', fn (Request $request): Limit => Limit::perMinute(120)->by($request->user()?->getAuthIdentifier() ?? $request->ip()));
+        RateLimiter::for('oauth-register', fn (Request $request): Limit => Limit::perHour(10)->by((string) $request->ip()));
 
         Passport::authorizationView(app(OAuthConsentView::class)(...));
     }
