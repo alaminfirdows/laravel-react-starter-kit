@@ -1,5 +1,6 @@
 import { Head, Link, WhenVisible } from '@inertiajs/react';
 import { ArrowRight, Info } from 'lucide-react';
+import { AddPackDialog } from '@/components/project/add-pack-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,18 +15,26 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { edit } from '@/routes/projects/setup';
 import { show as showTask } from '@/routes/projects/tasks';
-import type { Activity, ProjectPageProps, TaskSummary } from '@/types';
+import type {
+    Activity,
+    AvailablePack,
+    ProjectPageProps,
+    TaskSummary,
+} from '@/types';
 
 type OverviewProps = ProjectPageProps & {
     nextTask: TaskSummary | null;
     activity?: Activity[];
+    availablePacks?: AvailablePack[];
 };
 
 export default function ProjectOverview({
     project,
+    can,
     tree,
     nextTask,
     activity,
+    availablePacks,
 }: OverviewProps) {
     return (
         <>
@@ -69,18 +78,26 @@ export default function ProjectOverview({
                             </p>
                         )}
                     </div>
-                    {nextTask && (
-                        <Button asChild>
-                            <Link
-                                href={showTask({
-                                    project: project.slug,
-                                    task: nextTask.id,
-                                })}
-                            >
-                                Continue: {nextTask.title} <ArrowRight />
-                            </Link>
-                        </Button>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                        {can.update && (
+                            <AddPackDialog
+                                projectSlug={project.slug}
+                                packs={availablePacks}
+                            />
+                        )}
+                        {nextTask && (
+                            <Button asChild>
+                                <Link
+                                    href={showTask({
+                                        project: project.slug,
+                                        task: nextTask.id,
+                                    })}
+                                >
+                                    Continue: {nextTask.title} <ArrowRight />
+                                </Link>
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

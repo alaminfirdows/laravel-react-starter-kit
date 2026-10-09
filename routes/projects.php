@@ -8,6 +8,7 @@ use App\Domain\Knowledge\Http\Controllers\KnowledgeController;
 use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\Controllers\ProjectController;
 use App\Domain\Project\Http\Controllers\ProjectLogoController;
+use App\Domain\Project\Http\Controllers\ProjectPackController;
 use App\Domain\Project\Http\Controllers\ProjectSetupController;
 use App\Domain\Task\Http\Controllers\ActionRunController;
 use App\Domain\Task\Http\Controllers\ApprovalController;
@@ -33,6 +34,7 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::get('{project}/setup/{step}', [ProjectSetupController::class, 'edit'])->whereIn('step', $steps)->name('setup.edit');
     Route::patch('{project}/setup/{step}', [ProjectSetupController::class, 'update'])->whereIn('step', $steps)->name('setup.update');
     Route::post('{project}/logo', [ProjectLogoController::class, 'store'])->name('logo.store');
+    Route::post('{project}/packs', [ProjectPackController::class, 'store'])->name('packs.store');
 
     Route::get('{project}/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
     Route::post('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'store'])->name('tasks.completion.store');

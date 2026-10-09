@@ -180,6 +180,13 @@ export type Activity = {
     createdAt: string;
 };
 
+export type AvailablePack = {
+    key: string;
+    name: string;
+    descriptionMd: string | null;
+    itemsCount: number;
+};
+
 export type ProjectPageProps = {
     project: Project;
     tree: ProjectTree;

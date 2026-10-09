@@ -4,11 +4,13 @@ namespace App\Domain\Project\Http\Controllers;
 
 use App\Domain\Activity\Http\Resources\ActivityResource;
 use App\Domain\Activity\Models\Activity;
+use App\Domain\Catalog\Queries\AvailablePacks;
 use App\Domain\Project\Actions\CreateProject;
 use App\Domain\Project\Enums\ProjectPhase;
 use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\ProjectPageProps;
 use App\Domain\Project\Http\Requests\StoreProjectRequest;
+use App\Domain\Project\Http\Resources\AvailablePackResource;
 use App\Domain\Project\Http\Resources\ProjectResource;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\TaskStatus;
@@ -56,7 +58,7 @@ class ProjectController extends Controller
         return to_route('projects.setup.edit', ['project' => $project->slug, 'step' => ProjectSetupStep::Identity]);
     }
 
-    public function show(Workspace $workspace, Project $project): Response
+    public function show(Workspace $workspace, Project $project, AvailablePacks $availablePacks): Response
     {
         Gate::authorize('view', $project);
 
@@ -73,6 +75,7 @@ class ProjectController extends Controller
             'activity' => Inertia::optional(fn () => ActivityResource::collection(
                 Activity::query()->where('project_id', $project->id)->latest('id')->limit(20)->get(),
             )),
+            'availablePacks' => Inertia::optional(fn () => AvailablePackResource::collection($availablePacks->handle($project))),
         ]);
     }
 }
