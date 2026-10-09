@@ -2,6 +2,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     ArrowLeft,
     BookOpen,
+    ClipboardList,
     History,
     LayoutDashboard,
     Scale,
@@ -29,6 +30,7 @@ import { index as activityIndex } from '@/routes/projects/activity';
 import { index as approvalsIndex } from '@/routes/projects/approvals';
 import { index as decisionsIndex } from '@/routes/projects/decisions';
 import { index as knowledgeIndex } from '@/routes/projects/knowledge';
+import { index as researchIndex } from '@/routes/projects/research';
 import { edit } from '@/routes/projects/setup';
 import type { ProjectPageProps, Task } from '@/types';
 
@@ -48,6 +50,12 @@ export function ProjectSidebar() {
             title: 'Knowledge',
             href: knowledgeIndex({ project: project.slug }),
             icon: BookOpen,
+            exact: false,
+        },
+        {
+            title: 'Research',
+            href: researchIndex({ project: project.slug }),
+            icon: ClipboardList,
             exact: false,
         },
         {

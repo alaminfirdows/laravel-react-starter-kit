@@ -43,3 +43,36 @@ export type Decision = {
     source: DocSource;
     owner?: string | null;
 };
+
+export type Interview = {
+    id: string;
+    knowledgeDocumentId: string | null;
+    person: string;
+    company: string | null;
+    role: string | null;
+    interviewedOn: string | null;
+    problem: string | null;
+    currentSolution: string | null;
+    pain: string | null;
+    desiredOutcome: string | null;
+    objections: string | null;
+    quotes: string | null;
+    featureRequests: string | null;
+    updatedAt: string | null;
+};
+
+export type Competitor = {
+    id: string;
+    knowledgeDocumentId: string | null;
+    name: string;
+    url: string | null;
+    pricing: string | null;
+    icp: string | null;
+    positioning: string | null;
+    features: string | null;
+    integrations: string | null;
+    strengths: string | null;
+    complaints: string | null;
+    lastReviewedAt: string | null;
+    updatedAt: string | null;
+};
