@@ -2,6 +2,8 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
+use App\Domain\Activity\Data\Actor;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
@@ -12,6 +14,8 @@ use Illuminate\Support\Facades\Notification;
 
 class InviteMember
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     /**
      * Validation (not a member, no pending invitation, allowed role)
      * happens in the form request.
@@ -25,11 +29,18 @@ class InviteMember
                 ->whereNull('accepted_at')
                 ->delete();
 
-            return $workspace->invitations()->create([
+            $invitation = $workspace->invitations()->create([
                 'email' => $email,
                 'role' => $role,
                 'invited_by' => $inviter->id,
             ]);
+
+            $this->activity->record('workspace.member_invited', $workspace, [
+                'email' => $invitation->email,
+                'role' => $role->value,
+            ], Actor::user($inviter));
+
+            return $invitation;
         });
 
         Notification::route('mail', $invitation->email)

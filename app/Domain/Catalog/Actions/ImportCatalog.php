@@ -2,6 +2,7 @@
 
 namespace App\Domain\Catalog\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Jobs\FlagCatalogUpdates;
 use App\Domain\Catalog\Models\CatalogCategory;
@@ -24,6 +25,8 @@ use Symfony\Component\Yaml\Yaml;
 class ImportCatalog
 {
     public const int MAX_DEPTH = 2;
+
+    public function __construct(protected ActivityRecorder $activity) {}
 
     /** Task YAML keys that are hashed but stored in their own tables. */
     private const array HASH_ONLY = ['actions', 'skills', 'resources'];
@@ -79,6 +82,8 @@ class ImportCatalog
 
             $this->importDependencies();
             $this->importPacks($this->read("{$directory}/packs.yaml"));
+
+            $this->activity->record('catalog.imported', null, $this->counts);
         });
 
         foreach ($this->changedTaskIds as $taskId) {

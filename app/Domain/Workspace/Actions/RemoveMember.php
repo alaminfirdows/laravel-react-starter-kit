@@ -2,6 +2,7 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Task\Actions\AssignTask;
 use App\Domain\Task\Models\Task;
@@ -19,6 +20,7 @@ class RemoveMember
         protected AssignTask $assign,
         protected ActiveMcpConnections $connections,
         protected RevokeMcpConnection $revoke,
+        protected ActivityRecorder $activity,
     ) {}
 
     /**
@@ -27,12 +29,17 @@ class RemoveMember
     public function handle(Workspace $workspace, User $member): void
     {
         DB::transaction(function () use ($workspace, $member): void {
-            $workspace->memberships()
+            $membership = $workspace->memberships()
                 ->where('user_id', $member->id)
                 ->where('role', '!=', WorkspaceRole::Owner->value)
                 ->lockForUpdate()
-                ->firstOrFail()
-                ->delete();
+                ->firstOrFail();
+            $membership->delete();
+
+            $this->activity->record('workspace.member_removed', $workspace, [
+                'user_id' => $member->id,
+                'role' => $membership->role->value,
+            ], Actor::current());
 
             Task::withoutWorkspaceScope()
                 ->where('workspace_id', $workspace->id)

@@ -2,9 +2,11 @@
 
 namespace App\Domain\Catalog\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Jobs\FlagCatalogUpdates;
 use App\Domain\Catalog\Models\CatalogTask;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Makes the current version live: new packs apply it and projects holding
@@ -12,14 +14,23 @@ use App\Domain\Catalog\Models\CatalogTask;
  */
 class PublishCatalogTask
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     public function handle(CatalogTask $task): CatalogTask
     {
-        $task->forceFill([
-            'status' => CatalogStatus::Published,
-            'published_at' => now(),
-        ])->save();
+        DB::transaction(function () use ($task): void {
+            $task->forceFill([
+                'status' => CatalogStatus::Published,
+                'published_at' => now(),
+            ])->save();
 
-        FlagCatalogUpdates::dispatch($task->id)->afterCommit();
+            $this->activity->record('catalog.task_published', $task, [
+                'key' => $task->key,
+                'version' => $task->version,
+            ]);
+
+            FlagCatalogUpdates::dispatch($task->id)->afterCommit();
+        });
 
         return $task;
     }

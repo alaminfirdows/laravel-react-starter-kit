@@ -2,6 +2,7 @@
 
 namespace App\Domain\Catalog\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Catalog\Data\PackData;
 use App\Domain\Catalog\Models\Pack;
 use App\Domain\Catalog\Models\PackItem;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
  */
 class SavePack
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     public function handle(PackData $data, ?Pack $pack = null): Pack
     {
         $pack ??= new Pack;
@@ -22,6 +25,7 @@ class SavePack
             $items = array_map(fn (array $item, int $i): array => [...$item, 'sort_order' => $i], $data->items, array_keys($data->items));
             $itemsChanged = $this->items($pack) !== $items;
 
+            $created = ! $pack->exists;
             Versioning::edit($pack, [
                 'key' => $data->key,
                 'name' => $data->name,
@@ -42,6 +46,13 @@ class SavePack
                     ->where('is_default', true)
                     ->where('audience->phase', $data->phase->value)
                     ->update(['is_default' => false]);
+            }
+
+            if ($created || $itemsChanged || $pack->wasChanged('version')) {
+                $this->activity->record($created ? 'catalog.pack_created' : 'catalog.pack_updated', $pack, [
+                    'key' => $pack->key,
+                    'version' => $pack->version,
+                ]);
             }
 
             return $pack;

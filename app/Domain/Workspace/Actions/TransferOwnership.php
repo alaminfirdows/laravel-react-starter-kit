@@ -2,6 +2,8 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
+use App\Domain\Activity\Data\Actor;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
@@ -10,6 +12,8 @@ use InvalidArgumentException;
 
 class TransferOwnership
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     /**
      * New owner must already be a member. The old owner becomes Admin.
      */
@@ -37,7 +41,13 @@ class TransferOwnership
 
             $newMembership->update(['role' => WorkspaceRole::Owner]);
 
+            $previousOwnerId = $locked->owner_id;
             $locked->forceFill(['owner_id' => $newOwner->id])->save();
+
+            $this->activity->record('workspace.ownership_transferred', $locked, [
+                'from_user_id' => $previousOwnerId,
+                'to_user_id' => $newOwner->id,
+            ], Actor::current());
 
             $workspace->owner_id = $newOwner->id;
             $workspace->syncOriginalAttribute('owner_id');

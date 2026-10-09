@@ -2,6 +2,8 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
+use App\Domain\Activity\Data\Actor;
 use App\Domain\Workspace\Exceptions\InvalidInvitationException;
 use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
@@ -10,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class AcceptInvitation
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     /**
      * @throws InvalidInvitationException
      */
@@ -47,6 +51,12 @@ class AcceptInvitation
             $invitation->forceFill(['accepted_at' => now()])->save();
 
             $user->switchWorkspace($workspace);
+
+            $this->activity->record('workspace.invitation_accepted', $workspace, [
+                'email' => $invitation->email,
+                'role' => $invitation->role->value,
+                'user_id' => $user->id,
+            ], Actor::user($user));
 
             return $workspace;
         });

@@ -2,10 +2,12 @@
 
 namespace App\Domain\Catalog\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Catalog\Data\CatalogTaskData;
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Support\Versioning;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 /**
@@ -14,10 +16,13 @@ use InvalidArgumentException;
  */
 class SaveCatalogTask
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     public function handle(CatalogTaskData $data, ?CatalogTask $task = null): CatalogTask
     {
         $task ??= new CatalogTask;
         $attributes = $data->authored();
+        $created = ! $task->exists;
 
         if (! $task->exists) {
             $parent = $data->parentId !== null ? CatalogTask::query()->findOrFail($data->parentId) : null;
@@ -36,9 +41,16 @@ class SaveCatalogTask
             $attributes['category_id'] = $data->categoryId;
         }
 
-        Versioning::edit($task, $attributes);
+        return DB::transaction(function () use ($task, $attributes, $created): CatalogTask {
+            if (Versioning::edit($task, $attributes)) {
+                $this->activity->record($created ? 'catalog.task_created' : 'catalog.task_updated', $task, [
+                    'key' => $task->key,
+                    'version' => $task->version,
+                ]);
+            }
 
-        return $task;
+            return $task;
+        });
     }
 
     private function depth(CatalogTask $task): int

@@ -34,7 +34,10 @@ class MarkTaskDone
         }
 
         return DB::transaction(function () use ($task, $actor): Task {
-            foreach ($task->actions()->get() as $action) {
+            // Same lock order as CompleteAction callers: actions by id, then the task.
+            $actions = $task->actions()->orderBy('id')->lockForUpdate()->get();
+
+            foreach ($actions as $action) {
                 $this->completeAction->handle($action->setRelation('task', $task), $actor);
             }
 

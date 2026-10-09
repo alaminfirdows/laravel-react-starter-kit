@@ -2,12 +2,17 @@
 
 namespace App\Domain\Workspace\Actions;
 
+use App\Domain\Activity\ActivityRecorder;
+use App\Domain\Activity\Data\Actor;
 use App\Domain\Workspace\Exceptions\InvalidInvitationException;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class DeclineInvitation
 {
+    public function __construct(protected ActivityRecorder $activity) {}
+
     /**
      * @throws InvalidInvitationException
      */
@@ -21,6 +26,13 @@ class DeclineInvitation
             throw InvalidInvitationException::alreadyAccepted();
         }
 
-        $invitation->delete();
+        DB::transaction(function () use ($invitation, $user): void {
+            $invitation->delete();
+
+            $this->activity->record('workspace.invitation_declined', $invitation->workspace, [
+                'email' => $invitation->email,
+                'role' => $invitation->role->value,
+            ], Actor::user($user));
+        });
     }
 }
