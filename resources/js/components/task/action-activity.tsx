@@ -13,7 +13,8 @@ function formatDate(value: string | null) {
 }
 
 function EvidenceItem({ evidence }: { evidence: Evidence }) {
-    const isUrl = evidence.kind === 'url' && evidence.value;
+    const isUrl =
+        evidence.kind === 'url' && /^https?:\/\//i.test(evidence.value ?? '');
 
     return (
         <li className="flex flex-wrap items-center gap-2 text-sm">

@@ -10,6 +10,7 @@ use App\Domain\Project\Models\Project;
 use App\Domain\Task\Actions\RunActionInApp;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ApprovalStatus;
+use App\Domain\Task\Enums\EvidenceKind;
 use App\Domain\Task\Enums\RunChannel;
 use App\Domain\Task\Enums\RunStatus;
 use App\Domain\Task\Exceptions\InvalidActionTransition;
@@ -18,6 +19,7 @@ use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Ai\Embeddings;
 
@@ -81,20 +83,34 @@ test('unmet criteria leave the action ready with the output saved', function () 
         ->and($this->action->fresh()->status)->toBe(ActionStatus::Ready);
 });
 
-test('agent failure fails the run, returns the action to ready and allows a retry', function () {
+test('agent failure fails the run with a generic reason, returns the action to ready and allows a retry', function () {
+    Log::spy();
     DraftDocumentAgent::fake(fn () => throw new RuntimeException('Provider timed out'));
 
     expect(fn () => app(RunActionInApp::class)->handle($this->action, $this->user))->toThrow(RuntimeException::class);
 
     $failed = $this->action->runs()->sole();
-    expect($failed)->status->toBe(RunStatus::Failed)->error->toBe('Provider timed out')
+    expect($failed)->status->toBe(RunStatus::Failed)->error->toBe('The AI run failed. Try again later.')
         ->and($this->action->fresh()->status)->toBe(ActionStatus::Ready);
+
+    Log::shouldHaveReceived('error')->withArgs(fn (string $message, array $context) => $context['error'] === 'Provider timed out');
 
     DraftDocumentAgent::fake([draftResponse()]);
     app(RunActionInApp::class)->handle($this->action->fresh(), $this->user);
 
     expect($this->action->fresh()->status)->toBe(ActionStatus::Done);
 });
+
+test('ai url outputs that are not http or https are stored as plain values', function (string $value) {
+    DraftDocumentAgent::fake([draftResponse([['kind' => 'url', 'label' => 'Source', 'value' => $value]])]);
+
+    app(RunActionInApp::class)->handle($this->action, $this->user);
+
+    expect($this->action->evidence()->sole())->kind->toBe(EvidenceKind::Value)->value->toBe($value);
+})->with([
+    'javascript' => ['javascript:alert(1)'],
+    'data' => ['data:text/html,<h1>Login</h1>'],
+]);
 
 test('a second click while running starts no second run', function () {
     Queue::fake();

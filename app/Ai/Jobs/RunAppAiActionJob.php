@@ -20,12 +20,15 @@ use App\Domain\Task\Data\EvidenceData;
 use App\Domain\Task\Enums\EvidenceKind;
 use App\Domain\Task\Enums\RunStatus;
 use App\Domain\Task\Exceptions\InvalidActionTransition;
+use App\Domain\Task\Exceptions\InvalidTaskTransition;
 use App\Domain\Task\Models\ActionRun;
 use App\Domain\Task\Models\TaskAction;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Responses\StructuredAgentResponse;
@@ -91,11 +94,20 @@ class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
         });
     }
 
+    /**
+     * Members see our own domain messages (e.g. budget spent) or a generic reason;
+     * raw provider errors go to the log only.
+     */
     public function failed(?Throwable $exception): void
     {
-        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run, User $user) use ($exception): void {
-            $actor = Actor::appAi($user);
-            app(FinishRun::class)->handle($run, $actor, RunStatus::Failed, Str::limit($exception?->getMessage() ?? __('The AI run failed.'), 1000));
+        Log::error('App AI run failed.', ['run_id' => $this->runId, 'error' => $exception?->getMessage()]);
+
+        $reason = $exception instanceof InvalidTaskTransition
+            ? Str::limit($exception->getMessage(), 1000)
+            : __('The AI run failed. Try again later.');
+
+        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run, User $user) use ($reason): void {
+            app(FinishRun::class)->handle($run, Actor::appAi($user), RunStatus::Failed, $reason);
         });
     }
 
@@ -115,6 +127,7 @@ class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
 
     /**
      * Documents become draft knowledge; URLs and values become evidence.
+     * A "url" that is not http(s) (e.g. javascript:, data:) is kept as a plain value.
      *
      * @param  list<array{kind?: string, label?: string, value?: string, doc_type?: string}>  $outputs
      */
@@ -129,20 +142,26 @@ class RunAppAiActionJob implements ShouldBeUnique, ShouldQueue
             }
 
             $docType = DocType::tryFrom($output['doc_type'] ?? '');
+            $kind = ($output['kind'] ?? null) === 'url' && ! $this->isWebUrl($value) ? 'value' : ($output['kind'] ?? null);
 
             match (true) {
-                ($output['kind'] ?? null) === 'document' && $docType !== null => app(SaveDocument::class)->handle(
+                $kind === 'document' && $docType !== null => app(SaveDocument::class)->handle(
                     $action->task->project,
                     new DocumentData($docType, $label, $value, source: DocSource::AppAi, taskId: $action->task_id, changeNote: __('Drafted by in-app AI')),
                     $actor,
                 ),
-                in_array($output['kind'] ?? null, ['url', 'value'], true) => app(AttachEvidence::class)->handle(
+                in_array($kind, ['url', 'value'], true) => app(AttachEvidence::class)->handle(
                     $action,
-                    new EvidenceData(EvidenceKind::from((string) $output['kind']), $label, Str::limit($value, 2000, '')),
+                    new EvidenceData(EvidenceKind::from($kind), $label, Str::limit($value, 2000, '')),
                     $actor,
                 ),
                 default => null,
             };
         }
+    }
+
+    private function isWebUrl(string $value): bool
+    {
+        return Validator::make(['url' => $value], ['url' => ['url:http,https']])->passes();
     }
 }

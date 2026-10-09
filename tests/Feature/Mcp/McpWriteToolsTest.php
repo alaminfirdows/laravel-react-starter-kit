@@ -74,6 +74,18 @@ test('attach_evidence refuses check results from agents', function () {
     expect($this->action->evidence()->count())->toBe(1);
 });
 
+test('attach_evidence refuses non-web url schemes', function (string $value) {
+    FounderServer::tool(AttachEvidenceTool::class, [
+        'action_id' => $this->action->id, 'kind' => 'url', 'label' => 'Page', 'value' => $value,
+    ])->assertHasErrors();
+
+    expect($this->action->evidence()->count())->toBe(0);
+})->with([
+    'javascript' => ['javascript:alert(1)'],
+    'data' => ['data:text/html,<script>alert(1)</script>'],
+    'ftp' => ['ftp://acme.test/file'],
+]);
+
 test('save_output needs a started run', function () {
     FounderServer::tool(SaveOutputTool::class, ['action_id' => $this->action->id, 'output_md' => 'x'])
         ->assertHasErrors(['start_action']);

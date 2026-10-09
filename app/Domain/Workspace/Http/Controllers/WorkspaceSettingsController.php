@@ -22,6 +22,8 @@ class WorkspaceSettingsController extends Controller
 
     public function edit(Workspace $workspace): Response
     {
+        Gate::authorize('view', $workspace);
+
         return Inertia::render('workspace/settings/general', [
             'workspace' => [
                 'id' => $workspace->id,

@@ -104,7 +104,12 @@ export default function Invitations({
                     description="Invitations not accepted yet"
                 />
 
-                {invitations.length === 0 ? (
+                {!workspacePermissions?.canCreateInvitation &&
+                !workspacePermissions?.canCancelInvitation ? (
+                    <p className="text-sm text-muted-foreground">
+                        Only admins can see pending invitations.
+                    </p>
+                ) : invitations.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         No pending invitations.
                     </p>

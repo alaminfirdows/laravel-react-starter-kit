@@ -23,13 +23,19 @@ use Inertia\Response;
  */
 class WorkspaceInvitationController extends Controller
 {
+    /**
+     * Pending invitee emails are for admins only; other members get an empty list.
+     */
     public function index(Request $request, Workspace $workspace): Response
     {
+        Gate::authorize('view', $workspace);
+
         /** @var User $actor */
         $actor = $request->user();
+        $canManage = $actor->can('inviteMember', $workspace) || $actor->can('cancelInvitation', $workspace);
 
         return Inertia::render('workspace/settings/invitations', [
-            'invitations' => $workspace->invitations()
+            'invitations' => ! $canManage ? [] : $workspace->invitations()
                 ->whereNull('accepted_at')
                 ->with('inviter:id,name')
                 ->latest()

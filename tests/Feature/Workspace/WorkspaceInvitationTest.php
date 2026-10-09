@@ -26,6 +26,21 @@ test('admins can see the invitations page', function () {
             ->has('assignableRoles', 3));
 });
 
+test('viewers do not see pending invitee emails', function () {
+    $viewer = User::factory()->create();
+    $this->workspace->members()->attach($viewer, ['role' => WorkspaceRole::Viewer]);
+    WorkspaceInvitation::factory()->for($this->workspace)->create(['email' => 'secret@acme.test']);
+
+    $this->actingAs($viewer)
+        ->get(route('workspace.invitations.index', $this->workspace))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('invitations', 0));
+
+    $this->actingAs($this->owner)
+        ->get(route('workspace.invitations.index', $this->workspace))
+        ->assertInertia(fn (Assert $page) => $page->where('invitations.0.email', 'secret@acme.test'));
+});
+
 test('owner can invite by email and the mail is sent', function () {
     $this->actingAs($this->owner)
         ->post(route('workspace.invitations.store', $this->workspace), [

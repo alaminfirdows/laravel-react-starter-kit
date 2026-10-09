@@ -37,7 +37,7 @@ final class AgentEvidence
         return [
             "{$prefix}kind" => ['required', Rule::in(self::kindValues())],
             "{$prefix}label" => ['required', 'string', 'max:255'],
-            "{$prefix}value" => ['required', 'string', 'max:5000', Rule::when(fn ($input): bool => data_get($input, "{$prefix}kind") === EvidenceKind::Url->value, ['url'])],
+            "{$prefix}value" => ['required', 'string', 'max:5000', Rule::when(fn ($input): bool => data_get($input, "{$prefix}kind") === EvidenceKind::Url->value, ['url:http,https'])],
             "{$prefix}criterion_key" => ['nullable', 'string', 'max:100'],
         ];
     }

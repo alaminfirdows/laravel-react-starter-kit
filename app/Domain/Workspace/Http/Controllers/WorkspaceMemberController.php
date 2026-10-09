@@ -24,6 +24,8 @@ class WorkspaceMemberController extends Controller
 
     public function index(Request $request, Workspace $workspace): Response
     {
+        Gate::authorize('view', $workspace);
+
         /** @var User $actor */
         $actor = $request->user();
         $actorRole = $actor->workspaceRole($workspace);
