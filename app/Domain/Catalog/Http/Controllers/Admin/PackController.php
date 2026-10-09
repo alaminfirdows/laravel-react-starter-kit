@@ -19,7 +19,7 @@ class PackController extends Controller
     public function index(): Response
     {
         return Inertia::render('admin/packs/index', [
-            'packs' => PackResource::collection(Pack::query()->withCount('items')->orderBy('name')->get()),
+            'packs' => PackResource::collection(Pack::query()->official()->withCount('items')->orderBy('name')->get()),
         ]);
     }
 

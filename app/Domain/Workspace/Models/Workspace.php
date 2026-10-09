@@ -2,6 +2,7 @@
 
 namespace App\Domain\Workspace\Models;
 
+use App\Domain\Catalog\Models\Pack;
 use App\Domain\Project\Models\Project;
 use App\Domain\Workspace\Concerns\GeneratesUniqueWorkspaceSlugs;
 use App\Domain\Workspace\Enums\WorkspaceRole;
@@ -131,6 +132,16 @@ class Workspace extends Model
     public function invitations(): HasMany
     {
         return $this->hasMany(WorkspaceInvitation::class);
+    }
+
+    /**
+     * Community packs owned by this workspace.
+     *
+     * @return HasMany<Pack, $this>
+     */
+    public function packs(): HasMany
+    {
+        return $this->hasMany(Pack::class, 'owner_workspace_id');
     }
 
     /**

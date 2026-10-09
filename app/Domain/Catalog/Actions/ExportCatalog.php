@@ -185,7 +185,7 @@ class ExportCatalog
     {
         $rows = [];
 
-        foreach (Pack::query()->with('items.catalogTask')->orderBy('id')->get() as $pack) {
+        foreach (Pack::query()->official()->with('items.catalogTask')->orderBy('id')->get() as $pack) {
             $audience = $pack->audience ?? [];
             $phase = $audience['phase'] ?? null;
             unset($audience['phase']);
