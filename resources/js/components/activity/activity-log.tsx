@@ -7,7 +7,7 @@ import type {
     Activity,
     ActivityFilterValues,
     ActivityLogProps,
-    SelectItemOption,
+    Option,
 } from '@/types';
 
 const ALL = 'all';
@@ -39,7 +39,7 @@ function FilterSelect({
 }: {
     label: string;
     value: string | null;
-    items: SelectItemOption[];
+    items: Option[];
     onChange: (value: string | null) => void;
 }) {
     return (

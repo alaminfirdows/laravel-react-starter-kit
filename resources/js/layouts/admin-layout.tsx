@@ -6,12 +6,20 @@ import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { index } from '@/routes/admin';
+import { index as catalogIndex } from '@/routes/admin/catalog';
+import { index as packsIndex } from '@/routes/admin/packs';
+import { index as promptsIndex } from '@/routes/admin/prompts';
 import type { NavItem } from '@/types';
 
 export default function AdminLayout({ children }: PropsWithChildren) {
-    const { isCurrentUrl } = useCurrentUrl();
+    const { isCurrentUrl, isCurrentOrParentUrl } = useCurrentUrl();
 
-    const navItems: NavItem[] = [{ title: 'Overview', href: index() }];
+    const navItems: NavItem[] = [
+        { title: 'Overview', href: index() },
+        { title: 'Catalog', href: catalogIndex() },
+        { title: 'Prompts', href: promptsIndex() },
+        { title: 'Packs', href: packsIndex() },
+    ];
 
     return (
         <div className="px-4 py-6">
@@ -26,14 +34,17 @@ export default function AdminLayout({ children }: PropsWithChildren) {
                         className="flex flex-col space-y-1 space-x-0"
                         aria-label="Admin"
                     >
-                        {navItems.map((item) => (
+                        {navItems.map((item, position) => (
                             <Button
                                 key={toUrl(item.href)}
                                 size="sm"
                                 variant="ghost"
                                 asChild
                                 className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentUrl(item.href),
+                                    'bg-muted':
+                                        position === 0
+                                            ? isCurrentUrl(item.href)
+                                            : isCurrentOrParentUrl(item.href),
                                 })}
                             >
                                 <Link href={item.href}>{item.title}</Link>

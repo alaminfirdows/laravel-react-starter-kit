@@ -199,8 +199,6 @@ export type TaskComment = {
     createdAt: string;
 };
 
-export type SelectItemOption = { value: string; label: string };
-
 export type ActivityFilterValues = {
     actor: string | null;
     channel: string | null;
@@ -214,8 +212,8 @@ export type ActivityLogProps = {
     };
     filters: ActivityFilterValues;
     options: {
-        actors: SelectItemOption[];
-        channels: SelectItemOption[];
-        events: SelectItemOption[];
+        actors: Option[];
+        channels: Option[];
+        events: Option[];
     };
 };

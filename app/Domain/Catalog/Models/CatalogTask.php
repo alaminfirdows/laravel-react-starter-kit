@@ -81,6 +81,22 @@ class CatalogTask extends Model
         return $this->hasMany(CatalogAction::class)->orderBy('sort_order');
     }
 
+    /**
+     * Scope nested `{catalogAction:key}` bindings to this task's actions.
+     *
+     * @param  string  $childType
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveChildRouteBinding($childType, $value, $field): ?Model
+    {
+        if ($childType === 'catalogAction') {
+            return $this->actions()->where($field ?? 'key', $value)->first();
+        }
+
+        return parent::resolveChildRouteBinding($childType, $value, $field);
+    }
+
     /** @return BelongsToMany<CatalogTask, $this> */
     public function dependencies(): BelongsToMany
     {

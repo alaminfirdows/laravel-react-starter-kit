@@ -1,0 +1,338 @@
+import { Form, Head, Link } from '@inertiajs/react';
+import { Pencil, Plus } from 'lucide-react';
+import CatalogTaskController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CatalogTaskController';
+import CatalogTaskPublicationController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CatalogTaskPublicationController';
+import { CatalogActionDialog } from '@/components/admin/catalog-action-dialog';
+import { CatalogStatusBadge } from '@/components/admin/catalog-status-badge';
+import Heading from '@/components/heading';
+import { MarkdownEditor } from '@/components/markdown/markdown-editor';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Field,
+    FieldDescription,
+    FieldError,
+    FieldGroup,
+    FieldLabel,
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { create, edit, index } from '@/routes/admin/catalog';
+import type {
+    AdminCatalogAction,
+    AdminCatalogTask,
+    CatalogActionFormOptions,
+    CatalogTaskRef,
+    Option,
+} from '@/types';
+
+type Props = CatalogActionFormOptions & {
+    task: AdminCatalogTask | null;
+    parent: CatalogTaskRef | null;
+    actions: AdminCatalogAction[];
+    categoryOptions: Option[];
+    priorityOptions: Option[];
+};
+
+export default function CatalogEdit({
+    task,
+    parent,
+    actions,
+    categoryOptions,
+    priorityOptions,
+    ...actionOptions
+}: Props) {
+    const form = task
+        ? CatalogTaskController.update.form(task.key)
+        : CatalogTaskController.store.form();
+
+    return (
+        <>
+            <Head title={task ? `Edit ${task.title}` : 'New catalog task'} />
+            <div className="space-y-8">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                    <Heading
+                        variant="small"
+                        title={task ? task.title : 'New catalog task'}
+                        description={
+                            parent ? `Subtask of ${parent.title}` : 'Root task'
+                        }
+                    />
+                    <div className="flex items-center gap-2">
+                        {task && (
+                            <>
+                                <span className="text-xs text-muted-foreground">
+                                    v{task.version}
+                                </span>
+                                {task.adminEditedAt && (
+                                    <Badge variant="outline">Edited</Badge>
+                                )}
+                                <CatalogStatusBadge status={task.status} />
+                                {task.status !== 'published' && (
+                                    <Form
+                                        {...CatalogTaskPublicationController.store.form(
+                                            task.key,
+                                        )}
+                                        options={{ preserveScroll: true }}
+                                    >
+                                        {({ processing }) => (
+                                            <Button
+                                                size="sm"
+                                                disabled={processing}
+                                            >
+                                                Publish
+                                            </Button>
+                                        )}
+                                    </Form>
+                                )}
+                            </>
+                        )}
+                        <Button size="sm" variant="outline" asChild>
+                            <Link href={index()}>Back</Link>
+                        </Button>
+                    </div>
+                </div>
+
+                <Form {...form} options={{ preserveScroll: true }}>
+                    {({ processing, errors }) => (
+                        <FieldGroup>
+                            {parent && (
+                                <input
+                                    type="hidden"
+                                    name="parent"
+                                    value={parent.key}
+                                />
+                            )}
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <Field data-invalid={!!errors.key}>
+                                    <FieldLabel htmlFor="key">Key</FieldLabel>
+                                    <Input
+                                        id="key"
+                                        name={task ? undefined : 'key'}
+                                        required
+                                        disabled={!!task}
+                                        defaultValue={task?.key}
+                                        placeholder="research.icp"
+                                        aria-invalid={!!errors.key}
+                                    />
+                                    <FieldError>{errors.key}</FieldError>
+                                </Field>
+                                {!parent && (
+                                    <Field data-invalid={!!errors.category_id}>
+                                        <FieldLabel htmlFor="category_id">
+                                            Category
+                                        </FieldLabel>
+                                        <Select
+                                            name="category_id"
+                                            items={categoryOptions}
+                                            defaultValue={
+                                                task
+                                                    ? String(task.categoryId)
+                                                    : undefined
+                                            }
+                                        >
+                                            <SelectTrigger
+                                                id="category_id"
+                                                className="w-full"
+                                                aria-invalid={
+                                                    !!errors.category_id
+                                                }
+                                            >
+                                                <SelectValue placeholder="Choose a category" />
+                                            </SelectTrigger>
+                                        </Select>
+                                        <FieldError>
+                                            {errors.category_id}
+                                        </FieldError>
+                                    </Field>
+                                )}
+                            </div>
+                            <FieldError>{errors.parent}</FieldError>
+                            <Field data-invalid={!!errors.title}>
+                                <FieldLabel htmlFor="title">Title</FieldLabel>
+                                <Input
+                                    id="title"
+                                    name="title"
+                                    required
+                                    maxLength={255}
+                                    defaultValue={task?.title}
+                                    aria-invalid={!!errors.title}
+                                />
+                                <FieldError>{errors.title}</FieldError>
+                            </Field>
+                            <Field data-invalid={!!errors.summary}>
+                                <FieldLabel htmlFor="summary">
+                                    Summary
+                                </FieldLabel>
+                                <Input
+                                    id="summary"
+                                    name="summary"
+                                    maxLength={280}
+                                    defaultValue={task?.summary ?? ''}
+                                    aria-invalid={!!errors.summary}
+                                />
+                                <FieldError>{errors.summary}</FieldError>
+                            </Field>
+                            <Field data-invalid={!!errors.body_md}>
+                                <FieldLabel htmlFor="body_md">Body</FieldLabel>
+                                <MarkdownEditor
+                                    id="body_md"
+                                    name="body_md"
+                                    defaultValue={task?.bodyMd ?? null}
+                                    placeholder="Explain the task in Markdown…"
+                                />
+                                <FieldError>{errors.body_md}</FieldError>
+                            </Field>
+                            <div className="grid gap-4 sm:grid-cols-3">
+                                <Field data-invalid={!!errors.priority}>
+                                    <FieldLabel htmlFor="priority">
+                                        Priority
+                                    </FieldLabel>
+                                    <Select
+                                        name="priority"
+                                        items={priorityOptions}
+                                        defaultValue={task?.priority ?? 'p2'}
+                                    >
+                                        <SelectTrigger
+                                            id="priority"
+                                            className="w-full"
+                                        >
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                    </Select>
+                                    <FieldError>{errors.priority}</FieldError>
+                                </Field>
+                                <Field data-invalid={!!errors.est_minutes}>
+                                    <FieldLabel htmlFor="est_minutes">
+                                        Estimate (minutes)
+                                    </FieldLabel>
+                                    <Input
+                                        id="est_minutes"
+                                        name="est_minutes"
+                                        type="number"
+                                        min={1}
+                                        defaultValue={task?.estMinutes ?? ''}
+                                    />
+                                    <FieldError>
+                                        {errors.est_minutes}
+                                    </FieldError>
+                                </Field>
+                                <Field data-invalid={!!errors.difficulty}>
+                                    <FieldLabel htmlFor="difficulty">
+                                        Difficulty (1–5)
+                                    </FieldLabel>
+                                    <Input
+                                        id="difficulty"
+                                        name="difficulty"
+                                        type="number"
+                                        min={1}
+                                        max={5}
+                                        defaultValue={task?.difficulty ?? ''}
+                                    />
+                                    <FieldError>{errors.difficulty}</FieldError>
+                                </Field>
+                            </div>
+                            <Field orientation="horizontal">
+                                <Checkbox
+                                    id="is_optional"
+                                    name="is_optional"
+                                    value="1"
+                                    defaultChecked={task?.isOptional}
+                                />
+                                <FieldLabel htmlFor="is_optional">
+                                    Optional task
+                                </FieldLabel>
+                            </Field>
+                            <FieldDescription>
+                                New tasks start as drafts. Projects only get
+                                published tasks.
+                            </FieldDescription>
+                            <Field orientation="horizontal">
+                                <Button type="submit" disabled={processing}>
+                                    {task ? 'Save task' : 'Create draft'}
+                                </Button>
+                            </Field>
+                        </FieldGroup>
+                    )}
+                </Form>
+
+                {task && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Actions</CardTitle>
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="outline" asChild>
+                                    <Link
+                                        href={create({
+                                            query: { parent: task.key },
+                                        })}
+                                    >
+                                        <Plus /> Subtask
+                                    </Link>
+                                </Button>
+                                <CatalogActionDialog
+                                    taskKey={task.key}
+                                    {...actionOptions}
+                                    trigger={
+                                        <Button size="sm">
+                                            <Plus /> Action
+                                        </Button>
+                                    }
+                                />
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {actions.length > 0 ? (
+                                <ul className="divide-y">
+                                    {actions.map((action) => (
+                                        <li
+                                            key={action.key}
+                                            className="flex items-center gap-2 py-2"
+                                        >
+                                            <span className="min-w-0 flex-1 truncate text-sm">
+                                                {action.title}
+                                            </span>
+                                            <Badge variant="outline">
+                                                {action.type}
+                                            </Badge>
+                                            <Badge variant="secondary">
+                                                {action.executor}
+                                            </Badge>
+                                            <CatalogActionDialog
+                                                taskKey={task.key}
+                                                action={action}
+                                                {...actionOptions}
+                                                trigger={
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        aria-label={`Edit ${action.title}`}
+                                                    >
+                                                        <Pencil />
+                                                    </Button>
+                                                }
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    No actions yet.
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+                {parent && (
+                    <Button variant="link" className="px-0" asChild>
+                        <Link href={edit(parent.key)}>
+                            Back to {parent.title}
+                        </Link>
+                    </Button>
+                )}
+            </div>
+        </>
+    );
+}
