@@ -157,6 +157,23 @@ test('invalid action config json is rejected', function () {
         ->assertSessionHasErrors('config');
 });
 
+test('an action schedule with a cron that never runs or a bad timezone is rejected', function (array $schedule) {
+    $task = CatalogTask::factory()->create();
+
+    $this->actingAs($this->admin)
+        ->post("/admin/catalog/{$task->key}/actions", [
+            'key' => 'a', 'title' => 'A', 'type' => 'scheduled', 'executor' => 'app_system',
+            'config' => json_encode(['schedule' => $schedule]),
+        ])
+        ->assertSessionHasErrors('config');
+
+    expect($task->actions()->count())->toBe(0);
+})->with([
+    'impossible date' => [['cron' => '0 0 30 2 *']],
+    'not a cron' => [['cron' => 'nope']],
+    'bad timezone' => [['cron' => '0 9 * * *', 'timezone' => 'Mars/Base']],
+]);
+
 test('admin creates and updates a prompt template', function () {
     $this->actingAs($this->admin)
         ->post('/admin/prompts', [

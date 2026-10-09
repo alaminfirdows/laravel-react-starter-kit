@@ -8,6 +8,7 @@ use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Task\Enums\ActionType;
 use App\Domain\Task\Enums\Executor;
+use App\Domain\Task\Rules\ActionSchedule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -38,7 +39,7 @@ class SaveCatalogActionRequest extends FormRequest
             'executor' => ['required', Rule::enum(Executor::class)],
             'instructions_md' => ['nullable', 'string', 'max:50000'],
             'prompt' => ['nullable', 'string', Rule::exists(PromptTemplate::class, 'key')],
-            'config' => ['nullable', 'json'],
+            'config' => ['nullable', 'json', new ActionSchedule],
             'is_required' => ['boolean'],
             'requires_approval' => ['boolean'],
         ];

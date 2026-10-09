@@ -13,6 +13,7 @@ use App\Domain\Catalog\Models\PromptTemplate;
 use App\Domain\Catalog\Models\Skill;
 use App\Domain\Catalog\Support\SkillFile;
 use App\Domain\Catalog\Support\Versioning;
+use App\Domain\Task\Rules\ActionSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use InvalidArgumentException;
@@ -222,6 +223,12 @@ class ImportCatalog
             if (isset($row['prompt'])) {
                 $promptId = $this->promptIds[$row['prompt']]
                     ?? throw new InvalidArgumentException("{$file}: action [{$task->key}.{$row['key']}] has unknown prompt [{$row['prompt']}]");
+            }
+
+            $scheduleProblem = ActionSchedule::problem($row['config'] ?? null);
+
+            if ($scheduleProblem !== null) {
+                throw new InvalidArgumentException("{$file}: action [{$task->key}.{$row['key']}] has a bad schedule: {$scheduleProblem}");
             }
 
             $task->actions()->updateOrCreate(['key' => $row['key']], [

@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 /**
  * Time rules, checked by the scheduler:
@@ -62,7 +64,7 @@ class ProcessScheduledActions
             ->each(function (TaskAction $action) use (&$counts): void {
                 $workspace = data_get($action, 'task.project.workspace');
 
-                if (! $workspace instanceof Workspace) {
+                if (! $workspace instanceof Workspace || ! $workspace->isActive()) {
                     return;
                 }
 
@@ -74,13 +76,15 @@ class ProcessScheduledActions
                         } elseif ($action->type === ActionType::Scheduled && $this->scheduleIsDue($action)) {
                             $owner = $workspace->owner ?? throw (new ModelNotFoundException)->setModel(User::class);
                             DB::transaction(function () use ($action, $owner): void {
-                                $this->reopen->handle($action, Actor::user($owner));
+                                $this->reopen->handle($action, Actor::system(ActivityChannel::Cli));
                                 $this->runInApp->handle($action, $owner);
                             });
                             $counts['scheduled']++;
                         }
                     } catch (InvalidTaskTransition $e) {
                         Log::info('Scheduled action skipped', ['action' => $action->id, 'reason' => $e->getMessage()]);
+                    } catch (Throwable $e) {
+                        Log::error('Scheduled action failed', ['action' => $action->id, 'exception' => $e]);
                     }
                 });
             });
@@ -154,7 +158,14 @@ class ProcessScheduledActions
 
         $lastRun = $action->getAttribute('last_run_started_at');
         $anchor = CarbonImmutable::parse($lastRun ?? $action->created_at);
-        $next = new CronExpression($cron)->getNextRunDate($anchor, 0, false, $timezone);
+
+        try {
+            $next = new CronExpression($cron)->getNextRunDate($anchor, 0, false, $timezone);
+        } catch (RuntimeException) {
+            Log::info('Scheduled action skipped', ['action' => $action->id, 'reason' => 'invalid cron expression']);
+
+            return false;
+        }
 
         return CarbonImmutable::instance($next)->lessThanOrEqualTo(now());
     }

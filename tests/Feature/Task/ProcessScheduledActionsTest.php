@@ -1,7 +1,12 @@
 <?php
 
+use App\Domain\Activity\Data\Actor;
+use App\Domain\Activity\Enums\ActivityChannel;
+use App\Domain\Activity\Enums\ActorType;
 use App\Domain\Activity\Models\Activity;
 use App\Domain\Project\Models\Project;
+use App\Domain\Task\Actions\ReopenRecurringAction;
+use App\Domain\Task\Actions\RunActionInApp;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ActionType;
 use App\Domain\Task\Enums\Executor;
@@ -161,6 +166,73 @@ test('an invalid cron expression is skipped without crashing', function () {
     processScheduled();
 
     expect($broken->runs()->count())->toBe(0);
+});
+
+test('a cron expression that never runs is skipped and later actions still run', function () {
+    Queue::fake();
+    $impossible = cronAction($this->task, ['cron' => '0 0 30 2 *']);
+    $this->travel(2)->days();
+    $healthy = cronAction($this->task, ['cron' => '* * * * *']);
+    $this->travel(5)->minutes();
+
+    processScheduled();
+
+    expect($impossible->id)->toBeLessThan($healthy->id)
+        ->and($impossible->runs()->count())->toBe(0)
+        ->and($healthy->runs()->count())->toBe(1);
+});
+
+test('an unexpected error in one action is logged and the rest still run', function () {
+    Log::spy();
+    $this->mock(RunActionInApp::class)->shouldReceive('handle')->andThrow(new RuntimeException('boom'));
+    $broken = cronAction($this->task, ['cron' => '* * * * *']);
+    $wait = waitAction($this->task, ['until' => now()->toDateString()]);
+    $this->travel(1)->days();
+
+    processScheduled();
+
+    expect($broken->id)->toBeLessThan($wait->id)
+        ->and($broken->fresh()->status)->toBe(ActionStatus::Pending)
+        ->and($wait->fresh()->status)->toBe(ActionStatus::Done);
+    Log::shouldHaveReceived('error')->withArgs(fn (string $message, array $context) => $context['action'] === $broken->id)->once();
+});
+
+test('actions of an inactive or suspended workspace are skipped', function (string $state) {
+    Queue::fake();
+    $paused = Workspace::factory()->ownedBy(User::factory()->create())->{$state}()->create();
+    $pausedAction = cronAction(Task::factory()->forProject(Project::factory()->forWorkspace($paused)->create())->create(), ['cron' => '* * * * *']);
+    $healthy = cronAction($this->task, ['cron' => '* * * * *']);
+    $this->travel(5)->minutes();
+
+    processScheduled();
+
+    expect($pausedAction->runs()->count())->toBe(0)
+        ->and($healthy->runs()->count())->toBe(1);
+})->with(['suspended', 'inactive']);
+
+test('reopen does not overwrite a status changed after the action was loaded', function () {
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+    $recurring->forceFill(['status' => ActionStatus::Failed])->save();
+    $stale = TaskAction::query()->findOrFail($recurring->id);
+    TaskAction::query()->whereKey($recurring->id)->update(['status' => ActionStatus::Running]);
+
+    app(ReopenRecurringAction::class)->handle($stale, Actor::system(ActivityChannel::Cli));
+
+    expect($recurring->fresh()->status)->toBe(ActionStatus::Running)
+        ->and(Activity::query()->where('event', 'action.reopened')->count())->toBe(0);
+});
+
+test('a recurring reopen is recorded as the system, not the owner', function () {
+    Queue::fake();
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+    $recurring->forceFill(['status' => ActionStatus::Done, 'completed_at' => now()])->save();
+
+    $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
+    processScheduled();
+
+    $reopened = Activity::query()->where('event', 'action.reopened')->sole();
+    expect($reopened->actor_type)->toBe(ActorType::System);
 });
 
 test('a failed cron action is retried at the next occurrence', function () {
