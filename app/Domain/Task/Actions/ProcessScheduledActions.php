@@ -15,6 +15,7 @@ use App\Domain\Workspace\Models\Workspace;
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -45,7 +46,7 @@ class ProcessScheduledActions
                 $query->whereIn('status', [ActionStatus::Pending, ActionStatus::Ready])
                     ->orWhere(fn (Builder $recurring) => $recurring
                         ->where('type', ActionType::Scheduled)
-                        ->where('status', ActionStatus::Done)
+                        ->whereIn('status', [ActionStatus::Done, ActionStatus::Failed])
                         ->whereNotNull('config->schedule->cron'));
             })
             ->lazyById()
@@ -63,8 +64,10 @@ class ProcessScheduledActions
                             $counts['waits']++;
                         } elseif ($action->type === ActionType::Scheduled && $this->scheduleIsDue($action)) {
                             $owner = $workspace->owner()->firstOrFail();
-                            $this->reopen->handle($action, Actor::user($owner));
-                            $this->runInApp->handle($action, $owner);
+                            DB::transaction(function () use ($action, $owner): void {
+                                $this->reopen->handle($action, Actor::user($owner));
+                                $this->runInApp->handle($action, $owner);
+                            });
                             $counts['scheduled']++;
                         }
                     } catch (InvalidTaskTransition $e) {

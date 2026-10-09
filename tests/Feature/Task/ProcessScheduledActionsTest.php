@@ -1,16 +1,20 @@
 <?php
 
+use App\Domain\Activity\Models\Activity;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ActionType;
 use App\Domain\Task\Enums\Executor;
 use App\Domain\Task\Enums\RunChannel;
+use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Models\Task;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
@@ -111,10 +115,13 @@ test('a cron action runs at its first occurrence, once per window', function () 
     processScheduled();
     expect($recurring->runs()->count())->toBe(0);
 
+    Queue::fake();
+    Log::spy();
     $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
     processScheduled();
     processScheduled();
     expect($recurring->runs()->count())->toBe(1);
+    Log::shouldNotHaveReceived('info');
 });
 
 test('a cron action runs again at the next occurrence, even after completing', function () {
@@ -151,4 +158,55 @@ test('an invalid cron expression is skipped without crashing', function () {
     processScheduled();
 
     expect($broken->runs()->count())->toBe(0);
+});
+
+test('a failed cron action is retried at the next occurrence', function () {
+    Queue::fake();
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+
+    $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
+    processScheduled();
+    $recurring->refresh()->forceFill(['status' => ActionStatus::Failed])->save();
+
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(1);
+
+    $this->travel(1)->days();
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(2);
+});
+
+test('a cron schedule honours its timezone', function () {
+    Queue::fake();
+    $this->travelTo(now('UTC')->startOfDay()->addHours(10));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *', 'timezone' => 'Asia/Dhaka']);
+
+    // 09:00 Dhaka = 03:00 UTC next day boundary; at 10:00 UTC (16:00 Dhaka) the first occurrence is tomorrow 09:00 Dhaka.
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(0);
+
+    $this->travelTo(now('UTC')->startOfDay()->addDay()->addHours(2));
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(0);
+
+    $this->travelTo(now('UTC')->startOfDay()->addHours(3)->addMinute());
+    processScheduled();
+    expect($recurring->runs()->count())->toBe(1);
+});
+
+test('a start that throws leaves no reopen activity and does not crash', function () {
+    Queue::fake();
+    $this->travelTo(now()->startOfDay()->addHours(8));
+    $recurring = cronAction($this->task, ['cron' => '0 9 * * *']);
+    $recurring->forceFill(['status' => ActionStatus::Done, 'completed_at' => now()])->save();
+    $this->task->forceFill(['status' => TaskStatus::Locked])->save();
+
+    $this->travelTo(now()->startOfDay()->addHours(9)->addMinute());
+    processScheduled();
+    processScheduled();
+
+    expect($recurring->runs()->count())->toBe(0)
+        ->and($recurring->fresh()->status)->toBe(ActionStatus::Done)
+        ->and(Activity::query()->where('event', 'action.reopened')->count())->toBe(0);
 });
