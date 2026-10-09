@@ -3,6 +3,7 @@ import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { NotificationBell } from '@/components/notification-bell';
+import { ProjectChannelListener } from '@/components/project/project-channel-listener';
 import { ProjectProgress } from '@/components/project/project-progress';
 import { ProjectSidebar } from '@/components/project/project-sidebar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -38,6 +39,9 @@ export default function ProjectLayout({
 
     return (
         <AppShell variant="sidebar">
+            {import.meta.env.VITE_PUSHER_APP_KEY && (
+                <ProjectChannelListener projectId={project.id} />
+            )}
             <ProjectSidebar />
             <AppContent variant="sidebar" className="min-w-0 overflow-x-clip">
                 <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b px-4">

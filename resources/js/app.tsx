@@ -1,4 +1,5 @@
 import { createInertiaApp } from '@inertiajs/react';
+import { configureEcho } from '@laravel/echo-react';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -10,6 +11,15 @@ import SettingsLayout from '@/layouts/settings/layout';
 import WorkspaceSettingsLayout from '@/layouts/workspace-settings/layout';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+if (import.meta.env.VITE_PUSHER_APP_KEY) {
+    configureEcho({
+        broadcaster: 'pusher',
+        key: import.meta.env.VITE_PUSHER_APP_KEY,
+        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+        forceTLS: true,
+    });
+}
 
 void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
