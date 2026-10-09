@@ -1,10 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
-import Heading from '@/components/heading';
+import { Package, Plus } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { PackReviewBadge } from '@/components/pack/pack-review-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { create, edit } from '@/routes/packs';
 import type { CommunityPack } from '@/types';
 
@@ -15,45 +17,43 @@ export default function CommunityPacksIndex({
     packs: CommunityPack[];
     can: { create: boolean };
 }) {
+    const newButton = can.create && (
+        <Button asChild>
+            <Link href={create()}>
+                <Plus /> New pack
+            </Link>
+        </Button>
+    );
+
     return (
         <>
             <Head title="Packs" />
-            <div className="space-y-6 p-4 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <Heading
-                        title="Packs"
-                        description="Your own task bundles. Add them to projects, or share them with everyone after review."
-                    />
-                    {can.create && (
-                        <Button asChild>
-                            <Link href={create()}>
-                                <Plus /> New pack
-                            </Link>
-                        </Button>
-                    )}
-                </div>
+            <Page>
+                <PageHeader
+                    title="Packs"
+                    description="Your own task bundles. Add them to projects, or share them with everyone after review."
+                    actions={packs.length > 0 ? newButton : undefined}
+                />
                 {packs.length === 0 ? (
-                    <div className="rounded-xl border border-dashed p-12 text-center text-muted-foreground">
-                        No packs yet.
-                    </div>
+                    <EmptyState
+                        icon={Package}
+                        title="No packs yet."
+                        description="Bundle catalog tasks into a pack you can reuse."
+                        action={newButton || undefined}
+                    />
                 ) : (
-                    <Card>
-                        <CardContent>
-                            <ul className="divide-y">
-                                {packs.map((pack) => (
-                                    <li
-                                        key={pack.key}
-                                        className="flex items-center gap-2 py-2"
-                                    >
-                                        <Link
-                                            href={edit({ pack: pack.key })}
-                                            className="min-w-0 flex-1 truncate text-sm hover:underline"
-                                        >
-                                            {pack.name}
-                                        </Link>
-                                        <span className="text-xs text-muted-foreground">
-                                            {pack.itemsCount} tasks
-                                        </span>
+                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                        {packs.map((pack) => (
+                            <Link
+                                key={pack.key}
+                                href={edit({ pack: pack.key })}
+                                className="rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                    <span className="truncate text-sm font-semibold">
+                                        {pack.name}
+                                    </span>
+                                    <div className="mt-auto flex flex-wrap items-center gap-2">
                                         {pack.phase && (
                                             <Badge
                                                 variant="outline"
@@ -63,13 +63,16 @@ export default function CommunityPacksIndex({
                                             </Badge>
                                         )}
                                         <PackReviewBadge pack={pack} />
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                    </Card>
+                                        <span className="ml-auto font-mono text-xs text-muted-foreground">
+                                            {pack.itemsCount} tasks
+                                        </span>
+                                    </div>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
                 )}
-            </div>
+            </Page>
         </>
     );
 }

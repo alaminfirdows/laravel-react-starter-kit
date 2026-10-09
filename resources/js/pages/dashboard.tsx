@@ -1,27 +1,103 @@
-import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Head, Link, usePage } from '@inertiajs/react';
+import {
+    ArrowRight,
+    FolderKanban,
+    ListTodo,
+    Package,
+    Settings,
+} from 'lucide-react';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
+import { Card } from '@/components/ui/card';
+import { WorkspaceAvatar } from '@/components/workspace-avatar';
 import { redirect as dashboard } from '@/routes/dashboard';
+import { index as packsIndex } from '@/routes/packs';
+import { index as projectsIndex } from '@/routes/projects';
+import { mine as myTasks } from '@/routes/tasks';
+import { edit as editWorkspaceSettings } from '@/routes/workspace/settings';
 
 export default function Dashboard() {
+    const { auth, currentWorkspace } = usePage().props;
+    const firstName = auth.user.name.split(' ')[0];
+
+    const actions = [
+        {
+            title: 'Projects',
+            description: 'Open a company or product plan.',
+            href: projectsIndex(),
+            icon: FolderKanban,
+        },
+        {
+            title: 'My tasks',
+            description: 'Open tasks assigned to you.',
+            href: myTasks(),
+            icon: ListTodo,
+        },
+        {
+            title: 'Packs',
+            description: 'Your task bundles.',
+            href: packsIndex(),
+            icon: Package,
+        },
+        {
+            title: 'Workspace settings',
+            description: 'Members, billing, and details.',
+            href: editWorkspaceSettings(),
+            icon: Settings,
+        },
+    ];
+
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+            <Page>
+                <PageHeader
+                    title={`Welcome back, ${firstName}`}
+                    description={
+                        currentWorkspace
+                            ? `You are working in ${currentWorkspace.name}.`
+                            : 'Pick up where you left off.'
+                    }
+                    leading={
+                        currentWorkspace && (
+                            <WorkspaceAvatar
+                                name={currentWorkspace.name}
+                                logoUrl={currentWorkspace.logoUrl}
+                                className="size-10"
+                            />
+                        )
+                    }
+                />
+                <section className="flex flex-col gap-3">
+                    <h2 className="text-sm font-semibold">Quick actions</h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        {actions.map((action) => (
+                            <Link
+                                key={action.title}
+                                href={action.href}
+                                className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            >
+                                <Card className="h-full transition-colors hover:border-primary/50 hover:bg-muted/30">
+                                    <div className="flex items-center gap-3">
+                                        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                            <action.icon className="size-5" />
+                                        </span>
+                                        <div className="flex min-w-0 flex-1 flex-col">
+                                            <span className="text-sm font-semibold">
+                                                {action.title}
+                                            </span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {action.description}
+                                            </span>
+                                        </div>
+                                        <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                                    </div>
+                                </Card>
+                            </Link>
+                        ))}
                     </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
-            </div>
+                </section>
+            </Page>
         </>
     );
 }

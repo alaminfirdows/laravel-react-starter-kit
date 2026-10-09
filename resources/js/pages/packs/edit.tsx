@@ -1,7 +1,8 @@
 import { Form, Head, Link } from '@inertiajs/react';
 import { Info } from 'lucide-react';
 import CommunityPackController from '@/actions/App/Domain/Catalog/Http/Controllers/CommunityPackController';
-import Heading from '@/components/heading';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { PackReviewBadge } from '@/components/pack/pack-review-badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -42,19 +43,19 @@ export default function CommunityPackEdit({
     return (
         <>
             <Head title={pack ? `Edit ${pack.name}` : 'New pack'} />
-            <div className="mx-auto w-full max-w-4xl space-y-6 p-4 md:p-8">
-                <div className="flex items-start justify-between gap-4">
-                    <Heading
-                        title={pack ? pack.name : 'New pack'}
-                        description="Pick catalog tasks. Each one comes with its subtasks."
-                    />
-                    <div className="flex items-center gap-2">
-                        {pack && <PackReviewBadge pack={pack} />}
-                        <Button variant="outline" asChild>
-                            <Link href={index()}>Back</Link>
-                        </Button>
-                    </div>
-                </div>
+            <Page size="narrow">
+                <PageHeader
+                    title={pack ? pack.name : 'New pack'}
+                    description="Pick catalog tasks. Each one comes with its subtasks."
+                    actions={
+                        <>
+                            {pack && <PackReviewBadge pack={pack} />}
+                            <Button variant="outline" asChild>
+                                <Link href={index()}>Back</Link>
+                            </Button>
+                        </>
+                    }
+                />
                 {pack?.reviewStatus === 'rejected' && pack.reviewNote && (
                     <Alert variant="destructive">
                         <Info />
@@ -171,7 +172,7 @@ export default function CommunityPackEdit({
                         </FieldGroup>
                     )}
                 </Form>
-            </div>
+            </Page>
         </>
     );
 }
