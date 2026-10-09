@@ -65,3 +65,5 @@ packs:
       items:
           - task: planning.problem-interviews # include_subtree defaults to true
 ```
+
+Admin UI edits (`/admin/catalog`) mark rows as not exported. Run `php artisan catalog:export` to write them back to these files (no version bump). `catalog:import` refuses while unexported edits exist; `--check` lists them, `--force` overwrites them from YAML.

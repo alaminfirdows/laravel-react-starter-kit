@@ -24,6 +24,9 @@ class ImportCatalog
 {
     public const int MAX_DEPTH = 2;
 
+    /** Task YAML keys that are hashed but stored in their own tables. */
+    private const array HASH_ONLY = ['actions', 'skills', 'resources'];
+
     /** @var array{categories:int, skills:int, resources:int, tasks:int, actions:int, prompts:int, packs:int} */
     private array $counts;
 
@@ -139,15 +142,7 @@ class ImportCatalog
     private function importPrompts(array $data): void
     {
         foreach ($data['prompts'] ?? [] as $row) {
-            $attributes = [
-                'title' => $row['title'],
-                'launcher_md' => $row['launcher_md'] ?? null,
-                'full_md' => $row['full_md'],
-                'variables' => $row['variables'] ?? null,
-                'target' => $row['target'] ?? 'chat',
-                'skill_keys' => $row['skills'] ?? null,
-            ];
-            $prompt = Versioning::import(PromptTemplate::query()->firstOrNew(['key' => $row['key']]), $attributes);
+            $prompt = Versioning::import(PromptTemplate::query()->firstOrNew(['key' => $row['key']]), self::promptAttributes($row));
             $this->promptIds[$prompt->key] = $prompt->id;
             $this->counts['prompts']++;
         }
@@ -169,25 +164,11 @@ class ImportCatalog
             throw new InvalidArgumentException("{$file}: task [{$key}] has unknown category [{$category}]");
         }
 
-        $task = Versioning::import(CatalogTask::query()->firstOrNew(['key' => $key]), [
-            'category_id' => $categoryId,
-            'parent_id' => $parent?->id,
-            'title' => $row['title'],
-            'summary' => $row['summary'] ?? null,
-            'body_md' => $row['body_md'] ?? null,
-            'applicability' => $row['applicability'] ?? null,
-            'priority_default' => $row['priority'] ?? 'p2',
-            'est_minutes' => $row['est_minutes'] ?? null,
-            'difficulty' => $row['difficulty'] ?? null,
-            'is_optional' => $row['optional'] ?? false,
-            'completion_criteria' => $row['completion_criteria'] ?? null,
-            'expected_outputs' => $row['expected_outputs'] ?? null,
-            'status' => $row['status'] ?? CatalogStatus::Published->value,
-            'sort_order' => $position,
-            'actions' => $row['actions'] ?? [],
-            'skills' => $row['skills'] ?? [],
-            'resources' => $row['resources'] ?? [],
-        ], except: ['actions', 'skills', 'resources']);
+        $task = Versioning::import(
+            CatalogTask::query()->firstOrNew(['key' => $key]),
+            self::taskAttributes($row, $categoryId, $parent?->id, $position),
+            except: self::HASH_ONLY,
+        );
 
         $task->published_at ??= now();
         $task->save();
@@ -308,14 +289,7 @@ class ImportCatalog
                 $defaults[$row['phase']] = $row['key'];
             }
 
-            $pack = Versioning::import(Pack::query()->firstOrNew(['key' => $row['key']]), [
-                'name' => $row['name'],
-                'description_md' => $row['description_md'] ?? null,
-                'audience' => ['phase' => $row['phase'], ...($row['audience'] ?? [])],
-                'is_default' => $row['is_default'] ?? false,
-                'status' => $row['status'] ?? CatalogStatus::Published->value,
-                'items' => $row['items'],
-            ], except: ['items']);
+            $pack = Versioning::import(Pack::query()->firstOrNew(['key' => $row['key']]), self::packAttributes($row), except: ['items']);
 
             $pack->items()->delete();
 
@@ -331,5 +305,70 @@ class ImportCatalog
 
             $this->counts['packs']++;
         }
+    }
+
+    /**
+     * Hashed prompt attributes for a YAML row (shared with `ExportCatalog`).
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public static function promptAttributes(array $row): array
+    {
+        return [
+            'title' => $row['title'],
+            'launcher_md' => $row['launcher_md'] ?? null,
+            'full_md' => $row['full_md'],
+            'variables' => $row['variables'] ?? null,
+            'target' => $row['target'] ?? 'chat',
+            'skill_keys' => $row['skills'] ?? null,
+        ];
+    }
+
+    /**
+     * Hashed task attributes for a YAML row (shared with `ExportCatalog`).
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public static function taskAttributes(array $row, int $categoryId, ?int $parentId, int $position): array
+    {
+        return [
+            'category_id' => $categoryId,
+            'parent_id' => $parentId,
+            'title' => $row['title'],
+            'summary' => $row['summary'] ?? null,
+            'body_md' => $row['body_md'] ?? null,
+            'applicability' => $row['applicability'] ?? null,
+            'priority_default' => $row['priority'] ?? 'p2',
+            'est_minutes' => $row['est_minutes'] ?? null,
+            'difficulty' => $row['difficulty'] ?? null,
+            'is_optional' => $row['optional'] ?? false,
+            'completion_criteria' => $row['completion_criteria'] ?? null,
+            'expected_outputs' => $row['expected_outputs'] ?? null,
+            'status' => $row['status'] ?? CatalogStatus::Published->value,
+            'sort_order' => $position,
+            'actions' => $row['actions'] ?? [],
+            'skills' => $row['skills'] ?? [],
+            'resources' => $row['resources'] ?? [],
+        ];
+    }
+
+    /**
+     * Hashed pack attributes for a YAML row (shared with `ExportCatalog`).
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public static function packAttributes(array $row): array
+    {
+        return [
+            'name' => $row['name'],
+            'description_md' => $row['description_md'] ?? null,
+            'audience' => ['phase' => $row['phase'], ...($row['audience'] ?? [])],
+            'is_default' => $row['is_default'] ?? false,
+            'status' => $row['status'] ?? CatalogStatus::Published->value,
+            'items' => $row['items'],
+        ];
     }
 }
