@@ -26,7 +26,7 @@ class DnsSpfCheck implements Check
 
         return match (count($spf)) {
             0 => CheckResult::fail(__('No SPF record on :host.', ['host' => $target->apexHost()])),
-            1 => CheckResult::pass(__('SPF record: :record', ['record' => $spf[0]])),
+            1 => CheckResult::pass(__('SPF record found on :host.', ['host' => $target->apexHost()])),
             default => CheckResult::fail(__(':host has :count SPF records; keep one.', ['host' => $target->apexHost(), 'count' => count($spf)])),
         };
     }

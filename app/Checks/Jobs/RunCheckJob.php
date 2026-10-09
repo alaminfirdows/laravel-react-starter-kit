@@ -84,10 +84,13 @@ class RunCheckJob implements ShouldBeUnique, ShouldQueue
         });
     }
 
+    /**
+     * Members see a generic reason; the queue worker reports the exception itself.
+     */
     public function failed(?Throwable $exception): void
     {
-        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run) use ($exception): void {
-            app(FinishRun::class)->handle($run, Actor::system(), RunStatus::Failed, $exception?->getMessage() ?? __('The check failed.'));
+        $this->withStartedRun($this->runId, $this->userId, function (ActionRun $run): void {
+            app(FinishRun::class)->handle($run, Actor::system(), RunStatus::Failed, __('The check failed.'));
         });
     }
 

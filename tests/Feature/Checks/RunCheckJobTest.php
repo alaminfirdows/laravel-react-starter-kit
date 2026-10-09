@@ -15,8 +15,10 @@ use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use Tests\Fixtures\FakeDnsResolver;
 
 beforeEach(function () {
+    FakeDnsResolver::bind();
     Http::preventStrayRequests();
     $this->user = User::factory()->create();
     $workspace = Workspace::factory()->ownedBy($this->user)->create();

@@ -19,8 +19,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
+use Tests\Fixtures\FakeDnsResolver;
 
 beforeEach(function () {
+    FakeDnsResolver::bind();
     $this->user = User::factory()->create();
     $this->workspace = Workspace::factory()->ownedBy($this->user)->create(['slug' => 'acme']);
     app(WorkspaceDiscoveryService::class)->setCurrentWorkspace($this->workspace);

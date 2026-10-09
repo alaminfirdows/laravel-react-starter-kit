@@ -15,8 +15,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
+use Tests\Fixtures\FakeDnsResolver;
 
 beforeEach(function () {
+    FakeDnsResolver::bind();
     $this->user = User::factory()->create();
     $this->workspace = Workspace::factory()->ownedBy($this->user)->create();
     app(WorkspaceDiscoveryService::class)->setCurrentWorkspace($this->workspace);
