@@ -55,8 +55,8 @@ export default function Authorize({
         <>
             <Head title="Authorize" />
 
-            <div className="space-y-6">
-                <div className="space-y-1 text-sm">
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-1 text-sm">
                     <div className="flex flex-wrap items-center gap-2">
                         <strong>{client.name}</strong>
                         {client.verified ? (
@@ -90,7 +90,7 @@ export default function Authorize({
                 </p>
 
                 {scopes.length > 0 && (
-                    <ul className="space-y-1 text-sm text-muted-foreground">
+                    <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
                         {scopes.map((scope) => (
                             <li key={scope.id} className="flex gap-2">
                                 <Check className="size-4" />
@@ -103,7 +103,7 @@ export default function Authorize({
                 <form
                     method="post"
                     action={approve.url()}
-                    className="space-y-6"
+                    className="flex flex-col gap-6"
                 >
                     {fields}
                     <Field data-invalid={!!errors.workspace}>

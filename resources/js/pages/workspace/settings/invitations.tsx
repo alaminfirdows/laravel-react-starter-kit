@@ -1,7 +1,7 @@
 import { Form, Head, router, usePage } from '@inertiajs/react';
 import WorkspaceInvitationController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceInvitationController';
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
-import Heading from '@/components/heading';
+import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,156 +33,160 @@ export default function Invitations({
             <Head title="Invitations" />
 
             {workspacePermissions?.canCreateInvitation && (
-                <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Invite member"
-                        description="The link in the email is valid for 3 days"
-                    />
-
-                    <Form
-                        {...WorkspaceInvitationController.store.form()}
-                        options={{ preserveScroll: true }}
-                        resetOnSuccess={['email']}
-                        className="flex flex-col gap-4 sm:flex-row sm:items-start"
-                    >
-                        {({ processing, errors }) => (
-                            <>
-                                <div className="grid flex-1 gap-2">
-                                    <Label htmlFor="email" className="sr-only">
-                                        Email
-                                    </Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        name="email"
-                                        placeholder="name@example.com"
-                                        required
-                                    />
-                                    <InputError message={errors.email} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Select
-                                        name="role"
-                                        defaultValue={defaultRole}
-                                    >
-                                        <SelectTrigger
-                                            className="w-32"
-                                            aria-label="Role"
+                <SettingsCard
+                    title="Invite member"
+                    description="The link in the email is valid for 3 days"
+                >
+                    <SettingsCardBody>
+                        <Form
+                            {...WorkspaceInvitationController.store.form()}
+                            options={{ preserveScroll: true }}
+                            resetOnSuccess={['email']}
+                            className="flex flex-col gap-4 sm:flex-row sm:items-start"
+                        >
+                            {({ processing, errors }) => (
+                                <>
+                                    <div className="grid flex-1 gap-2">
+                                        <Label
+                                            htmlFor="email"
+                                            className="sr-only"
                                         >
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {assignableRoles.map((role) => (
-                                                <SelectItem
-                                                    key={role.value}
-                                                    value={role.value}
-                                                >
-                                                    {role.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <InputError message={errors.role} />
-                                </div>
-                                <Button
-                                    disabled={processing}
-                                    data-test="invite-member-button"
-                                >
-                                    Send invite
-                                </Button>
-                            </>
-                        )}
-                    </Form>
-                </div>
+                                            Email
+                                        </Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            name="email"
+                                            placeholder="name@example.com"
+                                            required
+                                        />
+                                        <InputError message={errors.email} />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Select
+                                            name="role"
+                                            defaultValue={defaultRole}
+                                        >
+                                            <SelectTrigger
+                                                className="w-32"
+                                                aria-label="Role"
+                                            >
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {assignableRoles.map((role) => (
+                                                    <SelectItem
+                                                        key={role.value}
+                                                        value={role.value}
+                                                    >
+                                                        {role.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <InputError message={errors.role} />
+                                    </div>
+                                    <Button
+                                        disabled={processing}
+                                        data-test="invite-member-button"
+                                    >
+                                        Send invite
+                                    </Button>
+                                </>
+                            )}
+                        </Form>
+                    </SettingsCardBody>
+                </SettingsCard>
             )}
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Pending invitations"
-                    description="Invitations not accepted yet"
-                />
-
-                {!workspacePermissions?.canCreateInvitation &&
-                !workspacePermissions?.canCancelInvitation ? (
-                    <p className="text-sm text-muted-foreground">
-                        Only admins can see pending invitations.
-                    </p>
-                ) : invitations.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No pending invitations.
-                    </p>
-                ) : (
-                    <ul className="divide-y rounded-lg border">
-                        {invitations.map((invitation) => (
-                            <li
-                                key={invitation.code}
-                                className="flex flex-wrap items-center gap-3 p-4"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium">
-                                        {invitation.email}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {invitation.inviterName &&
-                                            `Invited by ${invitation.inviterName} · `}
-                                        {invitation.isExpired
-                                            ? 'Expired'
-                                            : `Expires ${formatDate(invitation.expiresAt)}`}
-                                    </p>
-                                </div>
-
-                                <Badge
-                                    variant={
-                                        invitation.isExpired
-                                            ? 'destructive'
-                                            : 'secondary'
-                                    }
+            <SettingsCard
+                title="Pending invitations"
+                description="Invitations not accepted yet"
+            >
+                <SettingsCardBody>
+                    {!workspacePermissions?.canCreateInvitation &&
+                    !workspacePermissions?.canCancelInvitation ? (
+                        <p className="text-sm text-muted-foreground">
+                            Only admins can see pending invitations.
+                        </p>
+                    ) : invitations.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            No pending invitations.
+                        </p>
+                    ) : (
+                        <ul className="divide-y rounded-md border">
+                            {invitations.map((invitation) => (
+                                <li
+                                    key={invitation.code}
+                                    className="flex flex-wrap items-center gap-3 p-4"
                                 >
-                                    {invitation.roleLabel}
-                                </Badge>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-medium">
+                                            {invitation.email}
+                                        </p>
+                                        <p className="font-mono text-xs text-muted-foreground">
+                                            {invitation.inviterName &&
+                                                `Invited by ${invitation.inviterName} · `}
+                                            {invitation.isExpired
+                                                ? 'Expired'
+                                                : `Expires ${formatDate(invitation.expiresAt)}`}
+                                        </p>
+                                    </div>
 
-                                {workspacePermissions?.canCreateInvitation && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            router.visit(
-                                                WorkspaceInvitationController.resend(
-                                                    {
-                                                        invitation:
-                                                            invitation.code,
-                                                    },
-                                                ),
-                                                { preserveScroll: true },
-                                            )
+                                    <Badge
+                                        variant={
+                                            invitation.isExpired
+                                                ? 'destructive'
+                                                : 'secondary'
                                         }
                                     >
-                                        Resend
-                                    </Button>
-                                )}
+                                        {invitation.roleLabel}
+                                    </Badge>
 
-                                {workspacePermissions?.canCancelInvitation && (
-                                    <ConfirmActionDialog
-                                        trigger={
-                                            <Button variant="ghost" size="sm">
-                                                Cancel
-                                            </Button>
-                                        }
-                                        title="Cancel invitation?"
-                                        description={`The link sent to ${invitation.email} stops working.`}
-                                        confirmLabel="Cancel invitation"
-                                        form={WorkspaceInvitationController.destroy.form(
-                                            { invitation: invitation.code },
-                                        )}
-                                    />
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+                                    {workspacePermissions?.canCreateInvitation && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                router.visit(
+                                                    WorkspaceInvitationController.resend(
+                                                        {
+                                                            invitation:
+                                                                invitation.code,
+                                                        },
+                                                    ),
+                                                    { preserveScroll: true },
+                                                )
+                                            }
+                                        >
+                                            Resend
+                                        </Button>
+                                    )}
+
+                                    {workspacePermissions?.canCancelInvitation && (
+                                        <ConfirmActionDialog
+                                            trigger={
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            }
+                                            title="Cancel invitation?"
+                                            description={`The link sent to ${invitation.email} stops working.`}
+                                            confirmLabel="Cancel invitation"
+                                            form={WorkspaceInvitationController.destroy.form(
+                                                { invitation: invitation.code },
+                                            )}
+                                        />
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </SettingsCardBody>
+            </SettingsCard>
         </>
     );
 }

@@ -1,7 +1,11 @@
 import { Form, Head, router, usePage } from '@inertiajs/react';
 import { useRef } from 'react';
 import WorkspaceSettingsController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceSettingsController';
-import Heading from '@/components/heading';
+import {
+    SettingsCard,
+    SettingsCardBody,
+    SettingsCardFooter,
+} from '@/components/settings-card';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,70 +36,67 @@ export default function General({
 
             <h1 className="sr-only">Workspace settings</h1>
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="General"
-                    description="Workspace name and URL"
-                />
-
+            <SettingsCard title="General" description="Workspace name and URL">
                 <Form
                     {...WorkspaceSettingsController.update.form()}
                     options={{ preserveScroll: true }}
-                    className="space-y-6"
+                    className="flex flex-col"
                 >
                     {({ processing, errors }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    defaultValue={workspace.name}
-                                    required
-                                    maxLength={255}
-                                    disabled={!canUpdate}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="slug">URL</Label>
-                                <div className="flex items-center rounded-md border border-input pl-3 focus-within:ring-2 focus-within:ring-ring/50">
-                                    <span className="text-sm text-muted-foreground">
-                                        {window.location.host}/
-                                    </span>
+                            <SettingsCardBody>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name">Name</Label>
                                     <Input
-                                        id="slug"
-                                        name="slug"
-                                        defaultValue={workspace.slug}
+                                        id="name"
+                                        name="name"
+                                        defaultValue={workspace.name}
                                         required
-                                        minLength={2}
-                                        maxLength={64}
-                                        pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                                        title="Lowercase letters, numbers and dashes"
-                                        className="border-0 pl-0 shadow-none focus-visible:ring-0"
+                                        maxLength={255}
                                         disabled={!canUpdate}
                                     />
+                                    <InputError message={errors.name} />
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Changing the URL breaks old links.
-                                </p>
-                                <InputError message={errors.slug} />
-                            </div>
 
+                                <div className="grid gap-2">
+                                    <Label htmlFor="slug">URL</Label>
+                                    <div className="flex items-center rounded-md border border-input pl-3 focus-within:ring-2 focus-within:ring-ring/50">
+                                        <span className="text-sm text-muted-foreground">
+                                            {window.location.host}/
+                                        </span>
+                                        <Input
+                                            id="slug"
+                                            name="slug"
+                                            defaultValue={workspace.slug}
+                                            required
+                                            minLength={2}
+                                            maxLength={64}
+                                            pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                                            title="Lowercase letters, numbers and dashes"
+                                            className="border-0 pl-0 shadow-none focus-visible:ring-0"
+                                            disabled={!canUpdate}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Changing the URL breaks old links.
+                                    </p>
+                                    <InputError message={errors.slug} />
+                                </div>
+                            </SettingsCardBody>
                             {canUpdate && (
-                                <Button
-                                    disabled={processing}
-                                    data-test="update-workspace-button"
-                                >
-                                    Save
-                                </Button>
+                                <SettingsCardFooter helper="Visible to all workspace members.">
+                                    <Button
+                                        disabled={processing}
+                                        data-test="update-workspace-button"
+                                    >
+                                        Save
+                                    </Button>
+                                </SettingsCardFooter>
                             )}
                         </>
                     )}
                 </Form>
-            </div>
+            </SettingsCard>
 
             <WorkspaceLogo workspace={workspace} canUpdate={canUpdate} />
 
@@ -116,14 +117,8 @@ function WorkspaceLogo({
     const fileInput = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-6">
-            <Heading
-                variant="small"
-                title="Logo"
-                description="PNG, JPG or WebP. Max 2 MB."
-            />
-
-            <div className="flex items-center gap-4">
+        <SettingsCard title="Logo" description="PNG, JPG or WebP. Max 2 MB.">
+            <SettingsCardBody className="flex-row items-center gap-4">
                 <WorkspaceAvatar
                     name={workspace.name}
                     logoUrl={workspace.logoUrl}
@@ -185,22 +180,21 @@ function WorkspaceLogo({
                         )}
                     </Form>
                 )}
-            </div>
-        </div>
+            </SettingsCardBody>
+        </SettingsCard>
     );
 }
 
 function DeleteWorkspace({ workspace }: { workspace: WorkspaceDetails }) {
     return (
-        <div className="space-y-6">
-            <Heading
-                variant="small"
-                title="Delete workspace"
-                description="Delete this workspace, its members and its data"
-            />
-            <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4 dark:bg-destructive/10">
-                <div className="space-y-0.5 text-destructive-foreground">
-                    <p className="font-medium">Warning</p>
+        <SettingsCard
+            destructive
+            title="Delete workspace"
+            description="Delete this workspace, its members and its data"
+        >
+            <SettingsCardBody>
+                <div className="flex flex-col gap-0.5 rounded-md border border-destructive/20 bg-destructive/5 p-3 text-destructive-foreground dark:bg-destructive/10">
+                    <p className="text-sm font-medium">Warning</p>
                     <p className="text-sm">This cannot be undone.</p>
                 </div>
 
@@ -263,7 +257,7 @@ function DeleteWorkspace({ workspace }: { workspace: WorkspaceDetails }) {
                         </Form>
                     </DialogContent>
                 </Dialog>
-            </div>
-        </div>
+            </SettingsCardBody>
+        </SettingsCard>
     );
 }

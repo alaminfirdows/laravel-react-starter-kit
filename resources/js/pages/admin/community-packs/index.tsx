@@ -1,6 +1,9 @@
 import { Form, Head } from '@inertiajs/react';
+import { Inbox } from 'lucide-react';
 import CommunityPackReviewController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CommunityPackReviewController';
-import Heading from '@/components/heading';
+import { EmptyState } from '@/components/empty-state';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,16 +26,17 @@ export default function CommunityPackReviews({
     return (
         <>
             <Head title="Community packs" />
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
+            <Page size="narrow">
+                <PageHeader
                     title="Community packs"
                     description="Public packs waiting for review. Approved packs are listed for every workspace."
                 />
                 {packs.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                        Nothing to review.
-                    </p>
+                    <EmptyState
+                        icon={Inbox}
+                        title="Nothing to review."
+                        description="New public packs will show up here."
+                    />
                 )}
                 {packs.map((pack) => (
                     <Card key={pack.key}>
@@ -49,12 +53,15 @@ export default function CommunityPackReviews({
                                 )}
                             </CardTitle>
                             <CardDescription>
-                                By {pack.owner} · v{pack.version}
+                                By {pack.owner} ·{' '}
+                                <span className="font-mono">
+                                    v{pack.version}
+                                </span>
                             </CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
+                        <CardContent className="flex flex-col gap-2 text-sm">
                             {pack.descriptionMd && <p>{pack.descriptionMd}</p>}
-                            <ul className="list-disc pl-5">
+                            <ul className="list-disc pl-5 text-muted-foreground">
                                 {pack.items?.map((item) => (
                                     <li key={item.key}>{item.title}</li>
                                 ))}
@@ -66,7 +73,7 @@ export default function CommunityPackReviews({
                                     pack.key,
                                 )}
                                 options={{ preserveScroll: true }}
-                                className="w-full space-y-3"
+                                className="flex w-full flex-col gap-3"
                             >
                                 {({ processing, errors }) => (
                                     <>
@@ -85,7 +92,7 @@ export default function CommunityPackReviews({
                                                 {errors.note ?? errors.decision}
                                             </FieldError>
                                         </Field>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <Button
                                                 name="decision"
                                                 value="approved"
@@ -108,7 +115,7 @@ export default function CommunityPackReviews({
                         </CardFooter>
                     </Card>
                 ))}
-            </div>
+            </Page>
         </>
     );
 }

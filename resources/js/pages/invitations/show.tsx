@@ -27,8 +27,8 @@ export default function ShowInvitation({
                     logoUrl={invitation.workspaceLogoUrl}
                     className="size-14 text-lg"
                 />
-                <div className="space-y-1">
-                    <h1 className="text-xl font-semibold">
+                <div className="flex flex-col gap-1">
+                    <h1 className="text-xl font-semibold tracking-tight">
                         {invitation.workspaceName}
                     </h1>
                     <p className="text-sm text-muted-foreground">

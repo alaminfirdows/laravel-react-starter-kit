@@ -3,7 +3,7 @@ import { Copy, Unplug } from 'lucide-react';
 import { toast } from 'sonner';
 import WorkspaceConnectionController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceConnectionController';
 import ConnectClaudeController from '@/actions/App/Http/Controllers/Settings/ConnectClaudeController';
-import Heading from '@/components/heading';
+import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useClipboard } from '@/hooks/use-clipboard';
@@ -57,129 +57,135 @@ export default function ConnectClaude({
 
             <h1 className="sr-only">Connect Claude</h1>
 
-            <div className="space-y-10">
-                <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Connect Claude"
-                        description="Let Claude read your tasks and report progress back"
-                    />
-                    <ol className="list-decimal space-y-2 pl-5 text-sm">
-                        {steps.map((step) => (
-                            <li key={step}>{step}</li>
-                        ))}
-                    </ol>
-                    <div className="flex gap-2">
-                        <Input
-                            readOnly
-                            value={connectorUrl}
-                            aria-label="Connector URL"
-                        />
-                        <Button variant="outline" onClick={copyUrl}>
-                            <Copy /> Copy
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Active connections"
-                        description="Clients that can act for you. Revoke to sign them out."
-                    />
-                    {connections.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No connections yet.
-                        </p>
-                    ) : (
-                        <ul className="divide-y rounded-md border">
-                            {connections.map((connection) => (
-                                <li
-                                    key={connection.id}
-                                    className="flex items-center justify-between gap-4 p-3 text-sm"
-                                >
-                                    <div>
-                                        <p className="font-medium">
-                                            {connection.clientName}
-                                        </p>
-                                        <p className="text-muted-foreground">
-                                            {connection.workspaceName ??
-                                                'No workspace (reconnect)'}{' '}
-                                            · since{' '}
-                                            {formatDate(connection.createdAt)}
-                                        </p>
-                                    </div>
-                                    <Form
-                                        {...ConnectClaudeController.destroy.form(
-                                            connection.id,
-                                        )}
-                                        options={{ preserveScroll: true }}
-                                    >
-                                        {({ processing }) => (
-                                            <RevokeButton
-                                                disabled={processing}
-                                            />
-                                        )}
-                                    </Form>
-                                </li>
+            <div className="flex flex-col gap-6">
+                <SettingsCard
+                    title="Connect Claude"
+                    description="Let Claude read your tasks and report progress back"
+                >
+                    <SettingsCardBody>
+                        <ol className="flex list-decimal flex-col gap-2 pl-5 text-sm">
+                            {steps.map((step) => (
+                                <li key={step}>{step}</li>
                             ))}
-                        </ul>
-                    )}
-                </div>
-                {team && (
-                    <div className="space-y-6">
-                        <Heading
-                            variant="small"
-                            title={`${team.workspace.name} connections`}
-                            description="Members' clients bound to this workspace. You can revoke members ranked below you."
-                        />
-                        {team.connections.length === 0 ? (
+                        </ol>
+                        <div className="flex gap-2">
+                            <Input
+                                readOnly
+                                value={connectorUrl}
+                                aria-label="Connector URL"
+                            />
+                            <Button variant="outline" onClick={copyUrl}>
+                                <Copy /> Copy
+                            </Button>
+                        </div>
+                    </SettingsCardBody>
+                </SettingsCard>
+
+                <SettingsCard
+                    title="Active connections"
+                    description="Clients that can act for you. Revoke to sign them out."
+                >
+                    <SettingsCardBody>
+                        {connections.length === 0 ? (
                             <p className="text-sm text-muted-foreground">
-                                No member connections.
+                                No connections yet.
                             </p>
                         ) : (
-                            <ul className="divide-y rounded-md border">
-                                {team.connections.map((connection) => (
+                            <ul className="divide-y rounded-md border bg-card">
+                                {connections.map((connection) => (
                                     <li
                                         key={connection.id}
                                         className="flex items-center justify-between gap-4 p-3 text-sm"
                                     >
                                         <div>
                                             <p className="font-medium">
-                                                {connection.userName}
+                                                {connection.clientName}
                                             </p>
                                             <p className="text-muted-foreground">
-                                                {connection.clientName} · since{' '}
+                                                {connection.workspaceName ??
+                                                    'No workspace (reconnect)'}{' '}
+                                                · since{' '}
                                                 {formatDate(
                                                     connection.createdAt,
                                                 )}
                                             </p>
                                         </div>
-                                        {connection.canRevoke && (
-                                            <Form
-                                                {...WorkspaceConnectionController.destroy.form(
-                                                    {
-                                                        workspace:
-                                                            team.workspace.slug,
-                                                        token: connection.id,
-                                                    },
-                                                )}
-                                                options={{
-                                                    preserveScroll: true,
-                                                }}
-                                            >
-                                                {({ processing }) => (
-                                                    <RevokeButton
-                                                        disabled={processing}
-                                                    />
-                                                )}
-                                            </Form>
-                                        )}
+                                        <Form
+                                            {...ConnectClaudeController.destroy.form(
+                                                connection.id,
+                                            )}
+                                            options={{ preserveScroll: true }}
+                                        >
+                                            {({ processing }) => (
+                                                <RevokeButton
+                                                    disabled={processing}
+                                                />
+                                            )}
+                                        </Form>
                                     </li>
                                 ))}
                             </ul>
                         )}
-                    </div>
+                    </SettingsCardBody>
+                </SettingsCard>
+                {team && (
+                    <SettingsCard
+                        title={`${team.workspace.name} connections`}
+                        description="Members' clients bound to this workspace. You can revoke members ranked below you."
+                    >
+                        <SettingsCardBody>
+                            {team.connections.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    No member connections.
+                                </p>
+                            ) : (
+                                <ul className="divide-y rounded-md border bg-card">
+                                    {team.connections.map((connection) => (
+                                        <li
+                                            key={connection.id}
+                                            className="flex items-center justify-between gap-4 p-3 text-sm"
+                                        >
+                                            <div>
+                                                <p className="font-medium">
+                                                    {connection.userName}
+                                                </p>
+                                                <p className="text-muted-foreground">
+                                                    {connection.clientName} ·
+                                                    since{' '}
+                                                    {formatDate(
+                                                        connection.createdAt,
+                                                    )}
+                                                </p>
+                                            </div>
+                                            {connection.canRevoke && (
+                                                <Form
+                                                    {...WorkspaceConnectionController.destroy.form(
+                                                        {
+                                                            workspace:
+                                                                team.workspace
+                                                                    .slug,
+                                                            token: connection.id,
+                                                        },
+                                                    )}
+                                                    options={{
+                                                        preserveScroll: true,
+                                                    }}
+                                                >
+                                                    {({ processing }) => (
+                                                        <RevokeButton
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                        />
+                                                    )}
+                                                </Form>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </SettingsCardBody>
+                    </SettingsCard>
                 )}
             </div>
         </>

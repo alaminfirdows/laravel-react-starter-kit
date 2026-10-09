@@ -2,7 +2,15 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { LogOut } from 'lucide-react';
 import WorkspaceMemberController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceMemberController';
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
-import Heading from '@/components/heading';
+import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Badge } from '@/components/ui/badge';
@@ -32,83 +40,105 @@ export default function Members({
         <>
             <Head title="Members" />
 
-            <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Members"
-                    description={`People with access to ${currentWorkspace?.name ?? 'this workspace'}`}
-                />
-
-                <ul className="divide-y rounded-lg border">
-                    {members.map((member) => (
-                        <li
-                            key={member.id}
-                            className="flex flex-wrap items-center gap-3 p-4"
-                            data-test={`member-${member.id}`}
-                        >
-                            <div className="flex min-w-0 flex-1 items-center gap-2">
-                                <MemberInfo member={member} />
-                                {member.isCurrentUser && (
-                                    <Badge variant="outline">You</Badge>
-                                )}
-                            </div>
-
-                            {member.canUpdate ? (
-                                <RoleSelect
-                                    member={member}
-                                    roles={assignableRoles}
-                                />
-                            ) : (
-                                <Badge variant="secondary">
-                                    {member.roleLabel}
-                                </Badge>
-                            )}
-
-                            {workspacePermissions?.canTransferOwnership &&
-                                !member.isCurrentUser && (
-                                    <TransferOwnership member={member} />
-                                )}
-
-                            {member.canRemove && (
-                                <ConfirmActionDialog
-                                    trigger={
-                                        <Button variant="ghost" size="sm">
-                                            Remove
-                                        </Button>
-                                    }
-                                    title={`Remove ${member.name}?`}
-                                    description="They lose access to this workspace at once."
-                                    confirmLabel="Remove member"
-                                    form={WorkspaceMemberController.destroy.form(
-                                        { member: member.id },
+            <SettingsCard
+                title="Members"
+                description={`People with access to ${currentWorkspace?.name ?? 'this workspace'}`}
+                className="max-w-full"
+            >
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="pl-5">Member</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead className="pr-5 text-right">
+                                <span className="sr-only">Actions</span>
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {members.map((member) => (
+                            <TableRow
+                                key={member.id}
+                                data-test={`member-${member.id}`}
+                            >
+                                <TableCell className="pl-5">
+                                    <div className="flex min-w-0 items-center gap-2">
+                                        <MemberInfo member={member} />
+                                        {member.isCurrentUser && (
+                                            <Badge variant="outline">You</Badge>
+                                        )}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    {member.canUpdate ? (
+                                        <RoleSelect
+                                            member={member}
+                                            roles={assignableRoles}
+                                        />
+                                    ) : (
+                                        <Badge variant="secondary">
+                                            {member.roleLabel}
+                                        </Badge>
                                     )}
-                                />
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+                                </TableCell>
+                                <TableCell className="pr-5">
+                                    <div className="flex items-center justify-end gap-1">
+                                        {workspacePermissions?.canTransferOwnership &&
+                                            !member.isCurrentUser && (
+                                                <TransferOwnership
+                                                    member={member}
+                                                />
+                                            )}
+
+                                        {member.canRemove && (
+                                            <ConfirmActionDialog
+                                                trigger={
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
+                                                        Remove
+                                                    </Button>
+                                                }
+                                                title={`Remove ${member.name}?`}
+                                                description="They lose access to this workspace at once."
+                                                confirmLabel="Remove member"
+                                                form={WorkspaceMemberController.destroy.form(
+                                                    { member: member.id },
+                                                )}
+                                            />
+                                        )}
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </SettingsCard>
 
             {workspacePermissions?.canLeaveWorkspace && (
-                <div className="space-y-6">
-                    <Heading
-                        variant="small"
-                        title="Leave workspace"
-                        description="You lose access until someone invites you again"
-                    />
-                    <ConfirmActionDialog
-                        trigger={
-                            <Button variant="outline">
-                                <LogOut />
-                                Leave workspace
-                            </Button>
-                        }
-                        title={`Leave ${currentWorkspace?.name}?`}
-                        description="You lose access to this workspace and its data."
-                        confirmLabel="Leave workspace"
-                        form={WorkspaceMemberController.leave.form()}
-                    />
-                </div>
+                <SettingsCard
+                    destructive
+                    title="Leave workspace"
+                    description="You lose access until someone invites you again"
+                >
+                    <SettingsCardBody>
+                        <div>
+                            <ConfirmActionDialog
+                                trigger={
+                                    <Button variant="outline">
+                                        <LogOut data-icon="inline-start" />
+                                        Leave workspace
+                                    </Button>
+                                }
+                                title={`Leave ${currentWorkspace?.name}?`}
+                                description="You lose access to this workspace and its data."
+                                confirmLabel="Leave workspace"
+                                form={WorkspaceMemberController.leave.form()}
+                            />
+                        </div>
+                    </SettingsCardBody>
+                </SettingsCard>
             )}
         </>
     );

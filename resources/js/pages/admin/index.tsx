@@ -1,15 +1,12 @@
 import { Deferred, Head } from '@inertiajs/react';
+import { BarChart3 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import Heading from '@/components/heading';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { EmptyState } from '@/components/empty-state';
+import { ListSkeleton } from '@/components/list-skeleton';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { TaskCompletionStat, TaskDropOff } from '@/types';
 
 type Props = {
@@ -33,21 +30,15 @@ function StatList({
     children: ReactNode;
 }) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
+        <Card className="gap-0 py-0">
+            <CardHeader className="border-b px-4 py-3">
+                <CardTitle className="text-sm font-semibold">{title}</CardTitle>
+                <p className="text-xs text-muted-foreground">{description}</p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-0">
                 <Deferred
                     data={data}
-                    fallback={
-                        <div className="space-y-2">
-                            <Skeleton className="h-8 w-full animate-pulse" />
-                            <Skeleton className="h-8 w-full animate-pulse" />
-                            <Skeleton className="h-8 w-full animate-pulse" />
-                        </div>
-                    }
+                    fallback={<ListSkeleton rows={3} variant="rows" />}
                 >
                     {children}
                 </Deferred>
@@ -57,7 +48,14 @@ function StatList({
 }
 
 function Empty() {
-    return <p className="text-sm text-muted-foreground">No data yet.</p>;
+    return (
+        <EmptyState
+            icon={BarChart3}
+            size="sm"
+            title="No data yet."
+            className="border-0 bg-transparent"
+        />
+    );
 }
 
 export default function AdminIndex({
@@ -76,14 +74,19 @@ export default function AdminIndex({
     return (
         <>
             <Head title="Admin" />
-            <div className="space-y-6">
-                <Heading variant="small" title="Overview" />
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Page>
+                <PageHeader
+                    title="Overview"
+                    description="Catalog authoring, pack review and analytics"
+                />
+                <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                     {stats.map((stat) => (
-                        <Card key={stat.label}>
-                            <CardHeader>
-                                <CardDescription>{stat.label}</CardDescription>
-                                <CardTitle className="text-2xl">
+                        <Card key={stat.label} className="gap-1 py-4">
+                            <CardHeader className="gap-1 px-4">
+                                <p className="text-xs text-muted-foreground">
+                                    {stat.label}
+                                </p>
+                                <CardTitle className="font-mono text-2xl tabular-nums">
                                     {stat.value}
                                 </CardTitle>
                             </CardHeader>
@@ -97,17 +100,17 @@ export default function AdminIndex({
                         data="completionStats"
                     >
                         {completionStats?.length ? (
-                            <ul className="divide-y">
+                            <ul>
                                 {completionStats.map((stat) => (
                                     <li
                                         key={stat.key}
-                                        className="space-y-1 py-2"
+                                        className="flex flex-col gap-1.5 border-b px-4 py-3 last:border-b-0"
                                     >
                                         <div className="flex items-center justify-between gap-2 text-sm">
                                             <span className="truncate">
                                                 {stat.title}
                                             </span>
-                                            <span className="shrink-0 text-muted-foreground">
+                                            <span className="shrink-0 font-mono text-xs text-muted-foreground">
                                                 {stat.completed}/{stat.started}{' '}
                                                 done · {stat.projects} projects
                                                 {stat.avgHoursToComplete !==
@@ -132,16 +135,16 @@ export default function AdminIndex({
                         data="dropOff"
                     >
                         {dropOff?.length ? (
-                            <ul className="divide-y">
+                            <ul>
                                 {dropOff.map((stat) => (
                                     <li
                                         key={stat.key}
-                                        className="flex items-center justify-between gap-2 py-2 text-sm"
+                                        className="flex items-center justify-between gap-2 border-b px-4 py-3 text-sm last:border-b-0"
                                     >
                                         <span className="truncate">
                                             {stat.title}
                                         </span>
-                                        <span className="shrink-0 text-muted-foreground">
+                                        <span className="shrink-0 font-mono text-xs text-muted-foreground">
                                             {stat.stalled}/{stat.started}{' '}
                                             stalled ({percent(stat.dropOffRate)}
                                             )
@@ -154,7 +157,7 @@ export default function AdminIndex({
                         )}
                     </StatList>
                 </div>
-            </div>
+            </Page>
         </>
     );
 }

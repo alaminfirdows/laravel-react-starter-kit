@@ -1,8 +1,5 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { index } from '@/routes/admin';
@@ -24,41 +21,39 @@ export default function AdminLayout({ children }: PropsWithChildren) {
     ];
 
     return (
-        <div className="px-4 py-6">
-            <Heading
-                title="Admin"
-                description="Catalog authoring, pack review and analytics"
-            />
+        <div className="flex flex-col">
+            <nav
+                aria-label="Admin"
+                className="flex shrink-0 [scrollbar-width:none] gap-1 overflow-x-auto border-b px-3 md:px-4"
+            >
+                <span className="flex h-10 shrink-0 items-center pr-3 pl-2.5 text-sm font-semibold">
+                    Admin
+                </span>
+                {navItems.map((item, position) => {
+                    const active =
+                        position === 0
+                            ? isCurrentUrl(item.href)
+                            : isCurrentOrParentUrl(item.href);
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Admin"
-                    >
-                        {navItems.map((item, position) => (
-                            <Button
-                                key={toUrl(item.href)}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted':
-                                        position === 0
-                                            ? isCurrentUrl(item.href)
-                                            : isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>{item.title}</Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
+                    return (
+                        <Link
+                            key={toUrl(item.href)}
+                            href={item.href}
+                            prefetch
+                            aria-current={active ? 'page' : undefined}
+                            className={cn(
+                                'relative flex h-10 shrink-0 items-center px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground',
+                                'after:absolute after:inset-x-2 after:bottom-[-1px] after:h-0.5 after:rounded-full after:bg-transparent after:transition-colors',
+                                active && 'text-foreground after:bg-primary',
+                            )}
+                        >
+                            {item.title}
+                        </Link>
+                    );
+                })}
+            </nav>
 
-                <Separator className="my-6 lg:hidden" />
-
-                <div className="min-w-0 flex-1">{children}</div>
-            </div>
+            <div className="min-w-0 flex-1">{children}</div>
         </div>
     );
 }

@@ -20,7 +20,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                 </div>
             )}
 
-            <div className="space-y-6">
+            <div className="flex flex-col gap-6">
                 <Form {...email.form()}>
                     {({ processing, errors }) => (
                         <>
@@ -54,7 +54,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     )}
                 </Form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
+                <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
                     <span>Or, return to</span>
                     <TextLink href={login()}>log in</TextLink>
                 </div>

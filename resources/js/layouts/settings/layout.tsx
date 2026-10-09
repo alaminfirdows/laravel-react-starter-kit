@@ -1,8 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
-import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Page } from '@/components/page';
+import { PageHeader } from '@/components/page-header';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -38,47 +37,37 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <div className="px-4 py-6">
-            <Heading
+        <Page size="narrow" className="max-w-4xl">
+            <PageHeader
                 title="Settings"
                 description="Manage your profile and account settings"
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
-                    >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
-                </aside>
+            <div className="flex flex-col gap-6 md:flex-row md:gap-10">
+                <nav
+                    className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:w-44 md:shrink-0 md:flex-col md:overflow-visible md:px-0"
+                    aria-label="Settings"
+                >
+                    {sidebarNavItems.map((item, index) => (
+                        <Link
+                            key={`${toUrl(item.href)}-${index}`}
+                            href={item.href}
+                            className={cn(
+                                'shrink-0 rounded-md px-3 py-1.5 text-sm whitespace-nowrap transition-colors',
+                                isCurrentOrParentUrl(item.href)
+                                    ? 'bg-muted font-medium text-foreground'
+                                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                            )}
+                        >
+                            {item.title}
+                        </Link>
+                    ))}
+                </nav>
 
-                <Separator className="my-6 lg:hidden" />
-
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
-                        {children}
-                    </section>
+                <div className="flex max-w-2xl min-w-0 flex-1 flex-col gap-6">
+                    {children}
                 </div>
             </div>
-        </div>
+        </Page>
     );
 }

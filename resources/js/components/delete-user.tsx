@@ -1,7 +1,7 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import Heading from '@/components/heading';
+import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -20,15 +20,14 @@ export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-6">
-            <Heading
-                variant="small"
-                title="Delete account"
-                description="Delete your account and all of its resources"
-            />
-            <div className="space-y-4 rounded-lg border border-destructive/20 bg-destructive/5 p-4 dark:bg-destructive/10">
-                <div className="relative space-y-0.5 text-destructive-foreground">
-                    <p className="font-medium">Warning</p>
+        <SettingsCard
+            destructive
+            title="Delete account"
+            description="Delete your account and all of its resources"
+        >
+            <SettingsCardBody>
+                <div className="flex flex-col gap-0.5 rounded-md border border-destructive/20 bg-destructive/5 p-3 text-destructive-foreground dark:bg-destructive/10">
+                    <p className="text-sm font-medium">Warning</p>
                     <p className="text-sm">
                         Please proceed with caution, this cannot be undone.
                     </p>
@@ -114,7 +113,7 @@ export default function DeleteUser() {
                         </Form>
                     </DialogContent>
                 </Dialog>
-            </div>
-        </div>
+            </SettingsCardBody>
+        </SettingsCard>
     );
 }
