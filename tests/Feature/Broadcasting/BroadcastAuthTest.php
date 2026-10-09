@@ -78,3 +78,16 @@ test('finished run broadcasts, started run does not', function () {
 
     Event::assertDispatched(RunFinished::class, fn (RunFinished $event): bool => $event->broadcastWith() === ['runId' => $run->id, 'taskId' => $this->task->id, 'status' => 'succeeded']);
 });
+
+test('events use stable broadcast names', function () {
+    $run = ActionRun::factory()->forAction(TaskAction::factory()->forTask($this->task)->create())->create();
+    $comment = app(PostComment::class)->handle($this->task, 'Hi', Actor::user($this->owner));
+
+    expect((new TaskStatusChanged($this->task))->broadcastAs())->toBe('task.status-changed')
+        ->and((new RunFinished($run))->broadcastAs())->toBe('run.finished')
+        ->and((new CommentPosted($comment))->broadcastAs())->toBe('comment.posted');
+});
+
+test('pusher connection is configured', function () {
+    expect(config('broadcasting.connections.pusher.driver'))->toBe('pusher');
+});

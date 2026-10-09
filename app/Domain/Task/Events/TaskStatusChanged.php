@@ -23,6 +23,11 @@ class TaskStatusChanged implements ShouldBroadcast
         return new PrivateChannel(ProjectChannel::name($this->task->project_id));
     }
 
+    public function broadcastAs(): string
+    {
+        return 'task.status-changed';
+    }
+
     /**
      * @return array{taskId: string, status: string}
      */

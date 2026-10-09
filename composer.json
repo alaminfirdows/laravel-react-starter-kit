@@ -19,6 +19,7 @@
         "laravel/passport": "^13.9",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.14",
+        "pusher/pusher-php-server": "^7.3",
         "symfony/yaml": "^8.1"
     },
     "require-dev": {

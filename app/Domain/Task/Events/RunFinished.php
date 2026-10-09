@@ -23,6 +23,11 @@ class RunFinished implements ShouldBroadcast
         return new PrivateChannel(ProjectChannel::name($this->run->project_id));
     }
 
+    public function broadcastAs(): string
+    {
+        return 'run.finished';
+    }
+
     /**
      * @return array{runId: string, taskId: string, status: string}
      */

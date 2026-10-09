@@ -23,6 +23,11 @@ class CommentPosted implements ShouldBroadcast
         return new PrivateChannel(ProjectChannel::name($this->comment->project_id));
     }
 
+    public function broadcastAs(): string
+    {
+        return 'comment.posted';
+    }
+
     /**
      * @return array{commentId: string, taskId: string}
      */
