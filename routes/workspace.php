@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Activity\Http\Controllers\WorkspaceActivityController;
+use App\Domain\Catalog\Http\Controllers\CommunityPackController;
 use App\Domain\Task\Http\Controllers\MyTaskController;
 use App\Domain\Workspace\Http\Controllers\InvitationController;
 use App\Domain\Workspace\Http\Controllers\WorkspaceConnectionController;
@@ -45,6 +46,10 @@ Route::prefix('{workspace}')
         Route::get('my-tasks', [MyTaskController::class, 'index'])->name('tasks.mine');
 
         require __DIR__.'/projects.php';
+
+        Route::resource('packs', CommunityPackController::class)
+            ->only(['index', 'create', 'store', 'edit', 'update'])
+            ->parameters(['packs' => 'pack:key']);
 
         Route::get('settings', fn () => to_route('workspace.settings.edit'))->name('workspace.settings');
 

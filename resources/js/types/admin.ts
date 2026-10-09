@@ -85,3 +85,22 @@ export type PackRootTask = {
     category: string;
     status: CatalogStatus;
 };
+
+export type PackVisibility = 'private' | 'public';
+
+export type PackReviewStatus = 'pending' | 'approved' | 'rejected';
+
+export type CommunityPack = {
+    key: string;
+    name: string;
+    descriptionMd: string | null;
+    phase: ProjectPhase | null;
+    visibility: PackVisibility;
+    status: CatalogStatus;
+    reviewStatus: PackReviewStatus | null;
+    reviewNote: string | null;
+    version: number;
+    owner?: string | null;
+    items?: { key: string; title: string }[];
+    itemsCount?: number;
+};

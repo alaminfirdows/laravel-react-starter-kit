@@ -3,6 +3,7 @@ import {
     FolderGit2,
     FolderKanban,
     ListTodo,
+    Package,
     LayoutGrid,
     Settings,
     ShieldCheck,
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as adminIndex } from '@/routes/admin';
+import { index as packsIndex } from '@/routes/packs';
 import { index as projectsIndex } from '@/routes/projects';
 import { mine as myTasks } from '@/routes/tasks';
 import { edit as editWorkspaceSettings } from '@/routes/workspace/settings';
@@ -56,6 +58,11 @@ export function AppSidebar() {
             title: 'My tasks',
             href: myTasks(),
             icon: ListTodo,
+        },
+        {
+            title: 'Packs',
+            href: packsIndex(),
+            icon: Package,
         },
         {
             title: 'Workspace settings',
