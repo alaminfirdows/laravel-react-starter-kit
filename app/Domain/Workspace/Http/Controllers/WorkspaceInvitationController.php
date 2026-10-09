@@ -4,6 +4,7 @@ namespace App\Domain\Workspace\Http\Controllers;
 
 use App\Domain\Workspace\Actions\InviteMember;
 use App\Domain\Workspace\Actions\ResendInvitation;
+use App\Domain\Workspace\Actions\RevokeInvitation;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Exceptions\InvalidInvitationException;
 use App\Domain\Workspace\Http\Requests\InviteMemberRequest;
@@ -72,11 +73,11 @@ class WorkspaceInvitationController extends Controller
         return to_route('workspace.invitations.index');
     }
 
-    public function destroy(Workspace $workspace, WorkspaceInvitation $invitation): RedirectResponse
+    public function destroy(Workspace $workspace, WorkspaceInvitation $invitation, Request $request, RevokeInvitation $revokeInvitation): RedirectResponse
     {
         Gate::authorize('cancelInvitation', $workspace);
 
-        $invitation->delete();
+        $revokeInvitation->handle($invitation, $request->user());
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Invitation cancelled.')]);
 

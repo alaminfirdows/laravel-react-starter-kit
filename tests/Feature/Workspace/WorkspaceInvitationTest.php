@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Activity\Models\Activity;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Models\WorkspaceInvitation;
@@ -118,7 +119,8 @@ test('invitations of another workspace cannot be touched', function () {
         ->delete(route('workspace.invitations.destroy', [$this->workspace, $other]))
         ->assertNotFound();
 
-    expect($other->fresh())->not->toBeNull();
+    expect($other->fresh())->not->toBeNull()
+        ->and(Activity::withoutWorkspaceScope()->where('event', 'workspace.invitation_revoked')->exists())->toBeFalse();
 });
 
 test('owner can cancel an invitation', function () {
@@ -128,7 +130,12 @@ test('owner can cancel an invitation', function () {
         ->delete(route('workspace.invitations.destroy', [$this->workspace, $invitation]))
         ->assertRedirect(route('workspace.invitations.index', $this->workspace));
 
-    expect($invitation->fresh())->toBeNull();
+    $activity = Activity::withoutWorkspaceScope()->where('event', 'workspace.invitation_revoked')->sole();
+
+    expect($invitation->fresh())->toBeNull()
+        ->and($activity->workspace_id)->toBe($this->workspace->id)
+        ->and($activity->actor_id)->toBe($this->owner->id)
+        ->and($activity->properties['email'])->toBe($invitation->email);
 });
 
 test('invitations are throttled at 20 per hour per workspace', function () {
