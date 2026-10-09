@@ -131,6 +131,7 @@ export type TaskAction = {
     statusLabel: string;
     instructionsMd: string | null;
     isRequired: boolean;
+    isRecurring: boolean;
     prompt: string;
     deepLink: DeepLink;
     runs: ActionRun[];

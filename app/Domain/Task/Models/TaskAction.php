@@ -75,6 +75,14 @@ class TaskAction extends Model
     }
 
     /**
+     * A scheduled action with a cron schedule runs again at every occurrence.
+     */
+    public function isRecurring(): bool
+    {
+        return $this->type === ActionType::Scheduled && is_string($this->config['schedule']['cron'] ?? null);
+    }
+
+    /**
      * @return BelongsTo<Task, $this>
      */
     public function task(): BelongsTo

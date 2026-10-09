@@ -21,6 +21,11 @@ class InvalidActionTransition extends InvalidTaskTransition
         return new static(__('":title" is already closed.', ['title' => $action->title]));
     }
 
+    public static function scheduleNotStoppable(TaskAction $action): static
+    {
+        return new static(__('":title" has no recurring schedule to stop.', ['title' => $action->title]));
+    }
+
     public static function taskLocked(TaskAction $action): static
     {
         return new static(__('":title" is locked until its dependencies are done.', ['title' => $action->task->title]));

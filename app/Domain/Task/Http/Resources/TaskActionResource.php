@@ -33,6 +33,7 @@ class TaskActionResource extends JsonResource
             'statusLabel' => $this->status->label(),
             'instructionsMd' => $this->instructions_md,
             'isRequired' => $this->is_required,
+            'isRecurring' => $this->isRecurring(),
             'prompt' => app(RenderFullPrompt::class)->handle($this->resource),
             'deepLink' => app(BuildDeepLink::class)->handle($this->resource)->toArray(),
             'runs' => ActionRunResource::collection($this->whenLoaded('runs')),

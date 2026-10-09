@@ -3,6 +3,7 @@ import { ActionActivity } from '@/components/task/action-activity';
 import { ApprovalBanner } from '@/components/task/approval-banner';
 import { PromptButtons } from '@/components/task/prompt-buttons';
 import { RunInAppButton } from '@/components/task/run-in-app-button';
+import { StopScheduleButton } from '@/components/task/stop-schedule-button';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -25,6 +26,10 @@ export function ActionCard({
     canUpdate: boolean;
 }) {
     const isClosed = ['done', 'skipped'].includes(action.status);
+    const canStopSchedule =
+        canUpdate &&
+        action.isRecurring &&
+        ['done', 'failed'].includes(action.status);
 
     return (
         <Card>
@@ -69,6 +74,13 @@ export function ActionCard({
                             taskId={taskId}
                         />
                     )}
+                {canStopSchedule && (
+                    <StopScheduleButton
+                        action={action}
+                        projectSlug={projectSlug}
+                        taskId={taskId}
+                    />
+                )}
                 <PromptButtons
                     prompt={action.prompt}
                     deepLink={action.deepLink}

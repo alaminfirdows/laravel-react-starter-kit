@@ -14,6 +14,7 @@ use App\Domain\Project\Http\Controllers\ProjectLogoController;
 use App\Domain\Project\Http\Controllers\ProjectPackController;
 use App\Domain\Project\Http\Controllers\ProjectSetupController;
 use App\Domain\Task\Http\Controllers\ActionRunController;
+use App\Domain\Task\Http\Controllers\ActionScheduleController;
 use App\Domain\Task\Http\Controllers\ApprovalController;
 use App\Domain\Task\Http\Controllers\ApprovalDecisionController;
 use App\Domain\Task\Http\Controllers\TaskAssigneeController;
@@ -48,6 +49,7 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::post('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'store'])->scopeBindings()->name('tasks.comments.resolution.store');
     Route::delete('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'destroy'])->scopeBindings()->name('tasks.comments.resolution.destroy');
     Route::post('{project}/tasks/{task}/actions/{action}/runs', [ActionRunController::class, 'store'])->scopeBindings()->name('tasks.actions.runs.store');
+    Route::delete('{project}/tasks/{task}/actions/{action}/schedule', [ActionScheduleController::class, 'destroy'])->scopeBindings()->name('tasks.actions.schedule.destroy');
     Route::get('{project}/knowledge', [KnowledgeController::class, 'index'])->name('knowledge.index');
     Route::get('{project}/knowledge/create', [KnowledgeController::class, 'create'])->name('knowledge.create');
     Route::post('{project}/knowledge', [KnowledgeController::class, 'store'])->name('knowledge.store');
