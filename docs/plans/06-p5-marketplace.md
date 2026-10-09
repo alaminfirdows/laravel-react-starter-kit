@@ -45,3 +45,4 @@
 - Upgrade: `tasks.catalog_snapshot` stores the applied catalog version; a field is a conflict when the founder changed it (or no snapshot exists). Conflicts are unchecked by default, so the founder version stays.
 - Community packs: `owner_workspace_id`, `visibility`, `review_status`, `review_note` on `packs`. Private packs publish at once and are only visible to the owner workspace. Public packs stay `draft` + `pending` until an admin approves; each edit sends them back to review. Workspace UI at `/{workspace}/packs`.
 - Analytics: `Analytics\Queries\{TaskCompletionStats,DropOffByTask}` read `activity_log` across workspaces (last 90 days) and return per-catalog-task counts with catalog titles only. Founder task titles, workspace and project ids never leave the query. Shown as deferred props on the admin overview.
+- Task 10 gate: `composer ci:check` green 2026-10-09.

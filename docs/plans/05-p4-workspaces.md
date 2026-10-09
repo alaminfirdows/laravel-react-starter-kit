@@ -43,3 +43,4 @@
 - Tasks 7–8 shipped with **Pusher** (not Reverb: `laravel/reverb` 1.x needs `guzzlehttp/psr7 ^2`, Guzzle 8 locks psr7 3). `routes/channels.php` + `Project\Broadcasting\ProjectChannel` (private `projects.{projectId}`, members only, removed member refused). Events `TaskStatusChanged`, `RunFinished`, `CommentPosted` (ShouldBroadcast, ids only) broadcast as `task.status-changed`, `run.finished`, `comment.posted`.
 - Env: `BROADCAST_CONNECTION=pusher`, `PUSHER_APP_ID/KEY/SECRET/CLUSTER`, `VITE_PUSHER_APP_KEY/CLUSTER`. Default stays `log`.
 - Live UI: `configureEcho` in `app.tsx`; `ProjectChannelListener` in project layout (`useProjectChannel`) reloads `tree`, `task`, `comments` on each event. Task page polling removed. No `VITE_PUSHER_APP_KEY` → Echo not configured, listener not rendered, no live updates.
+- Task 9 gate: `composer ci:check` green 2026-10-09 (444 tests, phpstan 0, lint/tsc clean). Event names live in `Project\Enums\ProjectBroadcastEvent`.
