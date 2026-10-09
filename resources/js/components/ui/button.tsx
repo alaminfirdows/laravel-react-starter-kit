@@ -4,32 +4,49 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Ported from product-repo-ui (src/components/ui/button.tsx, v2 look).
+// `default` is the one orange button per view; `ink` is the neutral solid.
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-[color,background-color,border-color,box-shadow] cursor-pointer disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  [
+    "group/button inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-clip-padding text-control whitespace-nowrap select-none",
+    "transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] motion-safe:active:not-aria-[haspopup]:translate-y-px",
+    "outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+    "aria-invalid:border-destructive",
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  ],
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
+          "border-brand-press bg-brand brand-fill text-primary-foreground hover:bg-brand-hover active:bg-brand-press",
+        ink: "bg-foreground text-background hover:bg-foreground/85",
         outline:
-          "border border-input bg-card hover:bg-muted hover:text-foreground dark:bg-input/30 dark:hover:bg-input/50",
+          "border-border-strong bg-card text-foreground elev-1 hover:border-input hover:bg-muted aria-expanded:border-input aria-expanded:bg-muted",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border-border bg-muted text-foreground hover:border-border-strong aria-expanded:border-border-strong",
+        ghost:
+          "bg-transparent text-ink-2 hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground",
+        destructive:
+          "bg-destructive-tint text-destructive hover:border-destructive/40",
+        link: "text-foreground underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2 has-[svg]:px-3",
-        sm: "h-8 rounded-sm px-3 has-[svg]:px-2.5",
-        xs: "h-7 rounded-sm px-2.5 text-xs has-[svg]:px-2 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-11 rounded-sm px-6 has-[svg]:px-4",
+        default:
+          "h-10 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        xs: "h-7 gap-1 px-2.5 text-[0.8125rem] has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "h-8 gap-1.5 px-3 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5",
+        lg: "h-12 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         icon: "size-10",
         "icon-sm": "size-8",
         "icon-xs": "size-7 [&_svg:not([class*='size-'])]:size-3.5",
+        "icon-lg": "size-12",
       },
     },
+    compoundVariants: [
+      // A link reads as text: no box, whatever size it's given.
+      { variant: "link", className: "h-auto p-0" },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

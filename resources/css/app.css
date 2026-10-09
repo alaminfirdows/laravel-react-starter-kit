@@ -67,6 +67,15 @@
     --color-info-foreground: var(--info-foreground);
 
     --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-ink-2: var(--ink-2);
+    --color-brand: var(--brand);
+    --color-brand-hover: var(--brand-hover);
+    --color-brand-press: var(--brand-press);
+    --color-brand-tint: var(--brand-tint);
+    --color-destructive-tint: var(--destructive-tint);
+    --color-success-tint: var(--success-tint);
+    --color-warning-tint: var(--warning-tint);
     --color-input: var(--input);
     --color-ring: var(--ring);
 
@@ -110,6 +119,16 @@
     --info: oklch(0.53 0.13 245);
     --info-foreground: oklch(0.49 0.12 245);
     --border: oklch(0.915 0.004 40);
+    --border-strong: oklch(0.855 0.005 40);
+    --ink-2: oklch(0.4 0.008 40);
+    --brand: oklch(0.657 0.224 34);
+    --brand-hover: oklch(0.69 0.19 38);
+    --brand-press: oklch(0.63 0.205 34);
+    --brand-tint: oklch(0.958 0.02 38);
+    --destructive-tint: oklch(0.965 0.016 25);
+    --success-tint: oklch(0.965 0.028 150);
+    --warning-tint: oklch(0.972 0.02 80);
+    --shadow-1: 0 1px 2px oklch(0.2 0.01 40 / 0.06);
     --input: oklch(0.655 0.006 40);
     --ring: oklch(0.657 0.224 34);
     --chart-1: oklch(0.657 0.224 34);
@@ -152,6 +171,16 @@
     --info: oklch(0.78 0.11 245);
     --info-foreground: oklch(0.8 0.1 245);
     --border: oklch(0.275 0.006 40);
+    --border-strong: oklch(0.345 0.007 40);
+    --ink-2: oklch(0.8 0.005 40);
+    --brand: oklch(0.657 0.224 34);
+    --brand-hover: oklch(0.7 0.18 36);
+    --brand-press: oklch(0.62 0.21 34);
+    --brand-tint: oklch(0.27 0.06 38);
+    --destructive-tint: oklch(0.26 0.05 25);
+    --success-tint: oklch(0.26 0.045 150);
+    --warning-tint: oklch(0.27 0.045 75);
+    --shadow-1: 0 1px 2px oklch(0 0 0 / 0.4);
     --input: oklch(0.5 0.007 40);
     --ring: oklch(0.657 0.224 34);
     --chart-1: oklch(0.657 0.224 34);
@@ -192,6 +221,31 @@
     h4 {
         @apply tracking-tight;
     }
+}
+
+/* Ported from product-repo-ui v2 (v2-elev-1, v2-brand-fill, v2-control). */
+@utility elev-1 {
+    box-shadow: var(--shadow-1);
+}
+
+/* Filled orange control: faint top-lit sheen over the background-color (so
+   hover/press colours still apply), hairline inner highlight, and lift. */
+@utility brand-fill {
+    background-image: linear-gradient(
+        to bottom,
+        oklch(1 0 0 / 0.16),
+        oklch(1 0 0 / 0) 70%
+    );
+    box-shadow:
+        inset 0 1px 0 oklch(1 0 0 / 0.22),
+        var(--shadow-1);
+}
+
+@utility text-control {
+    font-size: 0.875rem;
+    line-height: 1.25;
+    letter-spacing: -0.004em;
+    font-weight: 560;
 }
 
 @utility tabular {

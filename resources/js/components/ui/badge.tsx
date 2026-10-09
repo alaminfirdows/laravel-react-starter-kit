@@ -4,25 +4,23 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+// Quiet chips ported from product-repo-ui. Status badges keep their word;
+// colour only reinforces it.
 const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-[4px] border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&_svg]:size-3 gap-1 [&_svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/30 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
+  "inline-flex min-h-6 w-fit shrink-0 items-center gap-1 rounded-[4px] border border-transparent px-2 font-mono text-xs whitespace-nowrap [&_svg]:pointer-events-none [&_svg]:size-3 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-        muted: "border-transparent bg-muted text-muted-foreground",
-        primary: "border-transparent bg-primary/10 text-primary dark:bg-primary/20",
-        success: "border-transparent bg-success/12 text-success-foreground dark:bg-success/18",
-        warning: "border-transparent bg-warning/18 text-warning-foreground dark:bg-warning/15",
-        info: "border-transparent bg-info/12 text-info-foreground dark:bg-info/18",
-        danger: "border-transparent bg-destructive/10 text-destructive-foreground dark:bg-destructive/20",
+        default: "bg-foreground text-background",
+        secondary: "bg-muted text-ink-2",
+        outline: "border-border-strong bg-card text-foreground",
+        muted: "bg-muted text-ink-2",
+        destructive: "bg-destructive-tint text-destructive",
+        primary: "bg-brand-tint text-primary",
+        success: "bg-success-tint text-success",
+        warning: "bg-warning-tint text-warning",
+        info: "bg-info/12 text-info dark:bg-info/18",
+        danger: "bg-destructive-tint text-destructive",
       },
     },
     defaultVariants: {

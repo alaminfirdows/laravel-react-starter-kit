@@ -129,7 +129,7 @@ export default function ProjectOverview({
 
                             return (
                                 <Card key={group.key} className="gap-3 py-4">
-                                    <CardHeader className="flex-row items-center justify-between gap-3 px-4">
+                                    <CardHeader className="flex flex-row items-center justify-between gap-3 px-4">
                                         <CardTitle className="truncate">
                                             {group.name}
                                         </CardTitle>
