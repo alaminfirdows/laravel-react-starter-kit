@@ -5,10 +5,12 @@ namespace App\Mcp\Tools;
 use App\Domain\Task\Actions\AttachEvidence;
 use App\Domain\Task\Actions\CompleteAction;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
+use App\Domain\Task\Models\TaskAction;
 use App\Mcp\Support\AgentEvidence;
 use App\Mcp\Support\McpActor;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\Type;
+use Illuminate\Support\Facades\DB;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -16,6 +18,9 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Tool;
 
 #[Name('complete_action')]
+/**
+ * Evidence and completion share one transaction: a failed completion leaves no evidence, so a retry does not duplicate it.
+ */
 #[Description('Finish an action: store the result (Markdown) and evidence, then mark it done. Fails with the missing criteria if the action is not ready.')]
 class CompleteActionTool extends Tool
 {
@@ -38,11 +43,13 @@ class CompleteActionTool extends Tool
         }
 
         try {
-            foreach ($validated['evidence'] ?? [] as $item) {
-                $this->attach->handle($action, AgentEvidence::toData($item), $mcp->actor());
-            }
+            $action = DB::transaction(function () use ($action, $mcp, $validated): TaskAction {
+                foreach ($validated['evidence'] ?? [] as $item) {
+                    $this->attach->handle($action, AgentEvidence::toData($item), $mcp->actor());
+                }
 
-            $action = $this->complete->handle($action->refresh(), $mcp->actor(), $validated['output_md'] ?? null);
+                return $this->complete->handle($action, $mcp->actor(), $validated['output_md'] ?? null);
+            });
         } catch (InvalidTaskTransition $e) {
             return Response::error($e->getMessage());
         }

@@ -36,9 +36,8 @@ class SaveDocument
                 'version' => 0,
             ]);
 
-            $document->fill([
+            $document->forceFill(['status' => $data->status])->fill([
                 'title' => $data->title,
-                'status' => $data->status,
                 'source' => $data->source,
                 'task_id' => $data->taskId ?? $document->task_id,
                 'tags' => $data->tags ?? $document->tags,
@@ -69,7 +68,7 @@ class SaveDocument
             }
 
             if ($document->status === DocStatus::Approved && $document->doc_type->isSingleton()) {
-                $this->archiveOtherApproved($document);
+                $this->archiveOtherApproved($document, $actor);
             }
 
             $this->activity->record('knowledge.saved', $document, [
@@ -90,13 +89,21 @@ class SaveDocument
         return $document;
     }
 
-    protected function archiveOtherApproved(KnowledgeDocument $document): void
+    protected function archiveOtherApproved(KnowledgeDocument $document, Actor $actor): void
     {
         KnowledgeDocument::withoutWorkspaceScope()
             ->where('project_id', $document->project_id)
             ->where('doc_type', $document->doc_type)
             ->where('status', DocStatus::Approved)
             ->whereKeyNot($document->id)
-            ->update(['status' => DocStatus::Archived]);
+            ->get()
+            ->each(function (KnowledgeDocument $previous) use ($document, $actor): void {
+                $previous->forceFill(['status' => DocStatus::Archived])->save();
+
+                $this->activity->record('knowledge.archived', $previous, [
+                    'document_id' => $previous->id,
+                    'replaced_by' => $document->id,
+                ], $actor);
+            });
     }
 }

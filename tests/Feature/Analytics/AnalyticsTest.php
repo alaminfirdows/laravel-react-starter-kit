@@ -9,6 +9,7 @@ use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Models\Task;
+use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
@@ -59,6 +60,22 @@ test('completion stats sum all workspaces and expose only catalog data', functio
         ->and($stats[0]->completed)->toBe(1)
         ->and($stats[0]->completionRate())->toBe(0.5)
         ->and($stats[0]->avgHoursToComplete)->toBe(4.0);
+});
+
+test('completion stats count action starts and tasks closed by rollup', function () {
+    $started = analyticsTask($this->catalogTask, 'acme');
+    app(ActivityRecorder::class)->record('action.started', TaskAction::factory()->forTask($started)->create(), [], Actor::system());
+
+    $rolledUp = analyticsTask($this->catalogTask, 'beta');
+    $rolledUp->forceFill(['status' => TaskStatus::Done, 'completed_at' => $rolledUp->created_at->addHours(2)])->save();
+    recordTaskEvent($rolledUp, 'task.status_changed');
+
+    $stats = app(TaskCompletionStats::class)->handle(now()->subDays(90));
+
+    expect($stats)->toHaveCount(1)
+        ->and($stats[0]->started)->toBe(2)
+        ->and($stats[0]->completed)->toBe(1)
+        ->and($stats[0]->avgHoursToComplete)->toBe(2.0);
 });
 
 test('events outside the window and custom tasks are ignored', function () {

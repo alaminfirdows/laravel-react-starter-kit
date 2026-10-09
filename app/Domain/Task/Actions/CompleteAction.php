@@ -14,41 +14,46 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * The only path to `done` for an action: approval gate (§F.4), criteria (§F.2), then task sync (§F.3).
+ * Checks run on the locked row, so two concurrent completes cannot both pass.
  */
 class CompleteAction
 {
     public function __construct(
         protected EvaluateCriteria $criteria,
+        protected CloseStartedRuns $closeRuns,
         protected SyncTaskFromActions $sync,
         protected ActivityRecorder $activity,
     ) {}
 
     public function handle(TaskAction $action, Actor $actor, ?string $outputMd = null): TaskAction
     {
-        if ($action->status->isClosed()) {
-            return $action;
-        }
-
-        if ($action->task->status === TaskStatus::Locked) {
-            throw InvalidActionTransition::taskLocked($action);
-        }
-
-        if ($action->requires_approval && $action->approvals()->where('status', ApprovalStatus::Approved)->doesntExist()) {
-            throw InvalidActionTransition::approvalRequired($action);
-        }
-
-        $unmet = $this->criteria->handle($action);
-
-        if ($unmet !== []) {
-            throw InvalidActionTransition::unmetCriteria($action, $unmet);
-        }
-
         return DB::transaction(function () use ($action, $actor, $outputMd): TaskAction {
+            $action->newQueryWithoutScopes()->whereKey($action->getKey())->lockForUpdate()->value('id');
+            $action->refresh();
+
+            if ($action->status->isClosed()) {
+                return $action;
+            }
+
+            if ($action->task->status === TaskStatus::Locked) {
+                throw InvalidActionTransition::taskLocked($action);
+            }
+
+            if ($action->requires_approval && $action->approvals()->where('status', ApprovalStatus::Approved)->doesntExist()) {
+                throw InvalidActionTransition::approvalRequired($action);
+            }
+
+            $unmet = $this->criteria->handle($action);
+
+            if ($unmet !== []) {
+                throw InvalidActionTransition::unmetCriteria($action, $unmet);
+            }
+
             if ($outputMd !== null && $action->lastRun !== null) {
                 $action->lastRun->update(['output_md' => $outputMd]);
             }
 
-            $action->runs()->where('status', RunStatus::Started)->update(['status' => RunStatus::Succeeded, 'finished_at' => now(), 'updated_at' => now()]);
+            $this->closeRuns->handle($action, RunStatus::Succeeded, $actor);
 
             $from = $action->status;
             $action->forceFill([

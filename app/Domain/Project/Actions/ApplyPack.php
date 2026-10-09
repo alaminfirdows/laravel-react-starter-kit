@@ -98,7 +98,7 @@ class ApplyPack
                 'applied_at' => now(),
             ]);
 
-            $this->refreshLocks->handle($project);
+            $this->refreshLocks->handle($project, $actor);
 
             $this->activity->record('project.pack_applied', $project, [
                 'pack' => $pack->key,

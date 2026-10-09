@@ -10,6 +10,7 @@ use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Enums\Verification;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
 use App\Domain\Task\Models\Task;
+use App\Domain\Task\Models\TaskAction;
 use Illuminate\Support\Facades\DB;
 
 class ReopenTask
@@ -33,10 +34,13 @@ class ReopenTask
         return DB::transaction(function () use ($task, $actor): Task {
             $cleared = ['completed_at' => null, 'completed_by_type' => null, 'completed_by_id' => null];
 
-            $task->actions()
+            $reopened = $task->actions()
                 ->where('status', ActionStatus::Done)
                 ->where('completed_by_type', ActorType::User->value)
-                ->update(['status' => ActionStatus::Pending, ...$cleared, 'updated_at' => now()]);
+                ->get()
+                ->each(function (TaskAction $action) use ($cleared): void {
+                    $action->forceFill(['status' => ActionStatus::Pending, ...$cleared])->save();
+                });
 
             $from = $task->status;
             $task->forceFill([
@@ -46,9 +50,12 @@ class ReopenTask
                 ...$cleared,
             ])->save();
 
-            $this->activity->record('task.reopened', $task, ['from' => $from->value], $actor);
+            $this->activity->record('task.reopened', $task, array_filter([
+                'from' => $from->value,
+                'reopened_actions' => $reopened->modelKeys(),
+            ]), $actor);
             $this->rollup->handle($task, $actor);
-            $this->refreshLocks->handle($task->project);
+            $this->refreshLocks->handle($task->project, $actor);
 
             return $task;
         });

@@ -2,6 +2,9 @@
 
 namespace App\Domain\Workspace\Console;
 
+use App\Domain\Activity\Data\Actor;
+use App\Domain\Activity\Enums\ActivityChannel;
+use App\Domain\Workspace\Actions\SetWorkspaceStatus as SetWorkspaceStatusAction;
 use App\Domain\Workspace\Enums\WorkspaceStatus;
 use App\Domain\Workspace\Models\Workspace;
 use Illuminate\Console\Command;
@@ -12,7 +15,7 @@ class SetWorkspaceStatus extends Command
 
     protected $description = 'Set the status of a workspace';
 
-    public function handle(): int
+    public function handle(SetWorkspaceStatusAction $setStatus): int
     {
         $status = WorkspaceStatus::tryFrom((string) $this->argument('status'));
 
@@ -36,7 +39,7 @@ class SetWorkspaceStatus extends Command
             return self::FAILURE;
         }
 
-        $workspace->update(['status' => $status]);
+        $setStatus->handle($workspace, $status, Actor::system(ActivityChannel::Cli));
 
         $this->components->info("Workspace [{$workspace->slug}] is now {$status->value}.");
 

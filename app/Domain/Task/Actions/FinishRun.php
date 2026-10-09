@@ -27,7 +27,7 @@ class FinishRun
         }
 
         return DB::transaction(function () use ($run, $actor, $status, $error): ActionRun {
-            $run->update(['status' => $status, 'finished_at' => now(), 'error' => $error]);
+            $run->forceFill(['status' => $status, 'finished_at' => now(), 'error' => $error])->save();
 
             $action = $run->action;
 

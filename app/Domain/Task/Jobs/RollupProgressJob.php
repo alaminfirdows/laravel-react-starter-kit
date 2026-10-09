@@ -5,16 +5,17 @@ namespace App\Domain\Task\Jobs;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Scopes\WorkspaceScope;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
 
 /**
- * Caches mean leaf progress on `projects.progress_pct`. Dispatched with a 2 s delay and unique
- * per project, so a burst of task changes (an agent closing many actions) costs one query.
+ * Caches mean leaf progress on `projects.progress_pct`. Dispatched after commit with a 2 s delay and
+ * unique per project until it starts, so a burst of task changes (an agent closing many actions)
+ * costs one query and a change made while it runs queues one more.
  */
-class RollupProgressJob implements ShouldBeUnique, ShouldQueue
+class RollupProgressJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
 {
     use Queueable;
 
@@ -26,7 +27,7 @@ class RollupProgressJob implements ShouldBeUnique, ShouldQueue
 
     public static function debounce(string $projectId): void
     {
-        self::dispatch($projectId)->delay(now()->addSeconds(self::DEBOUNCE_SECONDS));
+        self::dispatch($projectId)->delay(now()->addSeconds(self::DEBOUNCE_SECONDS))->afterCommit();
     }
 
     public function uniqueId(): string

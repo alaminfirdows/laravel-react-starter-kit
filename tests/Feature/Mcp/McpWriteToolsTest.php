@@ -5,6 +5,8 @@ use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ApprovalStatus;
 use App\Domain\Task\Enums\RunChannel;
 use App\Domain\Task\Enums\RunStatus;
+use App\Domain\Task\Events\RunFinished;
+use App\Domain\Task\Models\ActionRun;
 use App\Domain\Task\Models\Task;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Enums\WorkspaceRole;
@@ -16,6 +18,7 @@ use App\Mcp\Tools\RequestApprovalTool;
 use App\Mcp\Tools\SaveOutputTool;
 use App\Mcp\Tools\StartActionTool;
 use App\Models\User;
+use Illuminate\Support\Facades\Event;
 use Laravel\Passport\Passport;
 
 beforeEach(function () {
@@ -53,6 +56,34 @@ test('start, save output, attach evidence and complete an action', function () {
         ->and($this->action->evidence()->count())->toBe(1);
 
     $this->assertDatabaseHas('activity_log', ['event' => 'action.completed', 'client_name' => $run->client_name]);
+});
+
+test('complete_action closes the started run and broadcasts it once', function () {
+    Event::fake([RunFinished::class]);
+    $run = ActionRun::factory()->forAction($this->action)->create(['status' => RunStatus::Started]);
+    $this->action->forceFill(['status' => ActionStatus::Running, 'last_run_id' => $run->id])->save();
+
+    FounderServer::tool(CompleteActionTool::class, [
+        'action_id' => $this->action->id,
+        'evidence' => [['kind' => 'url', 'label' => 'Pricing page', 'value' => 'https://acme.test/pricing', 'criterion_key' => 'page']],
+    ])->assertOk();
+
+    expect($run->refresh()->status)->toBe(RunStatus::Succeeded);
+    Event::assertDispatchedTimes(RunFinished::class, 1);
+    Event::assertDispatched(RunFinished::class, fn (RunFinished $event): bool => $event->run->is($run));
+    $this->assertDatabaseHas('activity_log', ['event' => 'run.finished', 'subject_id' => $this->action->id]);
+});
+
+test('failed complete_action keeps no evidence', function () {
+    $this->action->forceFill(['requires_approval' => true])->save();
+
+    FounderServer::tool(CompleteActionTool::class, [
+        'action_id' => $this->action->id,
+        'evidence' => [['kind' => 'url', 'label' => 'Pricing page', 'value' => 'https://acme.test/pricing', 'criterion_key' => 'page']],
+    ])->assertHasErrors();
+
+    expect($this->action->evidence()->count())->toBe(0)
+        ->and($this->action->refresh()->status)->toBe(ActionStatus::Pending);
 });
 
 test('complete_action names the missing criterion', function () {

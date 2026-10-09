@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 class SkipAction
 {
     public function __construct(
+        protected CloseStartedRuns $closeRuns,
         protected SyncTaskFromActions $sync,
         protected ActivityRecorder $activity,
     ) {}
@@ -29,7 +30,7 @@ class SkipAction
         }
 
         return DB::transaction(function () use ($action, $actor, $reason): TaskAction {
-            $action->runs()->where('status', RunStatus::Started)->update(['status' => RunStatus::Cancelled, 'finished_at' => now(), 'updated_at' => now()]);
+            $this->closeRuns->handle($action, RunStatus::Cancelled, $actor);
 
             $action->forceFill([
                 'status' => ActionStatus::Skipped,

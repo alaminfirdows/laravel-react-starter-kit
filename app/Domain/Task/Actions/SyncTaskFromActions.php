@@ -84,6 +84,6 @@ class SyncTaskFromActions
 
         $this->activity->record('task.completed', $task, ['from' => $from->value], $actor);
         $this->rollup->handle($task, $actor);
-        $this->refreshLocks->handle($task->project);
+        $this->refreshLocks->handle($task->project, $actor);
     }
 }
