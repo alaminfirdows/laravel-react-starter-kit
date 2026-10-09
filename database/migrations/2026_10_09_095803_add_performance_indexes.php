@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Postgres does not index foreign keys. Adds single-column indexes for FK/filter columns that have
- * no index starting with that column yet, plus the cross-workspace analytics scans.
+ * Postgres does not index foreign keys. Adds indexes for FK/filter columns and the cross-workspace analytics scans.
+ * Unconditional: a missing column or an existing index fails loudly.
  */
 return new class extends Migration
 {
@@ -33,10 +33,6 @@ return new class extends Migration
     {
         foreach (self::INDEXES as $table => $indexes) {
             foreach ($indexes as $columns) {
-                if (! Schema::hasColumns($table, $columns) || $this->isIndexed($table, $columns)) {
-                    continue;
-                }
-
                 Schema::table($table, fn (Blueprint $blueprint) => $blueprint->index($columns));
             }
         }
@@ -46,26 +42,8 @@ return new class extends Migration
     {
         foreach (self::INDEXES as $table => $indexes) {
             foreach ($indexes as $columns) {
-                $name = $table.'_'.implode('_', $columns).'_index';
-
-                if (Schema::hasIndex($table, $name)) {
-                    Schema::table($table, fn (Blueprint $blueprint) => $blueprint->dropIndex($name));
-                }
+                Schema::table($table, fn (Blueprint $blueprint) => $blueprint->dropIndex($table.'_'.implode('_', $columns).'_index'));
             }
         }
-    }
-
-    /**
-     * @param  list<string>  $columns
-     */
-    private function isIndexed(string $table, array $columns): bool
-    {
-        foreach (Schema::getIndexes($table) as $index) {
-            if (array_slice($index['columns'], 0, count($columns)) === $columns) {
-                return true;
-            }
-        }
-
-        return false;
     }
 };

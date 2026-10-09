@@ -251,3 +251,26 @@ test('the scheduler query count does not grow with the number of actions', funct
 
     expect(schedulerQueryCount())->toBe($few);
 });
+
+test('actions of a trashed task or project are skipped and the rest still run', function () {
+    $dueAction = fn (Task $task) => TaskAction::factory()->forTask($task)->create([
+        'type' => ActionType::Scheduled,
+        'executor' => Executor::AppSystem,
+        'config' => ['schedule' => ['at' => now()->subHour()->toIso8601String()]],
+    ]);
+    $trashedTask = Task::factory()->forProject($this->project)->create();
+    $trashedTaskAction = $dueAction($trashedTask);
+    $trashedTask->delete();
+
+    $trashedProject = Project::factory()->forWorkspace($this->workspace)->create();
+    $trashedProjectAction = $dueAction(Task::factory()->forProject($trashedProject)->create());
+    $trashedProject->delete();
+
+    $healthy = $dueAction($this->task);
+
+    processScheduled();
+
+    expect($healthy->runs()->count())->toBe(1)
+        ->and($trashedTaskAction->runs()->count())->toBe(0)
+        ->and($trashedProjectAction->runs()->count())->toBe(0);
+});

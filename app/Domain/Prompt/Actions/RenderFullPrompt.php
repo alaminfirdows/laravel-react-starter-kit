@@ -107,6 +107,10 @@ class RenderFullPrompt
     /**
      * Latest approved body per doc type, loaded once per project instance (not per placeholder or action).
      *
+     * The memo lives as long as that Project instance and is never invalidated: a document approved
+     * after the first render is not seen when the same instance is rendered again in the same
+     * request or job. Load a fresh Project to re-read.
+     *
      * @return array<string, string>
      */
     private function approvedKnowledge(Project $project): array

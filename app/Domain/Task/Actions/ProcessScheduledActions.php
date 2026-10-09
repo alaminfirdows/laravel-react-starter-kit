@@ -10,6 +10,7 @@ use App\Domain\Task\Enums\Executor;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
+use App\Domain\Workspace\Models\Workspace;
 use App\Domain\Workspace\Scopes\WorkspaceScope;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -17,7 +18,6 @@ use Cron\CronExpression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -53,14 +53,18 @@ class ProcessScheduledActions
                         ->whereNotNull('config->schedule->cron'));
             })
             ->with([
-                'task' => fn (Relation $task) => $task->withoutGlobalScopes([WorkspaceScope::class, SoftDeletingScope::class]),
+                'task' => fn (Relation $task) => $task->withoutGlobalScope(WorkspaceScope::class),
                 'task.project' => fn (Relation $project) => $project->withoutGlobalScope(WorkspaceScope::class),
                 'task.project.workspace.owner',
             ])
             ->withMax('runs as last_run_started_at', 'started_at')
             ->lazyById()
             ->each(function (TaskAction $action) use (&$counts): void {
-                $workspace = $action->task->project->workspace;
+                $workspace = data_get($action, 'task.project.workspace');
+
+                if (! $workspace instanceof Workspace) {
+                    return;
+                }
 
                 $this->workspaces->runAs($workspace, function () use ($action, $workspace, &$counts): void {
                     try {
