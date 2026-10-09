@@ -76,7 +76,7 @@ test('finished run broadcasts, started run does not', function () {
 
     Event::assertNotDispatched(RunFinished::class);
 
-    $run->update(['status' => RunStatus::Succeeded, 'finished_at' => now()]);
+    $run->forceFill(['status' => RunStatus::Succeeded, 'finished_at' => now()])->save();
 
     Event::assertDispatched(RunFinished::class, fn (RunFinished $event): bool => $event->broadcastWith() === ['runId' => $run->id, 'taskId' => $this->task->id, 'status' => 'succeeded']);
 });

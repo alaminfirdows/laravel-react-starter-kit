@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * @property-read Collection<int, CatalogResource> $resources
  * @property-read Pivot|null $pivot Set when loaded through `dependencies`
  */
-#[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'status', 'published_at', 'sort_order', 'admin_edited_at'])]
+#[Fillable(['key', 'category_id', 'parent_id', 'title', 'summary', 'body_md', 'body_doc', 'applicability', 'priority_default', 'est_minutes', 'difficulty', 'is_optional', 'completion_criteria', 'expected_outputs', 'version', 'content_hash', 'published_at', 'sort_order', 'admin_edited_at'])]
 #[UseFactory(CatalogTaskFactory::class)]
 class CatalogTask extends Model
 {

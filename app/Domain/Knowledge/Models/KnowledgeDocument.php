@@ -41,7 +41,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Project $project
  * @property-read Task|null $task
  */
-#[Fillable(['project_id', 'workspace_id', 'task_id', 'doc_type', 'title', 'body_md', 'status', 'source', 'version', 'checksum', 'embedded_at', 'tags', 'meta'])]
+#[Fillable(['project_id', 'workspace_id', 'task_id', 'doc_type', 'title', 'body_md', 'source', 'version', 'checksum', 'embedded_at', 'tags', 'meta'])]
 #[UseFactory(KnowledgeDocumentFactory::class)]
 #[UsePolicy(KnowledgeDocumentPolicy::class)]
 class KnowledgeDocument extends Model

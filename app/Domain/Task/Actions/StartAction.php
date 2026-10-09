@@ -35,7 +35,7 @@ class StartAction
         }
 
         return DB::transaction(function () use ($action, $actor, $channel, $renderedPrompt): ActionRun {
-            $run = ActionRun::create([
+            $run = new ActionRun([
                 'task_action_id' => $action->id,
                 'task_id' => $action->task_id,
                 'project_id' => $action->project_id,
@@ -44,9 +44,9 @@ class StartAction
                 'actor_id' => $actor->id,
                 'client_name' => $actor->clientName,
                 'rendered_prompt' => $renderedPrompt,
-                'status' => RunStatus::Started,
                 'started_at' => now(),
             ]);
+            $run->forceFill(['status' => RunStatus::Started])->save();
 
             $action->forceFill(['status' => ActionStatus::Running, 'last_run_id' => $run->id])->save();
 

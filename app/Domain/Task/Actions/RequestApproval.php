@@ -36,15 +36,15 @@ class RequestApproval
         }
 
         return DB::transaction(function () use ($action, $actor, $summaryMd, $payload): Approval {
-            $approval = $action->approvals()->create([
+            $approval = $action->approvals()->make([
                 'project_id' => $action->project_id,
                 'requested_by_type' => $actor->type,
                 'requested_by_id' => $actor->id,
                 'requested_by_client' => $actor->clientName,
                 'summary_md' => $summaryMd,
                 'payload' => $payload ?: null,
-                'status' => ApprovalStatus::Pending,
             ]);
+            $approval->forceFill(['status' => ApprovalStatus::Pending])->save();
 
             $action->forceFill(['status' => ActionStatus::AwaitingApproval])->save();
 

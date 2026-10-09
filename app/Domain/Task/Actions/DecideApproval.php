@@ -33,13 +33,13 @@ class DecideApproval
         }
 
         return DB::transaction(function () use ($approval, $actor, $approve, $note): Approval {
-            $approval->update([
+            $approval->forceFill([
                 'status' => $approve ? ApprovalStatus::Approved : ApprovalStatus::Rejected,
                 'decided_by_type' => $actor->type,
                 'decided_by_id' => $actor->id,
                 'decided_at' => now(),
                 'decision_note' => $note,
-            ]);
+            ])->save();
 
             $subject = $approval->subject;
 

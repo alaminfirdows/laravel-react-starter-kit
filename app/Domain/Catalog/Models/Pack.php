@@ -37,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $review_note
  * @property-read Workspace|null $ownerWorkspace
  */
-#[Fillable(['key', 'name', 'description_md', 'audience', 'is_default', 'version', 'content_hash', 'status', 'admin_edited_at'])]
+#[Fillable(['key', 'name', 'description_md', 'audience', 'is_default', 'version', 'content_hash', 'admin_edited_at'])]
 #[UsePolicy(PackPolicy::class)]
 #[UseFactory(PackFactory::class)]
 class Pack extends Model

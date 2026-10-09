@@ -39,8 +39,8 @@ final class Versioning
             return $model;
         }
 
+        self::fill($model, array_diff_key($attributes, array_flip($except)));
         $model->fill([
-            ...array_diff_key($attributes, array_flip($except)),
             'content_hash' => $hash,
             'version' => $model->exists ? $model->version + 1 : 1,
             'admin_edited_at' => null,
@@ -56,7 +56,7 @@ final class Versioning
      */
     public static function edit(CatalogTask|PromptTemplate|Pack $model, array $attributes, bool $force = false): bool
     {
-        $model->fill($attributes);
+        self::fill($model, $attributes);
 
         if ($model->exists && ! $force && ! $model->isDirty()) {
             return false;
@@ -69,5 +69,19 @@ final class Versioning
         ])->save();
 
         return true;
+    }
+
+    /**
+     * `status` is not fillable (status changes only via forceFill), so it is set apart.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private static function fill(CatalogTask|PromptTemplate|Pack $model, array $attributes): void
+    {
+        if (array_key_exists('status', $attributes)) {
+            $model->forceFill(['status' => $attributes['status']]);
+        }
+
+        $model->fill(array_diff_key($attributes, ['status' => true]));
     }
 }

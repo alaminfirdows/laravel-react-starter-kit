@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Task $task
  * @property-read Project $project
  */
-#[Fillable(['task_action_id', 'task_id', 'project_id', 'channel', 'actor_type', 'actor_id', 'client_name', 'rendered_prompt', 'status', 'started_at', 'finished_at', 'output_md', 'output', 'error', 'usage'])]
+#[Fillable(['task_action_id', 'task_id', 'project_id', 'channel', 'actor_type', 'actor_id', 'client_name', 'rendered_prompt', 'started_at', 'finished_at', 'output_md', 'output', 'error', 'usage'])]
 #[UseFactory(ActionRunFactory::class)]
 class ActionRun extends Model
 {

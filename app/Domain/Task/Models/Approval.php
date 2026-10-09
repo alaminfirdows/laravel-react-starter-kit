@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read TaskAction|Task $subject
  * @property-read Project $project
  */
-#[Fillable(['project_id', 'subject_type', 'subject_id', 'requested_by_type', 'requested_by_id', 'requested_by_client', 'summary_md', 'payload', 'status', 'decided_by_type', 'decided_by_id', 'decided_at', 'decision_note'])]
+#[Fillable(['project_id', 'subject_type', 'subject_id', 'requested_by_type', 'requested_by_id', 'requested_by_client', 'summary_md', 'payload', 'decided_by_type', 'decided_by_id', 'decided_at', 'decision_note'])]
 #[UseFactory(ApprovalFactory::class)]
 class Approval extends Model
 {

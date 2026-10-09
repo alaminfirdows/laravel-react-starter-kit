@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Storage;
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
  */
-#[Fillable(['name', 'slug', 'type', 'status', 'owner_id', 'plan', 'settings', 'logo_path'])]
+#[Fillable(['name', 'slug', 'type', 'owner_id', 'plan', 'settings', 'logo_path'])]
 #[UseFactory(WorkspaceFactory::class)]
 #[UsePolicy(WorkspacePolicy::class)]
 class Workspace extends Model

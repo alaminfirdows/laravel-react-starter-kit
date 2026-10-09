@@ -26,11 +26,10 @@ class SaveCatalogTask
                 throw new InvalidArgumentException("Task [{$data->key}] would be deeper than 3 levels.");
             }
 
-            $task->fill([
+            $task->forceFill(['status' => CatalogStatus::Draft])->fill([
                 'key' => $data->key,
                 'parent_id' => $parent?->id,
                 'category_id' => $parent->category_id ?? $data->categoryId,
-                'status' => CatalogStatus::Draft,
                 'sort_order' => CatalogTask::query()->where('parent_id', $parent?->id)->max('sort_order') + 1,
             ]);
         } elseif ($task->parent_id === null) {
