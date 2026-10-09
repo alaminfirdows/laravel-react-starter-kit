@@ -35,6 +35,18 @@ test('members page lists members with what the actor can do', function () {
             ->has('assignableRoles', 2));
 });
 
+test('members with the same role are sorted by name ignoring case', function () {
+    $this->member->forceFill(['name' => 'Zed'])->save();
+    $bob = User::factory()->create(['name' => 'bob']);
+    $this->workspace->memberships()->create(['user_id' => $bob->id, 'role' => WorkspaceRole::Member, 'joined_at' => now()]);
+
+    $this->actingAs($this->admin)
+        ->get(route('workspace.members.index', $this->workspace))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('members.2.id', $bob->id)
+            ->where('members.3.id', $this->member->id));
+});
+
 test('owner can change roles', function () {
     $this->actingAs($this->owner)
         ->patch(route('workspace.members.update', [$this->workspace, $this->member]), ['role' => 'admin'])

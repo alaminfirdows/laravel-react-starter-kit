@@ -12,6 +12,8 @@ use App\Domain\Project\Models\Project;
 /**
  * Keeps the knowledge document that mirrors a research row (interview, competitor) in sync,
  * so the row is found by knowledge search. The same document is updated on edit (new version).
+ * Mirrors are saved as approved: the research row is the authority (write-gated by its policy),
+ * so they reach the AI context like any approved document.
  */
 class MirrorResearchDocument
 {
@@ -19,15 +21,11 @@ class MirrorResearchDocument
 
     public function save(Project $project, DocType $type, string $title, string $bodyMd, Actor $actor, ?KnowledgeDocument $document = null): KnowledgeDocument
     {
-        $status = $document === null || $document->status === DocStatus::Archived
-            ? DocStatus::Draft
-            : $document->status;
-
         return $this->save->handle($project, new DocumentData(
             docType: $type,
             title: $title,
             bodyMd: $bodyMd,
-            status: $status,
+            status: DocStatus::Approved,
             changeNote: $document === null ? null : 'Research row updated',
         ), $actor, $document, mirroringResearch: true);
     }

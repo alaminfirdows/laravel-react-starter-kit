@@ -52,7 +52,8 @@ test('create, edit and delete an interview keeps one mirrored document', functio
         ->and($document->doc_type)->toBe(DocType::Interview)
         ->and($document->title)->toBe('Interview: Ana Lopez (Acme Agency)')
         ->and($document->body_md)->toContain("## Pain\n\nInvoices take a full day each month.")
-        ->and($document->version)->toBe(1);
+        ->and($document->version)->toBe(1)
+        ->and($document->status)->toBe(DocStatus::Approved);
     $this->assertDatabaseHas('activity_log', ['event' => 'interview.created', 'subject_id' => $interview->id]);
 
     $this->put("/acme/projects/rocket/research/interviews/{$interview->id}", [
@@ -64,6 +65,7 @@ test('create, edit and delete an interview keeps one mirrored document', functio
         ->and($document->refresh()->version)->toBe(2)
         ->and($document->versions()->count())->toBe(2)
         ->and($document->body_md)->toContain('Invoices take two days.')
+        ->and($document->status)->toBe(DocStatus::Approved)
         ->and($interview->refresh()->company)->toBeNull();
     $this->assertDatabaseHas('activity_log', ['event' => 'interview.updated', 'subject_id' => $interview->id]);
 

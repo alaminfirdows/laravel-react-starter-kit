@@ -4,8 +4,10 @@ use App\Domain\Knowledge\Enums\DocSource;
 use App\Domain\Knowledge\Enums\DocStatus;
 use App\Domain\Knowledge\Enums\DocType;
 use App\Domain\Knowledge\Models\Decision;
+use App\Domain\Knowledge\Models\Interview;
 use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Models\Project;
+use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Mcp\Servers\FounderServer;
@@ -86,6 +88,21 @@ test('documents of another workspace are not found', function () {
     ])->assertHasErrors(['Document not found']);
 
     expect($foreign->refresh()->title)->not->toBe('Hijack');
+});
+
+test('save_knowledge refuses a document that mirrors a research row', function () {
+    $document = KnowledgeDocument::factory()->forProject($this->project)->create(['doc_type' => DocType::Interview, 'title' => 'Interview: Ana']);
+    app(WorkspaceDiscoveryService::class)->runAs($this->workspace,
+        fn () => Interview::factory()->forProject($this->project)->create(['knowledge_document_id' => $document->id]));
+
+    FounderServer::tool(SaveKnowledgeTool::class, [
+        'project_id' => $this->project->id,
+        'document_id' => $document->id,
+        'title' => 'Hijack',
+        'body_md' => 'x',
+    ])->assertHasErrors(['This document mirrors a research row. Edit the row instead.']);
+
+    expect($document->refresh()->title)->toBe('Interview: Ana');
 });
 
 test('viewers cannot save knowledge or log decisions', function () {

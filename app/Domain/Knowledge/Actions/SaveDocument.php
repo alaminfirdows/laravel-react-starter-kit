@@ -27,7 +27,7 @@ class SaveDocument
     public function handle(Project $project, DocumentData $data, Actor $actor, ?KnowledgeDocument $document = null, bool $mirroringResearch = false): KnowledgeDocument
     {
         if ($document !== null && ! $mirroringResearch && $document->isResearchMirror()) {
-            throw ValidationException::withMessages(['document' => __('This document mirrors a research row. Edit the row instead.')]);
+            throw ValidationException::withMessages(['document_id' => __('This document mirrors a research row. Edit the row instead.')]);
         }
 
         $checksum = KnowledgeDocument::checksumFor($data->bodyMd);

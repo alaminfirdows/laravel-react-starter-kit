@@ -35,7 +35,7 @@ class WorkspaceMemberController extends Controller
 
         $members = $workspace->members()
             ->get()
-            ->sort(fn (User $a, User $b): int => [$b->membership->role->level(), $a->name, $a->id] <=> [$a->membership->role->level(), $b->name, $b->id])
+            ->sort(fn (User $a, User $b): int => [$b->membership->role->level(), mb_strtolower($a->name), $a->id] <=> [$a->membership->role->level(), mb_strtolower($b->name), $b->id])
             ->values()
             ->map(fn (User $member): MemberResource => new MemberResource($member, $actor, $actorRole, $canUpdateAny, $canRemoveAny))
             ->all();
