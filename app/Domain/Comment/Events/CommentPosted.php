@@ -4,6 +4,7 @@ namespace App\Domain\Comment\Events;
 
 use App\Domain\Comment\Models\Comment;
 use App\Domain\Project\Broadcasting\ProjectChannel;
+use App\Domain\Project\Enums\ProjectBroadcastEvent;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -26,7 +27,7 @@ class CommentPosted implements ShouldBroadcast, ShouldDispatchAfterCommit
 
     public function broadcastAs(): string
     {
-        return 'comment.posted';
+        return ProjectBroadcastEvent::CommentPosted->value;
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Domain\Task\Events;
 
 use App\Domain\Project\Broadcasting\ProjectChannel;
+use App\Domain\Project\Enums\ProjectBroadcastEvent;
 use App\Domain\Task\Models\Task;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -26,7 +27,7 @@ class TaskStatusChanged implements ShouldBroadcast, ShouldDispatchAfterCommit
 
     public function broadcastAs(): string
     {
-        return 'task.status-changed';
+        return ProjectBroadcastEvent::TaskStatusChanged->value;
     }
 
     /**

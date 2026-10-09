@@ -3,6 +3,7 @@
 namespace App\Domain\Task\Events;
 
 use App\Domain\Project\Broadcasting\ProjectChannel;
+use App\Domain\Project\Enums\ProjectBroadcastEvent;
 use App\Domain\Task\Models\ActionRun;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -26,7 +27,7 @@ class RunFinished implements ShouldBroadcast, ShouldDispatchAfterCommit
 
     public function broadcastAs(): string
     {
-        return 'run.finished';
+        return ProjectBroadcastEvent::RunFinished->value;
     }
 
     /**
