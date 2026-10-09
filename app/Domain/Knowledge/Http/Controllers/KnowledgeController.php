@@ -71,6 +71,7 @@ class KnowledgeController extends Controller
         return Inertia::render('projects/knowledge/show', [
             new ProjectPageProps($project),
             'document' => KnowledgeDocumentResource::make($knowledgeDocument),
+            'canEditDocument' => Gate::allows('update', $knowledgeDocument),
         ]);
     }
 

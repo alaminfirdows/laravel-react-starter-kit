@@ -19,7 +19,11 @@ class SaveKnowledgeDocumentRequest extends FormRequest
         /** @var Project $project */
         $project = $this->route('project');
 
-        return $this->user()->can('update', $project);
+        $document = $this->document();
+
+        return $document === null
+            ? $this->user()->can('update', $project)
+            : $this->user()->can('update', $document);
     }
 
     /**

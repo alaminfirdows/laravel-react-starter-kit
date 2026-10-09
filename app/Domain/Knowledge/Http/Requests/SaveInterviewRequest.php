@@ -30,7 +30,7 @@ class SaveInterviewRequest extends FormRequest
             'person' => ['required', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
             'role' => ['nullable', 'string', 'max:255'],
-            'interviewed_on' => ['nullable', 'date'],
+            'interviewed_on' => ['nullable', 'date_format:Y-m-d'],
             'problem' => $text,
             'current_solution' => $text,
             'pain' => $text,

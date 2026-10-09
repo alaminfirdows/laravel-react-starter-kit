@@ -11,6 +11,7 @@ use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Jobs\RebuildContextSnapshotJob;
 use App\Domain\Project\Models\Project;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Creates or updates a knowledge document. A changed body adds a version and re-chunks;
@@ -23,8 +24,12 @@ class SaveDocument
         protected ActivityRecorder $activity,
     ) {}
 
-    public function handle(Project $project, DocumentData $data, Actor $actor, ?KnowledgeDocument $document = null): KnowledgeDocument
+    public function handle(Project $project, DocumentData $data, Actor $actor, ?KnowledgeDocument $document = null, bool $mirroringResearch = false): KnowledgeDocument
     {
+        if ($document !== null && ! $mirroringResearch && $document->isResearchMirror()) {
+            throw ValidationException::withMessages(['document' => __('This document mirrors a research row. Edit the row instead.')]);
+        }
+
         $checksum = KnowledgeDocument::checksumFor($data->bodyMd);
         $bodyChanged = $document === null || $document->checksum !== $checksum;
 

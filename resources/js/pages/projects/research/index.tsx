@@ -171,6 +171,7 @@ export default function ResearchIndex({
                                         can.update && (
                                             <>
                                                 <ResearchFormDialog
+                                                    key={interview.updatedAt}
                                                     trigger={
                                                         <Button
                                                             variant="ghost"
@@ -272,6 +273,7 @@ export default function ResearchIndex({
                                         can.update && (
                                             <>
                                                 <ResearchFormDialog
+                                                    key={competitor.updatedAt}
                                                     trigger={
                                                         <Button
                                                             variant="ghost"

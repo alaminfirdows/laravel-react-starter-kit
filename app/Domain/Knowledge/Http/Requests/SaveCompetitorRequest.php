@@ -36,7 +36,7 @@ class SaveCompetitorRequest extends FormRequest
             'integrations' => $text,
             'strengths' => $text,
             'complaints' => $text,
-            'last_reviewed_at' => ['nullable', 'date'],
+            'last_reviewed_at' => ['nullable', 'date_format:Y-m-d'],
         ];
     }
 

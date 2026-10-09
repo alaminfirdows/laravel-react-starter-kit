@@ -69,6 +69,15 @@ class KnowledgeDocument extends Model
     }
 
     /**
+     * True when an interview or competitor row owns this document; it is edited through that row.
+     */
+    public function isResearchMirror(): bool
+    {
+        return Interview::query()->where('knowledge_document_id', $this->id)->exists()
+            || Competitor::query()->where('knowledge_document_id', $this->id)->exists();
+    }
+
+    /**
      * @return BelongsTo<Project, $this>
      */
     public function project(): BelongsTo

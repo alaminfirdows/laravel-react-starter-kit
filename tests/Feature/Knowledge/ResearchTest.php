@@ -171,3 +171,25 @@ test('person and name are required and url must be valid', function () {
     $this->post('/acme/projects/rocket/research/interviews', [])->assertSessionHasErrors('person');
     $this->post('/acme/projects/rocket/research/competitors', ['url' => 'not a url'])->assertSessionHasErrors(['name', 'url']);
 });
+
+test('mirrored research documents cannot be edited directly but the row still updates them', function () {
+    $this->post('/acme/projects/rocket/research/interviews', ['person' => 'Ana Lopez', 'pain' => 'Slow invoices.'])->assertRedirect();
+    $interview = Interview::withoutWorkspaceScope()->sole();
+    $document = KnowledgeDocument::withoutWorkspaceScope()->sole();
+    $payload = ['title' => 'Edited', 'body_md' => 'Direct edit', 'status' => 'draft'];
+
+    $this->get("/acme/projects/rocket/knowledge/{$document->id}/edit")->assertForbidden();
+    $this->put("/acme/projects/rocket/knowledge/{$document->id}", $payload)->assertForbidden();
+    $this->get("/acme/projects/rocket/knowledge/{$document->id}")
+        ->assertInertia(fn (Assert $page) => $page->where('canEditDocument', false));
+
+    $this->put("/acme/projects/rocket/research/interviews/{$interview->id}", ['person' => 'Ana Lopez', 'pain' => 'Slower invoices.'])->assertRedirect();
+
+    expect($document->refresh()->version)->toBe(2)
+        ->and($document->body_md)->toContain('Slower invoices.');
+});
+
+test('research dates must use Y-m-d', function () {
+    $this->post('/acme/projects/rocket/research/interviews', ['person' => 'Ana', 'interviewed_on' => '10/01/2026'])->assertSessionHasErrors('interviewed_on');
+    $this->post('/acme/projects/rocket/research/competitors', ['name' => 'Rival', 'last_reviewed_at' => 'yesterday'])->assertSessionHasErrors('last_reviewed_at');
+});

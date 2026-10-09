@@ -29,7 +29,7 @@ class MirrorResearchDocument
             bodyMd: $bodyMd,
             status: $status,
             changeNote: $document === null ? null : 'Research row updated',
-        ), $actor, $document);
+        ), $actor, $document, mirroringResearch: true);
     }
 
     public function archive(Project $project, KnowledgeDocument $document, Actor $actor): void
@@ -43,6 +43,6 @@ class MirrorResearchDocument
             title: $document->title,
             bodyMd: $document->body_md,
             status: DocStatus::Archived,
-        ), $actor, $document);
+        ), $actor, $document, mirroringResearch: true);
     }
 }

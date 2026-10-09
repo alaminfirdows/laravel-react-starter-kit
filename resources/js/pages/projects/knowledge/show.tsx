@@ -15,7 +15,11 @@ export default function KnowledgeShow({
     project,
     can,
     document,
-}: ProjectPageProps & { document: KnowledgeDocument }) {
+    canEditDocument,
+}: ProjectPageProps & {
+    document: KnowledgeDocument;
+    canEditDocument: boolean;
+}) {
     return (
         <>
             <Head title={document.title} />
@@ -33,7 +37,7 @@ export default function KnowledgeShow({
                             )}
                         </div>
                     </div>
-                    {can.update && (
+                    {can.update && canEditDocument && (
                         <Button variant="outline" asChild>
                             <Link
                                 href={edit({

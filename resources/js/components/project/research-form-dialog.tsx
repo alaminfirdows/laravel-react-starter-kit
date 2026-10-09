@@ -32,6 +32,7 @@ export type ResearchField = {
 const maxLengths: Record<string, number | undefined> = {
     text: 255,
     url: 2048,
+    textarea: 20000,
 };
 
 /**
@@ -88,6 +89,7 @@ export function ResearchFormDialog({
                                             <Textarea
                                                 id={id}
                                                 name={field.name}
+                                                maxLength={maxLengths.textarea}
                                                 defaultValue={
                                                     defaults[field.name] ?? ''
                                                 }
