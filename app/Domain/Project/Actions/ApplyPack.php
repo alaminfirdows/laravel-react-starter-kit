@@ -5,6 +5,7 @@ namespace App\Domain\Project\Actions;
 use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Activity\Enums\ActorType;
+use App\Domain\Catalog\Actions\DiffCatalogVersion;
 use App\Domain\Catalog\Enums\CatalogStatus;
 use App\Domain\Catalog\Models\CatalogTask;
 use App\Domain\Catalog\Models\Pack;
@@ -51,6 +52,7 @@ class ApplyPack
                     'workspace_id' => $project->workspace_id,
                     'catalog_task_id' => $catalogTask->id,
                     'catalog_version' => $catalogTask->version,
+                    'catalog_snapshot' => DiffCatalogVersion::snapshot($catalogTask),
                     'parent_id' => $parentId,
                     'depth' => $parentDepth === null ? 0 : $parentDepth + 1,
                     'sort_order' => $position,

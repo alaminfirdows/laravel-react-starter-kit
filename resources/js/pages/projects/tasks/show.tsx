@@ -2,12 +2,18 @@ import { Head, usePoll } from '@inertiajs/react';
 import { useEffect } from 'react';
 import { Markdown } from '@/components/markdown/markdown';
 import { ActionCard } from '@/components/task/action-card';
+import { CatalogUpdateDialog } from '@/components/task/catalog-update-dialog';
 import { CommentThread } from '@/components/task/comment-thread';
 import { ParentTaskCard } from '@/components/task/parent-task-card';
 import { SubtaskList } from '@/components/task/subtask-list';
 import { TaskHeader } from '@/components/task/task-header';
 import type { AssigneeOption } from '@/components/task/assignee-picker';
-import type { ProjectPageProps, Task, TaskComment } from '@/types';
+import type {
+    CatalogFieldDiff,
+    ProjectPageProps,
+    Task,
+    TaskComment,
+} from '@/types';
 
 export default function TaskShow({
     project,
@@ -15,10 +21,12 @@ export default function TaskShow({
     task,
     assignees,
     comments,
+    catalogDiff,
 }: ProjectPageProps & {
     task: Task;
     assignees: AssigneeOption[];
     comments: TaskComment[];
+    catalogDiff?: CatalogFieldDiff[];
 }) {
     const { start, stop } = usePoll(
         10_000,
@@ -52,6 +60,13 @@ export default function TaskShow({
                     projectSlug={project.slug}
                     assignees={assignees}
                 />
+                {task.hasCatalogUpdate && can.update && (
+                    <CatalogUpdateDialog
+                        taskId={task.id}
+                        projectSlug={project.slug}
+                        diff={catalogDiff}
+                    />
+                )}
                 <Markdown source={task.bodyMd} />
                 {task.children.length > 0 && (
                     <section className="space-y-3">

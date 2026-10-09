@@ -13,6 +13,7 @@ use App\Domain\Task\Http\Controllers\ActionRunController;
 use App\Domain\Task\Http\Controllers\ApprovalController;
 use App\Domain\Task\Http\Controllers\ApprovalDecisionController;
 use App\Domain\Task\Http\Controllers\TaskAssigneeController;
+use App\Domain\Task\Http\Controllers\TaskCatalogUpgradeController;
 use App\Domain\Task\Http\Controllers\TaskCompletionController;
 use App\Domain\Task\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,7 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::post('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'store'])->name('tasks.completion.store');
     Route::delete('{project}/tasks/{task}/completion', [TaskCompletionController::class, 'destroy'])->name('tasks.completion.destroy');
     Route::put('{project}/tasks/{task}/assignee', [TaskAssigneeController::class, 'update'])->name('tasks.assignee.update');
+    Route::post('{project}/tasks/{task}/catalog-upgrade', [TaskCatalogUpgradeController::class, 'store'])->name('tasks.catalog-upgrade.store');
     Route::post('{project}/tasks/{task}/comments', [TaskCommentController::class, 'store'])->name('tasks.comments.store');
     Route::post('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'store'])->scopeBindings()->name('tasks.comments.resolution.store');
     Route::delete('{project}/tasks/{task}/comments/{comment}/resolution', [CommentResolutionController::class, 'destroy'])->scopeBindings()->name('tasks.comments.resolution.destroy');

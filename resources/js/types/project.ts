@@ -156,7 +156,16 @@ export type Task = {
     children: TaskSummary[];
     actions: TaskAction[];
     hasActiveRun: boolean;
+    hasCatalogUpdate: boolean;
     assignee?: { id: string; name: string } | null;
+};
+
+export type CatalogFieldDiff = {
+    field: string;
+    label: string;
+    founder: string;
+    catalog: string;
+    isConflict: boolean;
 };
 
 export type Activity = {

@@ -21,4 +21,9 @@ class InvalidTaskTransition extends DomainException
     {
         return new self(__('Only workspace members who can edit projects can be assigned.'));
     }
+
+    public static function noCatalogUpdate(): self
+    {
+        return new self(__('This task already has the latest catalog version.'));
+    }
 }

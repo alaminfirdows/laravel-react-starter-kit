@@ -53,6 +53,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $completed_by_type
  * @property string|null $completed_by_id
  * @property bool $has_catalog_update
+ * @property array<string, mixed>|null $catalog_snapshot
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Project $project
@@ -94,6 +95,7 @@ class Task extends Model
             'expected_outputs' => 'array',
             'body_doc' => 'array',
             'has_catalog_update' => 'boolean',
+            'catalog_snapshot' => 'array',
             'due_at' => 'immutable_datetime',
             'started_at' => 'immutable_datetime',
             'completed_at' => 'immutable_datetime',

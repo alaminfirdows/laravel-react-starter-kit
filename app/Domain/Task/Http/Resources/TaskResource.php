@@ -33,6 +33,7 @@ class TaskResource extends JsonResource
             'depth' => $this->depth,
             'isLeaf' => $this->whenLoaded('children', fn (): bool => $this->children->isEmpty()),
             'assignee' => $this->whenLoaded('assignee', fn (): ?array => $this->assignee ? ['id' => $this->assignee->id, 'name' => $this->assignee->name] : null),
+            'hasCatalogUpdate' => $this->has_catalog_update,
             'completedAt' => $this->completed_at?->toIso8601String(),
             'ancestors' => $this->ancestors(),
             'parent' => TaskSummaryResource::make($this->whenLoaded('parent')),

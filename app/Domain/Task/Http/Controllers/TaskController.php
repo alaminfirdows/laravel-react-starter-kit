@@ -2,9 +2,11 @@
 
 namespace App\Domain\Task\Http\Controllers;
 
+use App\Domain\Catalog\Actions\DiffCatalogVersion;
 use App\Domain\Comment\Http\Resources\CommentResource;
 use App\Domain\Project\Http\ProjectPageProps;
 use App\Domain\Project\Models\Project;
+use App\Domain\Task\Http\Resources\CatalogFieldDiffResource;
 use App\Domain\Task\Http\Resources\TaskResource;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Models\Workspace;
@@ -23,7 +25,7 @@ class TaskController extends Controller
      */
     private const int RUN_HISTORY = 5;
 
-    public function show(Workspace $workspace, Project $project, Task $task): Response
+    public function show(Workspace $workspace, Project $project, Task $task, DiffCatalogVersion $diff): Response
     {
         Gate::authorize('view', $task);
 
@@ -43,6 +45,7 @@ class TaskController extends Controller
             'assignees' => fn (): array => $workspace->editors()->orderBy('name')->get(['id', 'name'])
                 ->map(fn (User $user): array => ['value' => $user->id, 'label' => $user->name])
                 ->all(),
+            'catalogDiff' => Inertia::optional(fn () => CatalogFieldDiffResource::collection($diff->handle($task))),
         ]);
     }
 }
