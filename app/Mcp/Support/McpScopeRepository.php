@@ -11,9 +11,15 @@ use League\OAuth2\Server\Entities\ScopeEntityInterface;
 /**
  * Passport scopes plus the "workspace:<ulid>" pattern that binds an MCP token to one workspace.
  * The consent screen adds that scope after a membership check; it is never shown as a choice to the client.
+ * Only the authorization code grant and its refresh can carry it; other grants drop it.
  */
 class McpScopeRepository extends ScopeRepository
 {
+    /**
+     * Grants whose tokens went through the consent screen's workspace picker.
+     */
+    private const array WORKSPACE_GRANTS = ['authorization_code', 'refresh_token'];
+
     public static function isWorkspaceScope(string $identifier): bool
     {
         return Str::startsWith($identifier, McpActor::WORKSPACE_SCOPE_PREFIX)
@@ -44,7 +50,7 @@ class McpScopeRepository extends ScopeRepository
 
         return [
             ...parent::finalizeScopes($otherScopes->values()->all(), $grantType, $clientEntity, $userIdentifier, $authCodeId),
-            ...$workspaceScopes->values()->all(),
+            ...(in_array($grantType, self::WORKSPACE_GRANTS, true) ? $workspaceScopes->values()->all() : []),
         ];
     }
 }

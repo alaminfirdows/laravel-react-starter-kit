@@ -55,6 +55,7 @@
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
+            "test -f storage/oauth-private.key || php artisan passport:keys",
             "@php artisan migrate --force",
             "pnpm install",
             "pnpm run build"

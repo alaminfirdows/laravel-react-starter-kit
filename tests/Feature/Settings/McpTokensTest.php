@@ -8,11 +8,12 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Passport\Client;
+use Laravel\Passport\RefreshToken;
 use Laravel\Passport\Token;
 
 function workspaceToken(User $user, Workspace $workspace): Token
 {
-    return Token::forceCreate([
+    $token = Token::forceCreate([
         'id' => Str::random(80),
         'user_id' => $user->id,
         'client_id' => Client::factory()->create(['name' => 'Claude'])->id,
@@ -20,6 +21,10 @@ function workspaceToken(User $user, Workspace $workspace): Token
         'revoked' => false,
         'expires_at' => now()->addDay(),
     ]);
+
+    RefreshToken::forceCreate(['id' => Str::random(80), 'access_token_id' => $token->id, 'revoked' => false, 'expires_at' => now()->addMonth()]);
+
+    return $token;
 }
 
 beforeEach(function () {
@@ -58,6 +63,7 @@ test('admin revokes a member token and activity is recorded', function () {
         ->assertRedirect();
 
     expect($this->memberToken->fresh()->revoked)->toBeTrue()
+        ->and($this->memberToken->refreshToken()->sole()->revoked)->toBeTrue()
         ->and(Activity::withoutWorkspaceScope()->where('event', 'mcp.connection_revoked')->value('workspace_id'))->toBe($this->workspace->id);
 });
 
@@ -78,6 +84,7 @@ test('removing a member revokes their workspace tokens only', function () {
     app(RemoveMember::class)->handle($this->workspace, $this->member);
 
     expect($this->memberToken->fresh()->revoked)->toBeTrue()
+        ->and($this->memberToken->refreshToken()->sole()->revoked)->toBeTrue()
         ->and(Token::query()->where('user_id', $this->member->id)->where('revoked', false)->count())->toBe(1);
 });
 
@@ -92,4 +99,13 @@ test('viewer cannot see or revoke member tokens', function () {
     $this->actingAs($viewer)->delete("/acme/settings/connections/{$this->memberToken->id}")->assertForbidden();
 
     expect($this->memberToken->fresh()->revoked)->toBeFalse();
+});
+
+test('token scoped to two workspaces is not listed for either', function () {
+    $token = workspaceToken($this->member, $this->workspace);
+    $token->forceFill(['scopes' => [...$token->scopes, 'workspace:'.Workspace::factory()->create()->id]])->save();
+
+    $this->actingAs($this->admin)
+        ->get(route('connect-claude.edit'))
+        ->assertInertia(fn (Assert $page) => $page->has('team.connections', 2));
 });

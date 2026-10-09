@@ -29,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        Passport::$deviceCodeGrantEnabled = false;
+
         $this->app->bind(ScopeRepository::class, McpScopeRepository::class);
         $this->app->bind(AuthorizationController::class, WorkspaceAuthorizationController::class);
         $this->app->bind(ApproveAuthorizationController::class, ApproveWorkspaceAuthorizationController::class);

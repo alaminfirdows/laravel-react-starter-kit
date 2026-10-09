@@ -7,7 +7,6 @@ use App\Mcp\Data\McpConnectionData;
 use App\Mcp\Support\McpActor;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 use Laravel\Passport\Token;
 
 /**
@@ -36,7 +35,7 @@ class ActiveMcpConnections
     }
 
     /**
-     * Tokens bound to the workspace: of current members, or of one user (member or not).
+     * Tokens bound to the workspace and no other: of current members, or of one user (member or not).
      *
      * @return Builder<Token>
      */
@@ -45,18 +44,18 @@ class ActiveMcpConnections
         return $this->active()
             ->when($user, fn (Builder $query, User $user) => $query->where('user_id', $user->getKey()),
                 fn (Builder $query) => $query->whereIn('user_id', $workspace->memberships()->select('user_id')))
-            ->where('scopes', 'like', '%"'.McpActor::WORKSPACE_SCOPE_PREFIX.$workspace->id.'"%');
+            ->where('scopes', 'like', '%"'.McpActor::WORKSPACE_SCOPE_PREFIX.$workspace->id.'"%')
+            ->where('scopes', 'not like', '%"'.McpActor::WORKSPACE_SCOPE_PREFIX.'%"'.McpActor::WORKSPACE_SCOPE_PREFIX.'%');
     }
 
+    /**
+     * The token's workspace, or null unless it has exactly one workspace scope.
+     */
     public static function workspaceId(Token $token): ?string
     {
-        foreach ($token->scopes ?? [] as $scope) {
-            if (Str::startsWith($scope, McpActor::WORKSPACE_SCOPE_PREFIX)) {
-                return Str::after($scope, McpActor::WORKSPACE_SCOPE_PREFIX);
-            }
-        }
+        $workspaceIds = McpActor::workspaceIds($token->scopes ?? []);
 
-        return null;
+        return count($workspaceIds) === 1 ? $workspaceIds[0] : null;
     }
 
     /**

@@ -33,7 +33,13 @@ test('token without workspace scope is rejected', function () {
     Project::factory()->forWorkspace($this->personal)->create(['name' => 'Mine']);
     Passport::actingAs($this->user, ['mcp:use']);
 
-    FounderServer::tool(WhoAmITool::class)->assertHasErrors(['not bound to a workspace']);
+    FounderServer::tool(WhoAmITool::class)->assertHasErrors(['not bound to exactly one workspace']);
+});
+
+test('token with two workspace scopes is rejected', function () {
+    Passport::actingAs($this->user, ['mcp:use', 'workspace:'.$this->personal->id, 'workspace:'.$this->team->id]);
+
+    FounderServer::tool(WhoAmITool::class)->assertHasErrors(['not bound to exactly one workspace']);
 });
 
 test('token for one workspace stays there after the web ui switches workspace', function () {
@@ -76,7 +82,7 @@ test('workspace scope for a workspace the user is not in is refused', function (
 /**
  * @return array{client: Client, verifier: string, authToken: string}
  */
-function startAuthorization(User $user): array
+function startAuthorization(User $user, string $scope = 'mcp:use'): array
 {
     $client = Client::factory()->asPublic()->create(['name' => 'Claude', 'redirect_uris' => ['https://claude.ai/api/mcp/auth_callback']]);
     $verifier = str_repeat('v', 64);
@@ -87,7 +93,7 @@ function startAuthorization(User $user): array
             'client_id' => $client->id,
             'redirect_uri' => 'https://claude.ai/api/mcp/auth_callback',
             'response_type' => 'code',
-            'scope' => 'mcp:use',
+            'scope' => $scope,
             'state' => 'xyz',
             'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
             'code_challenge_method' => 'S256',
@@ -122,20 +128,27 @@ test('consent screen lists the user workspaces with the current one as default',
             ->where('currentWorkspaceId', $this->personal->id));
 });
 
-test('approving binds the issued token to the chosen workspace', function () {
-    ['client' => $client, 'verifier' => $verifier, 'authToken' => $authToken] = startAuthorization($this->user);
+/**
+ * Approve with the picked workspace and exchange the code; returns the stored token scopes.
+ *
+ * @param  array{client: Client, verifier: string, authToken: string}  $authorization
+ * @return list<string>
+ */
+function approveAndExchange(array $authorization, Workspace $workspace): array
+{
+    ['client' => $client, 'verifier' => $verifier, 'authToken' => $authToken] = $authorization;
 
-    $redirect = $this->post('/oauth/authorize', [
+    $redirect = test()->post('/oauth/authorize', [
         'state' => 'xyz',
         'client_id' => $client->id,
         'auth_token' => $authToken,
-        'workspace' => $this->team->id,
+        'workspace' => $workspace->id,
     ])->assertRedirect()->headers->get('Location');
 
     expect($redirect)->toStartWith('https://claude.ai/api/mcp/auth_callback');
     parse_str((string) parse_url($redirect, PHP_URL_QUERY), $query);
 
-    $this->post('/oauth/token', [
+    test()->post('/oauth/token', [
         'grant_type' => 'authorization_code',
         'client_id' => $client->id,
         'redirect_uri' => 'https://claude.ai/api/mcp/auth_callback',
@@ -143,7 +156,38 @@ test('approving binds the issued token to the chosen workspace', function () {
         'code' => $query['code'],
     ])->assertOk();
 
-    expect(Token::query()->sole()->scopes)->toBe(['mcp:use', 'workspace:'.$this->team->id]);
+    return Token::query()->sole()->scopes;
+}
+
+test('approving binds the issued token to the chosen workspace', function () {
+    expect(approveAndExchange(startAuthorization($this->user), $this->team))
+        ->toBe(['mcp:use', 'workspace:'.$this->team->id]);
+});
+
+test('a workspace scope requested by the client is replaced by the picked one', function () {
+    $authorization = startAuthorization($this->user, 'mcp:use workspace:'.$this->team->id);
+
+    expect(approveAndExchange($authorization, $this->personal))
+        ->toBe(['mcp:use', 'workspace:'.$this->personal->id]);
+});
+
+test('a malformed workspace scope is an invalid scope', function () {
+    $client = Client::factory()->asPublic()->create(['redirect_uris' => ['https://claude.ai/api/mcp/auth_callback']]);
+
+    $redirect = $this->actingAs($this->user)
+        ->get('/oauth/authorize?'.http_build_query([
+            'client_id' => $client->id,
+            'redirect_uri' => 'https://claude.ai/api/mcp/auth_callback',
+            'response_type' => 'code',
+            'scope' => 'mcp:use workspace:foo',
+            'state' => 'xyz',
+            'code_challenge' => str_repeat('a', 43),
+            'code_challenge_method' => 'S256',
+        ]))
+        ->assertRedirect()
+        ->headers->get('Location');
+
+    expect($redirect)->toContain('error=invalid_scope');
 });
 
 test('approving a workspace the user is not a member of fails', function () {

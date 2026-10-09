@@ -51,5 +51,8 @@ jobs:
       - name: Setup Application
         run: composer setup
 
+      - name: Generate Passport Keys
+        run: php artisan passport:keys --force
+
       - name: Run CI Checks
         run: composer ci:check

@@ -54,7 +54,7 @@ final readonly class McpActor
         $workspace = self::workspaceFromToken($token);
 
         if ($workspace === null) {
-            throw new AuthorizationException('This token is not bound to a workspace. Reconnect the app to pick one.');
+            throw new AuthorizationException('This token is not bound to exactly one workspace. Reconnect the app to pick one.');
         }
 
         $role = $user->workspaceRole($workspace);
@@ -163,6 +163,11 @@ final readonly class McpActor
         throw ValidationException::withMessages([$key => "{$label} not found."]);
     }
 
+    /**
+     * The token's one workspace. No workspace scope, or more than one, binds to nothing.
+     *
+     * @throws AuthorizationException
+     */
     private static function workspaceFromToken(mixed $token): ?Workspace
     {
         if (! $token instanceof AccessToken) {
@@ -171,15 +176,26 @@ final readonly class McpActor
 
         /** @var list<string> $scopes */
         $scopes = $token->oauth_scopes ?? [];
+        $workspaceIds = self::workspaceIds($scopes);
 
-        foreach ($scopes as $scope) {
-            if (Str::startsWith($scope, self::WORKSPACE_SCOPE_PREFIX)) {
-                return Workspace::query()->whereKey(Str::after($scope, self::WORKSPACE_SCOPE_PREFIX))->first()
-                    ?? throw new AuthorizationException('Unknown workspace in token scope.');
-            }
+        if (count($workspaceIds) !== 1) {
+            return null;
         }
 
-        return null;
+        return Workspace::query()->whereKey($workspaceIds[0])->first()
+            ?? throw new AuthorizationException('Unknown workspace in token scope.');
+    }
+
+    /**
+     * @param  array<int, string>  $scopes
+     * @return list<string>
+     */
+    public static function workspaceIds(array $scopes): array
+    {
+        return array_values(array_map(
+            fn (string $scope): string => Str::after($scope, self::WORKSPACE_SCOPE_PREFIX),
+            array_filter($scopes, fn (string $scope): bool => Str::startsWith($scope, self::WORKSPACE_SCOPE_PREFIX)),
+        ));
     }
 
     private static function clientName(mixed $token): string
