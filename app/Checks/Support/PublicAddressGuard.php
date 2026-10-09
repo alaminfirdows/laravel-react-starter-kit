@@ -8,6 +8,19 @@ namespace App\Checks\Support;
  */
 class PublicAddressGuard
 {
+    /**
+     * IPv6 ranges the global-range filter lets through but that can reach internal hosts.
+     *
+     * @var list<array{0: string, 1: int}>
+     */
+    private const array BLOCKED_V6_PREFIXES = [
+        ['ff00::', 8],          // multicast
+        ['64:ff9b::', 96],      // NAT64 well-known (maps to any IPv4)
+        ['64:ff9b:1::', 48],    // NAT64 local-use (RFC 8215)
+        ['::ffff:0:0:0', 96],   // SIIT IPv4-translated
+        ['fec0::', 10],         // deprecated site-local
+    ];
+
     public function __construct(protected DnsResolver $dns) {}
 
     /**
@@ -18,7 +31,7 @@ class PublicAddressGuard
     {
         $host = parse_url($url, PHP_URL_HOST);
 
-        if (parse_url($url, PHP_URL_SCHEME) !== 'https' || ! is_string($host) || $host === '') {
+        if (parse_url($url, PHP_URL_SCHEME) !== 'https' || ! is_string($host) || $host === '' || $this->isNumericHost($host)) {
             return null;
         }
 
@@ -44,7 +57,40 @@ class PublicAddressGuard
             return (ord($packed[0]) & 0xF0) !== 0xE0;
         }
 
-        // Multicast ff00::/8 and NAT64 64:ff9b::/96 (maps to any IPv4).
-        return $packed[0] !== "\xFF" && ! str_starts_with($packed, "\x00\x64\xFF\x9B".str_repeat("\x00", 8));
+        foreach (self::BLOCKED_V6_PREFIXES as [$prefix, $bits]) {
+            if ($this->matchesPrefix($packed, (string) inet_pton($prefix), $bits)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Shorthand IPv4 forms ("2130706433", "0x7f.1", "127.1", "0177.0.0.1") that some
+     * resolvers read as loopback. TLDs are never numeric, so no real host matches.
+     */
+    private function isNumericHost(string $host): bool
+    {
+        return filter_var($host, FILTER_VALIDATE_IP) === false
+            && preg_match('/^(0x[0-9a-f]*|\d+)(\.(0x[0-9a-f]*|\d+))*\.?$/i', $host) === 1;
+    }
+
+    private function matchesPrefix(string $packed, string $prefix, int $bits): bool
+    {
+        $bytes = intdiv($bits, 8);
+        $rest = $bits % 8;
+
+        if (strncmp($packed, $prefix, $bytes) !== 0) {
+            return false;
+        }
+
+        if ($rest === 0) {
+            return true;
+        }
+
+        $mask = (0xFF << (8 - $rest)) & 0xFF;
+
+        return (ord($packed[$bytes]) & $mask) === (ord($prefix[$bytes]) & $mask);
     }
 }

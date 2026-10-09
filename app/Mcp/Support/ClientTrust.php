@@ -4,6 +4,7 @@ namespace App\Mcp\Support;
 
 use Illuminate\Support\Str;
 use Laravel\Passport\Client;
+use Normalizer;
 
 /**
  * Which OAuth clients may claim a Claude or Founder OS name, and how the consent screen labels them.
@@ -20,14 +21,42 @@ class ClientTrust
      */
     public const string CLAUDE_SCHEME = 'claude';
 
+    /**
+     * Non-Latin letters that look like the Latin letters of the reserved names.
+     */
+    private const array HOMOGLYPHS = [
+        'а' => 'a', 'А' => 'a', 'α' => 'a', 'Α' => 'a',
+        'с' => 'c', 'С' => 'c', 'ϲ' => 'c', 'ⅽ' => 'c',
+        'ԁ' => 'd', 'ⅾ' => 'd',
+        'е' => 'e', 'Е' => 'e', 'ε' => 'e', 'Ε' => 'e',
+        'ƒ' => 'f',
+        'і' => 'i', 'І' => 'l', 'ӏ' => 'l', 'Ӏ' => 'l', 'ǀ' => 'l', 'ⅼ' => 'l', 'Ι' => 'l',
+        'ո' => 'n', 'п' => 'n',
+        'о' => 'o', 'О' => 'o', 'ο' => 'o', 'Ο' => 'o',
+        'г' => 'r',
+        'ѕ' => 's', 'Ѕ' => 's',
+        'υ' => 'u', 'ս' => 'u',
+    ];
+
     public function isReservedName(string $name): bool
     {
-        $name = Str::lower(Str::squish($name));
+        $name = $this->skeleton($name);
 
         /** @var list<string> $reserved */
         $reserved = config('mcp.reserved_client_names', []);
 
-        return collect($reserved)->contains(fn (string $reservedName): bool => Str::contains($name, Str::lower($reservedName)));
+        return collect($reserved)->contains(fn (string $reservedName): bool => Str::contains($name, $this->skeleton($reservedName)));
+    }
+
+    /**
+     * Lookalike-proof form: NFKC (fullwidth), Cyrillic/Greek homoglyphs, ASCII, digit swaps, letters only.
+     */
+    private function skeleton(string $name): string
+    {
+        $name = strtr(Normalizer::normalize($name, Normalizer::FORM_KC) ?: $name, self::HOMOGLYPHS);
+        $name = strtr(Str::lower(Str::ascii($name)), ['0' => 'o', '1' => 'l', '3' => 'e', '4' => 'a', '5' => 's', '|' => 'l', '!' => 'i']);
+
+        return (string) preg_replace('/[^a-z]/', '', $name);
     }
 
     /**

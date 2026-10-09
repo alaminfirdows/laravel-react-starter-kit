@@ -43,15 +43,33 @@ test('hosts that resolve to internal addresses are never requested', function (a
     'ipv6 loopback' => [['::1']],
     'ipv6 unique local' => [['fd00:ec2::254']],
     'ipv4 mapped' => [['::ffff:10.0.0.1']],
+    'nat64 local use' => [['64:ff9b:1::a00:1']],
+    'siit translated' => [['::ffff:0:7f00:1']],
+    'ipv6 site local' => [['fec0::1']],
     'one public, one private' => [['93.184.216.34', '10.0.0.5']],
     'unresolvable' => [[]],
 ]);
 
-test('an ip literal in the website address is checked too', function () {
+test('ip literals and numeric shorthand hosts are never requested', function (string $host) {
     Http::fake();
 
-    expect(app(HttpsCheck::class)->run('169.254.169.254'))->passed->toBeFalse();
+    expect(app(HttpsCheck::class)->run($host))->passed->toBeFalse();
     Http::assertNothingSent();
+})->with(['169.254.169.254', '2130706433', '0x7f.1', '127.1', '0177.0.0.1']);
+
+test('the request is pinned to the vetted ip with a body size cap', function () {
+    $options = [];
+    Http::fake(function ($request, array $requestOptions) use (&$options) {
+        $options = $requestOptions;
+
+        return Http::response('ok');
+    });
+
+    expect(app(HttpsCheck::class)->run('acme.test'))->passed->toBeTrue()
+        ->and($options['curl'][CURLOPT_RESOLVE])->toBe(['acme.test:443:'.FakeDnsResolver::PUBLIC_IP])
+        ->and($options['allow_redirects'])->toBeFalse()
+        ->and($options['progress'](0, HttpsCheck::MAX_BYTES + 1, 0, 0))->toBeTrue()
+        ->and($options['progress'](0, 1024, 0, 0))->toBeFalse();
 });
 
 test('a redirect to an internal address is not followed', function () {

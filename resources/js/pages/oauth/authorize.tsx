@@ -114,6 +114,6 @@ export default function Authorize({
 }
 
 Authorize.layout = {
-    title: 'Connect Claude',
+    title: 'Authorize app',
     description: 'Allow this app to use Founder OS on your behalf.',
 };

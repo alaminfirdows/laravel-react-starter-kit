@@ -17,6 +17,23 @@ test('a redirect outside the allowlist is rejected', function () {
     registerClient('Claude', 'https://claude.ai/api/mcp/auth_callback')->assertCreated();
 });
 
+test('lookalike claude redirects are rejected', function (string $redirectUri) {
+    registerClient('My tool', $redirectUri)->assertStatus(400);
+})->with([
+    'subdomain trick' => ['https://claude.ai.evil.com/cb'],
+    'path trick' => ['https://evil.com/claude.ai/cb'],
+    'userinfo trick' => ['https://claude.ai@evil.com/cb'],
+    'other port' => ['https://claude.ai:8443/cb'],
+]);
+
+test('loopback redirects are allowed in production for claude code', function (string $redirectUri) {
+    app()->detectEnvironment(fn () => 'production');
+    config(['mcp' => require config_path('mcp.php')]);
+
+    expect(app()->isProduction())->toBeTrue();
+    registerClient('Claude Code (founder)', $redirectUri)->assertCreated();
+})->with(['http://localhost:33418/callback', 'http://127.0.0.1:33418/callback', 'http://[::1]:33418/callback']);
+
 test('reserved names need a claude redirect', function () {
     config(['mcp.redirect_domains' => ['https://claude.ai', 'https://partner.example']]);
 
@@ -24,6 +41,10 @@ test('reserved names need a claude redirect', function () {
         ->assertStatus(400)
         ->assertJsonPath('error', 'invalid_client_metadata');
     registerClient('Founder OS sync', 'https://partner.example/cb')->assertStatus(400);
+    registerClient('Clаude', 'https://partner.example/cb')->assertStatus(400);
+    registerClient('C1aude', 'https://partner.example/cb')->assertStatus(400);
+    registerClient('Ｃｌａｕｄｅ', 'https://partner.example/cb')->assertStatus(400);
+    registerClient('Fоunder-0S', 'https://partner.example/cb')->assertStatus(400);
 
     registerClient('Partner tool', 'https://partner.example/cb')->assertCreated();
 });

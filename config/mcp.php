@@ -12,13 +12,16 @@ return [
     | and host. Domains not in this list will raise validation errors.
     |
     | Only Claude hosts by default (comma list in MCP_REDIRECT_DOMAINS).
-    | Localhost is added for the local and testing environments only.
+    | Loopback (any port) is always allowed: Claude Code CLI uses it, and
+    | the code never leaves the user's own machine.
     |
     */
 
     'redirect_domains' => [
         ...array_values(array_filter(array_map('trim', explode(',', (string) env('MCP_REDIRECT_DOMAINS', 'https://claude.ai,https://claude.com'))))),
-        ...(in_array(env('APP_ENV'), ['local', 'testing'], true) ? ['http://localhost', 'http://127.0.0.1'] : []),
+        'http://localhost',
+        'http://127.0.0.1',
+        'http://[::1]',
     ],
 
     /*

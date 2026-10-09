@@ -7,6 +7,7 @@ use App\Checks\Support\Target;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\Psr7\UriResolver;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +21,11 @@ abstract class HttpCheck implements Check
     public const int TIMEOUT = 10;
 
     public const int MAX_REDIRECTS = 3;
+
+    /**
+     * Largest body a check downloads (5 MB); bigger bodies abort as unreachable.
+     */
+    public const int MAX_BYTES = 5 * 1024 * 1024;
 
     public function __construct(protected PublicAddressGuard $guard) {}
 
@@ -78,9 +84,12 @@ abstract class HttpCheck implements Check
             return Http::timeout(self::TIMEOUT)
                 ->withUserAgent('FounderOS-Check/1.0')
                 ->withoutRedirecting()
-                ->withOptions(['curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$pinnedIp}"]]])
+                ->withOptions([
+                    'curl' => [CURLOPT_RESOLVE => ["{$host}:{$port}:{$pinnedIp}"]],
+                    'progress' => fn (int $downloadTotal, int $downloaded): bool => $downloaded > self::MAX_BYTES,
+                ])
                 ->get($address);
-        } catch (ConnectionException $exception) {
+        } catch (ConnectionException|RequestException $exception) {
             Log::info('Site check could not connect.', ['address' => $address, 'error' => $exception->getMessage()]);
 
             return null;
