@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight } from '@/components/animated-icons';
 import { TaskStatusIcon } from '@/components/project/task-status-icon';
 import {
     Collapsible,

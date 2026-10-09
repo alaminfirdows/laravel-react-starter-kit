@@ -1,5 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/animated-icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';

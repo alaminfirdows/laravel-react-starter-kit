@@ -1,5 +1,5 @@
 import { Head, Link, WhenVisible } from '@inertiajs/react';
-import { ArrowRight, History, Info } from 'lucide-react';
+import { ArrowRight, History, Info } from '@/components/animated-icons';
 import { EmptyState } from '@/components/empty-state';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';

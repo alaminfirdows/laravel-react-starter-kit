@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { KeyRound } from 'lucide-react';
+import { KeyRound } from '@/components/animated-icons';
 import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
 import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
 import PasskeyItem from '@/components/passkey-item';

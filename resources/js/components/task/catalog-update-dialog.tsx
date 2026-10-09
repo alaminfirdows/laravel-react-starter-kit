@@ -1,5 +1,5 @@
 import { Form, router } from '@inertiajs/react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles } from '@/components/animated-icons';
 import { useState } from 'react';
 import TaskCatalogUpgradeController from '@/actions/App/Domain/Task/Http/Controllers/TaskCatalogUpgradeController';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

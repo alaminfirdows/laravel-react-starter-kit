@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { Activity as ActivityIcon } from 'lucide-react';
+import { Activity as ActivityIcon } from '@/components/animated-icons';
 import type { RouteDefinition } from '@/wayfinder';
 import { EmptyState } from '@/components/empty-state';
 import { Badge } from '@/components/ui/badge';

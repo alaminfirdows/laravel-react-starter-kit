@@ -1,5 +1,5 @@
 import { Deferred, Head } from '@inertiajs/react';
-import { BarChart3 } from 'lucide-react';
+import { BarChart3 } from '@/components/animated-icons';
 import type { ReactNode } from 'react';
 import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';

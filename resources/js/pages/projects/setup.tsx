@@ -1,5 +1,5 @@
 import { Form, Head, Link, setLayoutProps, useForm } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from '@/components/animated-icons';
 import { useState } from 'react';
 import ProjectLogoController from '@/actions/App/Domain/Project/Http/Controllers/ProjectLogoController';
 import ProjectSetupController from '@/actions/App/Domain/Project/Http/Controllers/ProjectSetupController';

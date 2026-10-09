@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Pencil } from 'lucide-react';
+import { Pencil } from '@/components/animated-icons';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { DocStatusBadge } from '@/components/knowledge/doc-status-badge';

@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Copy, Unplug } from 'lucide-react';
+import { Copy, Unplug } from '@/components/animated-icons';
 import { toast } from 'sonner';
 import WorkspaceConnectionController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceConnectionController';
 import ConnectClaudeController from '@/actions/App/Http/Controllers/Settings/ConnectClaudeController';

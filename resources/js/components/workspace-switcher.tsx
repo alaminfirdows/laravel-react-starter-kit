@@ -6,7 +6,7 @@ import {
     Mail,
     Plus,
     Settings,
-} from 'lucide-react';
+} from '@/components/animated-icons';
 import { useState } from 'react';
 import { CreateWorkspaceDialog } from '@/components/create-workspace-dialog';
 import { WorkspaceAvatar } from '@/components/workspace-avatar';

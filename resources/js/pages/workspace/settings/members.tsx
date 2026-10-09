@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { LogOut } from 'lucide-react';
+import { LogOut } from '@/components/animated-icons';
 import WorkspaceMemberController from '@/actions/App/Domain/Workspace/Http/Controllers/WorkspaceMemberController';
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { SettingsCard, SettingsCardBody } from '@/components/settings-card';

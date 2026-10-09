@@ -13,7 +13,7 @@ import type { NavItem } from '@/types';
  * Active item is raised onto a card surface with a tinted icon.
  */
 export const navItemClassName =
-    'text-sidebar-foreground [&>svg]:text-muted-foreground data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-xs data-[active=true]:ring-1 data-[active=true]:ring-sidebar-border data-[active=true]:[&>svg]:text-primary';
+    'text-sidebar-foreground [&_svg]:text-muted-foreground data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-xs data-[active=true]:ring-1 data-[active=true]:ring-sidebar-border data-[active=true]:[&_svg]:text-primary';
 
 export function NavMain({
     label,

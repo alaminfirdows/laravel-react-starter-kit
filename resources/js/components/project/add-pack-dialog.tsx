@@ -1,5 +1,5 @@
 import { Form, router } from '@inertiajs/react';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus } from '@/components/animated-icons';
 import { useState } from 'react';
 import ProjectPackController from '@/actions/App/Domain/Project/Http/Controllers/ProjectPackController';
 import { EmptyState } from '@/components/empty-state';

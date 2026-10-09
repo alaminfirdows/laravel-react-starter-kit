@@ -1,14 +1,15 @@
+import type { AppIcon } from '@/components/animated-icons';
 import {
     CheckCircle2,
-    Circle,
     CircleDot,
     CircleSlash,
     Lock,
-} from 'lucide-react';
+} from '@/components/animated-icons';
+import { Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TaskStatus } from '@/types';
 
-const icons: Partial<Record<TaskStatus, [typeof Circle, string]>> = {
+const icons: Partial<Record<TaskStatus, [AppIcon, string]>> = {
     done: [CheckCircle2, 'text-success'],
     in_progress: [CircleDot, 'text-warning'],
     locked: [Lock, 'text-muted-foreground'],

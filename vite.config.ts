@@ -13,10 +13,10 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
             fonts: [
-                bunny('Inter', {
+                bunny('Mona Sans', {
                     weights: [400, 500, 600, 700],
                 }),
-                bunny('JetBrains Mono', {
+                bunny('Geist Mono', {
                     weights: [400, 500],
                 }),
             ],

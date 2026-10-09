@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ListTree, Plus } from 'lucide-react';
+import { ListTree, Plus } from '@/components/animated-icons';
 import { CatalogStatusBadge } from '@/components/admin/catalog-status-badge';
 import { EmptyState } from '@/components/empty-state';
 import { Page } from '@/components/page';

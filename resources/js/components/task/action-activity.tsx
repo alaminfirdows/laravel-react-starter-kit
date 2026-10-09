@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from '@/components/animated-icons';
 import { Markdown } from '@/components/markdown/markdown';
 import { Badge } from '@/components/ui/badge';
 import {

@@ -1,5 +1,5 @@
 import { Form, Head, Link, WhenVisible } from '@inertiajs/react';
-import { FileText, Plus, Search } from 'lucide-react';
+import { FileText, Plus, Search } from '@/components/animated-icons';
 import KnowledgeController from '@/actions/App/Domain/Knowledge/Http/Controllers/KnowledgeController';
 import { EmptyState } from '@/components/empty-state';
 import { DocStatusBadge } from '@/components/knowledge/doc-status-badge';

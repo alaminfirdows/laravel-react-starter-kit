@@ -1,5 +1,5 @@
 import { Deferred, Head, Link, useForm } from '@inertiajs/react';
-import { Check, ClipboardCheck, History, X } from 'lucide-react';
+import { Check, ClipboardCheck, History, X } from '@/components/animated-icons';
 import ApprovalDecisionController from '@/actions/App/Domain/Task/Http/Controllers/ApprovalDecisionController';
 import { EmptyState } from '@/components/empty-state';
 import { ListSkeleton } from '@/components/list-skeleton';

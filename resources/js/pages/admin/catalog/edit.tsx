@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Pencil, Plus, Zap } from 'lucide-react';
+import { Pencil, Plus, Zap } from '@/components/animated-icons';
 import CatalogTaskController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CatalogTaskController';
 import CatalogTaskPublicationController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CatalogTaskPublicationController';
 import { CatalogActionDialog } from '@/components/admin/catalog-action-dialog';

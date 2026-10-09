@@ -2,7 +2,13 @@ import { Placeholder } from '@tiptap/extensions';
 import { Markdown as MarkdownExtension } from '@tiptap/markdown';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { Bold, Heading2, Italic, List, ListOrdered } from 'lucide-react';
+import {
+    Bold,
+    Heading2,
+    Italic,
+    List,
+    ListOrdered,
+} from '@/components/animated-icons';
 import { useState } from 'react';
 import { Toggle } from '@/components/ui/toggle';
 

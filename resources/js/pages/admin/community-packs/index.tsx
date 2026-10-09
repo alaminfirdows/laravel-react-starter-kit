@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Inbox } from 'lucide-react';
+import { Inbox } from '@/components/animated-icons';
 import CommunityPackReviewController from '@/actions/App/Domain/Catalog/Http/Controllers/Admin/CommunityPackReviewController';
 import { EmptyState } from '@/components/empty-state';
 import { Page } from '@/components/page';

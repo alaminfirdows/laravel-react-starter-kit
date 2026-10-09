@@ -1,4 +1,4 @@
-import { Hammer, Lightbulb, Rocket } from 'lucide-react';
+import { Hammer, Lightbulb, Rocket } from '@/components/animated-icons';
 import {
     Field,
     FieldContent,

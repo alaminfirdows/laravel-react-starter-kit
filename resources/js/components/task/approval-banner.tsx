@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { Check, ShieldQuestion, X } from 'lucide-react';
+import { Check, ShieldQuestion, X } from '@/components/animated-icons';
 import ApprovalDecisionController from '@/actions/App/Domain/Task/Http/Controllers/ApprovalDecisionController';
 import { Markdown } from '@/components/markdown/markdown';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

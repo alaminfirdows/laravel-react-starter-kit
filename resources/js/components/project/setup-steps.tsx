@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Check } from 'lucide-react';
+import { Check } from '@/components/animated-icons';
 import { cn } from '@/lib/utils';
 import { edit } from '@/routes/projects/setup';
 import type { Option } from '@/types';

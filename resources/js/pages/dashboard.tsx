@@ -5,7 +5,7 @@ import {
     ListTodo,
     Package,
     Settings,
-} from 'lucide-react';
+} from '@/components/animated-icons';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { Card } from '@/components/ui/card';

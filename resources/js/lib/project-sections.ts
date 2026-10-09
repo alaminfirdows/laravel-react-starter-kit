@@ -1,13 +1,13 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
+import type { AppIcon } from '@/components/animated-icons';
 import {
     BookOpen,
     ClipboardList,
     History,
     LayoutDashboard,
-    Scale,
     ShieldQuestion,
-} from 'lucide-react';
+} from '@/components/animated-icons';
+import { Scale } from 'lucide-react';
 import { show } from '@/routes/projects';
 import { index as activityIndex } from '@/routes/projects/activity';
 import { index as approvalsIndex } from '@/routes/projects/approvals';
@@ -18,7 +18,7 @@ import { index as researchIndex } from '@/routes/projects/research';
 export type ProjectSection = {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
-    icon: LucideIcon;
+    icon: AppIcon;
     exact: boolean;
 };
 

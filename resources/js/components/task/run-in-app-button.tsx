@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { Bot, ShieldCheck } from 'lucide-react';
+import { Bot, ShieldCheck } from '@/components/animated-icons';
 import ActionRunController from '@/actions/App/Domain/Task/Http/Controllers/ActionRunController';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';

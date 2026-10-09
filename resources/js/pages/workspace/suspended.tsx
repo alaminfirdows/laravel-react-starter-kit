@@ -1,5 +1,5 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Ban } from 'lucide-react';
+import { Ban } from '@/components/animated-icons';
 import { Button } from '@/components/ui/button';
 import { index as workspacesIndex } from '@/routes/workspaces';
 

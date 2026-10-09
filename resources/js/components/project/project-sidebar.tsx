@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@/components/animated-icons';
 import { CommandPaletteTrigger } from '@/components/command-palette';
 import { NavUser } from '@/components/nav-user';
 import { TaskTree } from '@/components/project/task-tree';

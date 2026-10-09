@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { Check, RotateCcw } from 'lucide-react';
+import { Check, RotateCcw } from '@/components/animated-icons';
 import TaskCompletionController from '@/actions/App/Domain/Task/Http/Controllers/TaskCompletionController';
 import {
     AssigneePicker,

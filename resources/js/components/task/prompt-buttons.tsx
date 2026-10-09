@@ -1,4 +1,4 @@
-import { Copy, ExternalLink, Eye } from 'lucide-react';
+import { Copy, ExternalLink, Eye } from '@/components/animated-icons';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {

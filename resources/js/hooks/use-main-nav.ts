@@ -6,7 +6,7 @@ import {
     Package,
     Settings,
     ShieldCheck,
-} from 'lucide-react';
+} from '@/components/animated-icons';
 import { dashboard } from '@/routes';
 import { index as adminIndex } from '@/routes/admin';
 import { index as packsIndex } from '@/routes/packs';

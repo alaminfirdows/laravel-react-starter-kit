@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users } from '@/components/animated-icons';
 import { useState } from 'react';
 import InvitationController from '@/actions/App/Domain/Workspace/Http/Controllers/InvitationController';
 import { CreateWorkspaceDialog } from '@/components/create-workspace-dialog';

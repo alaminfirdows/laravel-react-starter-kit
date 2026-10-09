@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ListTodo } from 'lucide-react';
+import { ListTodo } from '@/components/animated-icons';
 import { EmptyState } from '@/components/empty-state';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';

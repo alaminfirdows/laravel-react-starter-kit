@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { Check, MessageSquare, RotateCcw } from 'lucide-react';
+import { Check, MessageSquare, RotateCcw } from '@/components/animated-icons';
 import CommentResolutionController from '@/actions/App/Domain/Comment/Http/Controllers/CommentResolutionController';
 import TaskCommentController from '@/actions/App/Domain/Comment/Http/Controllers/TaskCommentController';
 import { EmptyState } from '@/components/empty-state';

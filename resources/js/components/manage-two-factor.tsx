@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@/components/animated-icons';
 import { useEffect, useRef, useState } from 'react';
 import { SettingsCard, SettingsCardBody } from '@/components/settings-card';
 import TwoFactorRecoveryCodes from '@/components/two-factor-recovery-codes';

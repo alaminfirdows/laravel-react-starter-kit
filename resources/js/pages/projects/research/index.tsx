@@ -1,5 +1,10 @@
 import { Head, Link } from '@inertiajs/react';
-import { Building2, FileText, MessagesSquare, Plus } from 'lucide-react';
+import {
+    Building2,
+    FileText,
+    MessagesSquare,
+    Plus,
+} from '@/components/animated-icons';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import CompetitorController from '@/actions/App/Domain/Knowledge/Http/Controllers/CompetitorController';

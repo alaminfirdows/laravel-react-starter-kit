@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { CornerLeftUp } from 'lucide-react';
+import { CornerLeftUp } from '@/components/animated-icons';
 import { TaskStatusIcon } from '@/components/project/task-status-icon';
 import {
     Card,

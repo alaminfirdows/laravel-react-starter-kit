@@ -1,5 +1,5 @@
 import { Form } from '@inertiajs/react';
-import { CalendarX } from 'lucide-react';
+import { CalendarX } from '@/components/animated-icons';
 import ActionScheduleController from '@/actions/App/Domain/Task/Http/Controllers/ActionScheduleController';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';

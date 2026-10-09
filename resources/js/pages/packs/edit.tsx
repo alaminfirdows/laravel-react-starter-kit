@@ -1,5 +1,5 @@
 import { Form, Head, Link } from '@inertiajs/react';
-import { Info } from 'lucide-react';
+import { Info } from '@/components/animated-icons';
 import CommunityPackController from '@/actions/App/Domain/Catalog/Http/Controllers/CommunityPackController';
 import { Page } from '@/components/page';
 import { PageHeader } from '@/components/page-header';

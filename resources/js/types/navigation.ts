@@ -1,5 +1,5 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
-import type { LucideIcon } from 'lucide-react';
+import type { AppIcon } from '@/components/animated-icons';
 
 export type BreadcrumbItem = {
     title: string;
@@ -9,6 +9,6 @@ export type BreadcrumbItem = {
 export type NavItem = {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
+    icon?: AppIcon | null;
     isActive?: boolean;
 };

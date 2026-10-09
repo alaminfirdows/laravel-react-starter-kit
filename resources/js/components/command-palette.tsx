@@ -1,5 +1,12 @@
 import { router, usePage } from '@inertiajs/react';
-import { FolderKanban, Monitor, Moon, Search, Sun, User } from 'lucide-react';
+import {
+    FolderKanban,
+    Monitor,
+    Moon,
+    Search,
+    Sun,
+    User,
+} from '@/components/animated-icons';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { WorkspaceAvatar } from '@/components/workspace-avatar';
