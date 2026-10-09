@@ -104,3 +104,21 @@ export type CommunityPack = {
     items?: { key: string; title: string }[];
     itemsCount?: number;
 };
+
+export type TaskCompletionStat = {
+    key: string;
+    title: string;
+    projects: number;
+    started: number;
+    completed: number;
+    completionRate: number;
+    avgHoursToComplete: number | null;
+};
+
+export type TaskDropOff = {
+    key: string;
+    title: string;
+    started: number;
+    stalled: number;
+    dropOffRate: number;
+};
