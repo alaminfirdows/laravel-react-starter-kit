@@ -21,7 +21,7 @@ class AssignTask
             return $task;
         }
 
-        if ($assignee !== null && ! $task->project->workspace->editors()->whereKey($assignee->id)->exists()) {
+        if ($assignee !== null && ! $task->loadMissing('workspace')->workspace->editors()->whereKey($assignee->id)->exists()) {
             throw InvalidTaskTransition::assigneeCannotEdit();
         }
 

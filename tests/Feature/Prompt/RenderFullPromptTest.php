@@ -12,6 +12,7 @@ use App\Domain\Task\Models\Task;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
+use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
     $workspace = Workspace::factory()->create();
@@ -71,4 +72,23 @@ test('knowledge placeholders insert the approved document, trimmed to budget', f
         ->not->toContain('Draft ICP')
         ->toContain('Positioning: |')
         ->and(mb_strlen(str($prompt)->after('Brand: ')->toString()))->toBeLessThanOrEqual(RenderFullPrompt::KNOWLEDGE_TOKENS * 4);
+});
+
+test('knowledge lookups run once per project, not per placeholder or action', function () {
+    KnowledgeDocument::factory()->forProject($this->project)->create(['doc_type' => DocType::Icp, 'status' => DocStatus::Approved, 'body_md' => 'Approved ICP']);
+    $actions = TaskAction::factory()->forTask($this->task)->count(3)->create([
+        'prompt_override_md' => '{{ knowledge.icp }} {{ knowledge.brand }} {{ knowledge.icp }}',
+    ]);
+    $render = app(RenderFullPrompt::class);
+    $project = Project::query()->findOrFail($this->project->id);
+    $actions->each(fn (TaskAction $action) => $action->setRelation('task', $this->task->setRelation('project', $project)->load('catalogTask.skills')));
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    $prompts = $actions->map(fn (TaskAction $action): string => $render->handle($action, withProtocol: false));
+    $knowledgeQueries = collect(DB::getQueryLog())->filter(fn (array $query): bool => str_contains($query['query'], 'knowledge_documents'))->count();
+    DB::disableQueryLog();
+
+    expect($prompts->every(fn (string $prompt): bool => str_contains($prompt, 'Approved ICP')))->toBeTrue()
+        ->and($knowledgeQueries)->toBe(1);
 });

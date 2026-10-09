@@ -15,6 +15,7 @@ use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -160,4 +161,22 @@ test('run refuses manual actions, viewers and actions of other tasks', function 
     $this->workspace->memberships()->create(['user_id' => $viewer->id, 'role' => WorkspaceRole::Viewer, 'joined_at' => now()]);
     $this->actingAs($viewer)->post("/acme/projects/rocket/tasks/{$this->parent->id}/actions/{$foreign->id}/runs")
         ->assertForbidden();
+});
+
+test('the task page resolves every ancestor level without lazy loading', function () {
+    app(WorkspaceDiscoveryService::class)->runAs($this->workspace, function () {
+        $root = Task::factory()->forProject($this->project)->create(['title' => 'Root']);
+        $middle = Task::factory()->childOf($root)->create(['title' => 'Middle']);
+        $this->deepest = Task::factory()->childOf($middle)->create(['title' => 'Deepest']);
+    });
+
+    Model::preventLazyLoading();
+
+    try {
+        $this->get("/acme/projects/rocket/tasks/{$this->deepest->id}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('task.ancestors.0.title', 'Root')->where('task.ancestors.1.title', 'Middle'));
+    } finally {
+        Model::preventLazyLoading(false);
+    }
 });

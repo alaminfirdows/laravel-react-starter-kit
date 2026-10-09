@@ -12,6 +12,7 @@ use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Queue;
@@ -211,4 +212,42 @@ test('a start that throws leaves no reopen activity and does not crash', functio
     expect($recurring->runs()->count())->toBe(0)
         ->and($recurring->fresh()->status)->toBe(ActionStatus::Done)
         ->and(Activity::query()->where('event', 'action.reopened')->count())->toBe(0);
+});
+
+/**
+ * Not-yet-due scheduled actions, each in its own project and workspace, so every row needs its task, project and workspace.
+ */
+function seedIdleScheduledActions(int $count): void
+{
+    foreach (range(1, $count) as $ignored) {
+        $workspace = Workspace::factory()->ownedBy(User::factory()->create())->create();
+        $project = Project::factory()->forWorkspace($workspace)->create();
+        $task = Task::factory()->forProject($project)->create();
+        TaskAction::factory()->forTask($task)->create([
+            'type' => ActionType::Scheduled,
+            'executor' => Executor::AppAi,
+            'config' => ['schedule' => ['at' => now()->addDay()->toIso8601String()]],
+        ]);
+    }
+}
+
+function schedulerQueryCount(): int
+{
+    app(WorkspaceDiscoveryService::class)->forgetCurrentWorkspace();
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    test()->artisan('actions:process-scheduled')->assertSuccessful();
+    $count = count(DB::getQueryLog());
+    DB::disableQueryLog();
+
+    return $count;
+}
+
+test('the scheduler query count does not grow with the number of actions', function () {
+    seedIdleScheduledActions(2);
+    $few = schedulerQueryCount();
+
+    seedIdleScheduledActions(6);
+
+    expect(schedulerQueryCount())->toBe($few);
 });

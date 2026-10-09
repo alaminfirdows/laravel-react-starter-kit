@@ -19,6 +19,11 @@ class RebuildContextSnapshotJob implements ShouldBeUnique, ShouldQueue
 
     public int $uniqueFor = 60;
 
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [5, 30];
+
     public function __construct(public string $projectId) {}
 
     public static function debounce(string $projectId): void

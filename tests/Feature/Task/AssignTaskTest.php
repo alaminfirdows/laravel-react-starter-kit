@@ -1,7 +1,9 @@
 <?php
 
+use App\Domain\Activity\Data\Actor;
 use App\Domain\Activity\Models\Activity;
 use App\Domain\Project\Models\Project;
+use App\Domain\Task\Actions\AssignTask;
 use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Actions\RemoveMember;
@@ -9,6 +11,7 @@ use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Enums\WorkspaceRole;
 use App\Domain\Workspace\Models\Workspace;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -86,4 +89,17 @@ test('my tasks lists open tasks assigned to me', function () {
             ->has('tasks', 1)
             ->where('tasks.0.title', 'Write ICP')
             ->where('tasks.0.project.slug', 'rocket'));
+});
+
+test('assigning checks membership without loading the project chain', function () {
+    $task = Task::query()->withoutGlobalScopes()->findOrFail($this->task->id);
+
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+    app(AssignTask::class)->handle($task, $this->member, Actor::user($this->owner));
+    $queries = collect(DB::getQueryLog())->pluck('query');
+    DB::disableQueryLog();
+
+    expect($queries->filter(fn (string $query): bool => str_contains($query, 'from "projects"')))->toBeEmpty()
+        ->and($task->fresh()->assignee_id)->toBe($this->member->id);
 });

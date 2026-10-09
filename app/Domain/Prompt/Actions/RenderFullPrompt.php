@@ -4,10 +4,12 @@ namespace App\Domain\Prompt\Actions;
 
 use App\Domain\Knowledge\Enums\DocStatus;
 use App\Domain\Knowledge\Enums\DocType;
+use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Models\Project;
 use App\Domain\Prompt\Support\TokenBudget;
 use App\Domain\Task\Models\TaskAction;
 use BackedEnum;
+use WeakMap;
 
 /**
  * Self-contained "full prompt" (PROJECT_CONTEXT §8) for users without the connector.
@@ -15,6 +17,9 @@ use BackedEnum;
  */
 class RenderFullPrompt
 {
+    /** @var WeakMap<Project, array<string, string>>|null */
+    private ?WeakMap $knowledge = null;
+
     public const int MAX_TOKENS = 3500;
 
     public const int MAX_CHARS = self::MAX_TOKENS * TokenBudget::CHARS_PER_TOKEN;
@@ -94,12 +99,26 @@ class RenderFullPrompt
             return '';
         }
 
-        $body = $project->knowledgeDocuments()
-            ->where('doc_type', $type)
-            ->where('status', DocStatus::Approved)
-            ->latest('updated_at')
-            ->value('body_md');
+        $body = $this->approvedKnowledge($project)[$type->value] ?? null;
 
         return $body === null ? '' : (new TokenBudget(self::KNOWLEDGE_TOKENS))->trim(trim($body));
+    }
+
+    /**
+     * Latest approved body per doc type, loaded once per project instance (not per placeholder or action).
+     *
+     * @return array<string, string>
+     */
+    private function approvedKnowledge(Project $project): array
+    {
+        $this->knowledge ??= new WeakMap;
+
+        return $this->knowledge[$project] ??= $project->knowledgeDocuments()
+            ->where('status', DocStatus::Approved)
+            ->latest('updated_at')
+            ->get(['doc_type', 'body_md'])
+            ->unique(fn (KnowledgeDocument $document): string => $document->doc_type->value)
+            ->mapWithKeys(fn (KnowledgeDocument $document): array => [$document->doc_type->value => (string) $document->body_md])
+            ->all();
     }
 }

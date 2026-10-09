@@ -87,7 +87,7 @@ class ImportCatalog
         });
 
         foreach ($this->changedTaskIds as $taskId) {
-            FlagCatalogUpdates::dispatch($taskId);
+            FlagCatalogUpdates::dispatch($taskId)->afterCommit();
         }
 
         return $this->counts;

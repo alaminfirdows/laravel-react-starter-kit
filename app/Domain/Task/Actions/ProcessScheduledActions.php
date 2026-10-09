@@ -4,17 +4,20 @@ namespace App\Domain\Task\Actions;
 
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Activity\Enums\ActivityChannel;
-use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ActionType;
 use App\Domain\Task\Enums\Executor;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
 use App\Domain\Task\Models\TaskAction;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
-use App\Domain\Workspace\Models\Workspace;
+use App\Domain\Workspace\Scopes\WorkspaceScope;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Cron\CronExpression;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -49,13 +52,15 @@ class ProcessScheduledActions
                         ->whereIn('status', [ActionStatus::Done, ActionStatus::Failed])
                         ->whereNotNull('config->schedule->cron'));
             })
+            ->with([
+                'task' => fn (Relation $task) => $task->withoutGlobalScopes([WorkspaceScope::class, SoftDeletingScope::class]),
+                'task.project' => fn (Relation $project) => $project->withoutGlobalScope(WorkspaceScope::class),
+                'task.project.workspace.owner',
+            ])
+            ->withMax('runs as last_run_started_at', 'started_at')
             ->lazyById()
             ->each(function (TaskAction $action) use (&$counts): void {
-                $workspace = Workspace::query()->whereIn('id', Project::withoutWorkspaceScope()->whereKey($action->project_id)->select('workspace_id'))->first();
-
-                if ($workspace === null) {
-                    return;
-                }
+                $workspace = $action->task->project->workspace;
 
                 $this->workspaces->runAs($workspace, function () use ($action, $workspace, &$counts): void {
                     try {
@@ -63,7 +68,7 @@ class ProcessScheduledActions
                             $this->complete->handle($action, Actor::system(ActivityChannel::Cli));
                             $counts['waits']++;
                         } elseif ($action->type === ActionType::Scheduled && $this->scheduleIsDue($action)) {
-                            $owner = $workspace->owner()->firstOrFail();
+                            $owner = $workspace->owner ?? throw (new ModelNotFoundException)->setModel(User::class);
                             DB::transaction(function () use ($action, $owner): void {
                                 $this->reopen->handle($action, Actor::user($owner));
                                 $this->runInApp->handle($action, $owner);
@@ -122,7 +127,9 @@ class ProcessScheduledActions
 
         $at = CarbonImmutable::parse($at);
 
-        return $at->isPast() && $action->runs()->where('started_at', '>=', $at)->doesntExist();
+        $lastRun = $action->getAttribute('last_run_started_at');
+
+        return $at->isPast() && ($lastRun === null || CarbonImmutable::parse($lastRun)->lessThan($at));
     }
 
     private function cronIsDue(TaskAction $action, mixed $cron): bool
@@ -141,7 +148,7 @@ class ProcessScheduledActions
             return false;
         }
 
-        $lastRun = $action->runs()->max('started_at');
+        $lastRun = $action->getAttribute('last_run_started_at');
         $anchor = CarbonImmutable::parse($lastRun ?? $action->created_at);
         $next = new CronExpression($cron)->getNextRunDate($anchor, 0, false, $timezone);
 
