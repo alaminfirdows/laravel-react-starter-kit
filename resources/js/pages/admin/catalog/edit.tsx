@@ -70,23 +70,20 @@ export default function CatalogEdit({
                                     <Badge variant="outline">Edited</Badge>
                                 )}
                                 <CatalogStatusBadge status={task.status} />
-                                {task.status !== 'published' && (
-                                    <Form
-                                        {...CatalogTaskPublicationController.store.form(
-                                            task.key,
-                                        )}
-                                        options={{ preserveScroll: true }}
-                                    >
-                                        {({ processing }) => (
-                                            <Button
-                                                size="sm"
-                                                disabled={processing}
-                                            >
-                                                Publish
-                                            </Button>
-                                        )}
-                                    </Form>
-                                )}
+                                <Form
+                                    {...CatalogTaskPublicationController.store.form(
+                                        task.key,
+                                    )}
+                                    options={{ preserveScroll: true }}
+                                >
+                                    {({ processing }) => (
+                                        <Button size="sm" disabled={processing}>
+                                            {task.status === 'published'
+                                                ? 'Publish update'
+                                                : 'Publish'}
+                                        </Button>
+                                    )}
+                                </Form>
                             </>
                         )}
                         <Button size="sm" variant="outline" asChild>

@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\Actions;
 
 use App\Domain\Catalog\Enums\CatalogStatus;
+use App\Domain\Catalog\Jobs\FlagCatalogUpdates;
 use App\Domain\Catalog\Models\CatalogCategory;
 use App\Domain\Catalog\Models\CatalogResource;
 use App\Domain\Catalog\Models\CatalogTask;
@@ -45,6 +46,9 @@ class ImportCatalog
     /** @var array<string, int> */
     private array $resourceIds = [];
 
+    /** @var list<int> catalog tasks whose version changed in this run */
+    private array $changedTaskIds = [];
+
     /** @var list<array{file:string, task:string, depends_on:string, kind:string}> */
     private array $pendingDependencies = [];
 
@@ -55,6 +59,7 @@ class ImportCatalog
     public function handle(string $directory, ?string $skillsDirectory = null): array
     {
         $this->counts = ['categories' => 0, 'skills' => 0, 'resources' => 0, 'tasks' => 0, 'actions' => 0, 'prompts' => 0, 'packs' => 0];
+        $this->changedTaskIds = [];
 
         DB::transaction(function () use ($directory, $skillsDirectory): void {
             $this->importCategories($this->read("{$directory}/categories.yaml"));
@@ -75,6 +80,10 @@ class ImportCatalog
             $this->importDependencies();
             $this->importPacks($this->read("{$directory}/packs.yaml"));
         });
+
+        foreach ($this->changedTaskIds as $taskId) {
+            FlagCatalogUpdates::dispatch($taskId);
+        }
 
         return $this->counts;
     }
@@ -164,14 +173,21 @@ class ImportCatalog
             throw new InvalidArgumentException("{$file}: task [{$key}] has unknown category [{$category}]");
         }
 
+        $task = CatalogTask::query()->firstOrNew(['key' => $key]);
+        $previousVersion = $task->exists ? $task->version : null;
+
         $task = Versioning::import(
-            CatalogTask::query()->firstOrNew(['key' => $key]),
+            $task,
             self::taskAttributes($row, $categoryId, $parent?->id, $position),
             except: self::HASH_ONLY,
         );
 
         $task->published_at ??= now();
         $task->save();
+
+        if ($previousVersion !== null && $previousVersion !== $task->version) {
+            $this->changedTaskIds[] = $task->id;
+        }
 
         $this->syncSkills($file, $task, $row['skills'] ?? []);
         $this->syncResources($file, $task, $row['resources'] ?? []);
