@@ -36,9 +36,12 @@ class ApplyPack
         return DB::transaction(function () use ($project, $pack, $actor): int {
             /** @var array<int, string> $map catalog_task_id => task id */
             $map = $project->tasks()->whereNotNull('catalog_task_id')->pluck('id', 'catalog_task_id')->all();
+            $existingIds = array_values($map);
+            $catalogTasks = $this->catalogTasksFor($pack);
+            $blocked = array_flip($this->blockedCatalogTaskIds($project, $map, array_values($catalogTasks->map(fn (array $row): int => $row[0]->id)->all())));
             $created = 0;
 
-            foreach ($this->catalogTasksFor($pack) as [$catalogTask, $position]) {
+            foreach ($catalogTasks as [$catalogTask, $position]) {
                 if (isset($map[$catalogTask->id])) {
                     continue;
                 }
@@ -61,7 +64,7 @@ class ApplyPack
                     'summary' => $catalogTask->summary,
                     'body_md' => $catalogTask->body_md,
                     'body_doc' => $catalogTask->body_doc,
-                    'status' => TaskStatus::Todo,
+                    'status' => isset($blocked[$catalogTask->id]) ? TaskStatus::Locked : TaskStatus::Todo,
                     'priority' => $catalogTask->priority_default,
                     'completion_criteria' => $catalogTask->completion_criteria,
                     'expected_outputs' => $catalogTask->expected_outputs,
@@ -98,7 +101,7 @@ class ApplyPack
                 'applied_at' => now(),
             ]);
 
-            $this->refreshLocks->handle($project, $actor);
+            $this->refreshLocks->handle($project, $actor, onlyTaskIds: $existingIds);
 
             $this->activity->record('project.pack_applied', $project, [
                 'pack' => $pack->key,
@@ -144,6 +147,34 @@ class ApplyPack
         }
 
         return $result;
+    }
+
+    /**
+     * New tasks start locked when a hard dependency is open (DATA_MODEL §F.1), so creating
+     * them needs no per-task lock event; `project.pack_applied` covers the change.
+     *
+     * @param  array<int, string>  $map  existing catalog_task_id => task id
+     * @param  list<int>  $packCatalogIds
+     * @return list<int> catalog task ids that start locked
+     */
+    private function blockedCatalogTaskIds(Project $project, array $map, array $packCatalogIds): array
+    {
+        $inProject = array_unique([...array_keys($map), ...$packCatalogIds]);
+        $closedExisting = $project->tasks()
+            ->whereNotNull('catalog_task_id')
+            ->whereIn('status', [TaskStatus::Done, TaskStatus::Skipped])
+            ->pluck('catalog_task_id')
+            ->flip();
+
+        return array_values(DB::table('catalog_task_dependencies')
+            ->whereIn('task_id', array_diff($packCatalogIds, array_keys($map)))
+            ->whereIn('depends_on_id', $inProject)
+            ->where('kind', 'hard')
+            ->get(['task_id', 'depends_on_id'])
+            ->reject(fn (object $row): bool => $closedExisting->has($row->depends_on_id))
+            ->map(fn (object $row): int => (int) $row->task_id)
+            ->unique()
+            ->all());
     }
 
     /**

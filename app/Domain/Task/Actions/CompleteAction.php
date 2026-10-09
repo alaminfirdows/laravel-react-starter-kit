@@ -7,7 +7,6 @@ use App\Domain\Activity\Data\Actor;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\ApprovalStatus;
 use App\Domain\Task\Enums\RunStatus;
-use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Exceptions\InvalidActionTransition;
 use App\Domain\Task\Models\TaskAction;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 class CompleteAction
 {
     public function __construct(
+        protected LockActionForChange $lock,
         protected EvaluateCriteria $criteria,
         protected CloseStartedRuns $closeRuns,
         protected SyncTaskFromActions $sync,
@@ -28,15 +28,8 @@ class CompleteAction
     public function handle(TaskAction $action, Actor $actor, ?string $outputMd = null): TaskAction
     {
         return DB::transaction(function () use ($action, $actor, $outputMd): TaskAction {
-            $action->newQueryWithoutScopes()->whereKey($action->getKey())->lockForUpdate()->value('id');
-            $action->refresh();
-
-            if ($action->status->isClosed()) {
+            if (! $this->lock->handle($action)) {
                 return $action;
-            }
-
-            if ($action->task->status === TaskStatus::Locked) {
-                throw InvalidActionTransition::taskLocked($action);
             }
 
             if ($action->requires_approval && $action->approvals()->where('status', ApprovalStatus::Approved)->doesntExist()) {

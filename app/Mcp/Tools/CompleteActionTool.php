@@ -5,7 +5,6 @@ namespace App\Mcp\Tools;
 use App\Domain\Task\Actions\AttachEvidence;
 use App\Domain\Task\Actions\CompleteAction;
 use App\Domain\Task\Exceptions\InvalidTaskTransition;
-use App\Domain\Task\Models\TaskAction;
 use App\Mcp\Support\AgentEvidence;
 use App\Mcp\Support\McpActor;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -38,23 +37,26 @@ class CompleteActionTool extends Tool
         ]);
         $action = $mcp->action($validated['action_id'], 'update');
 
-        if (isset($validated['run_id']) && $validated['run_id'] !== $action->last_run_id) {
-            return Response::error('run_id is not the latest run of this action. Call get_action to see it.');
-        }
-
         try {
-            $action = DB::transaction(function () use ($action, $mcp, $validated): TaskAction {
+            return DB::transaction(function () use ($action, $mcp, $validated): Response {
+                $action->newQueryWithoutScopes()->whereKey($action->getKey())->lockForUpdate()->value('id');
+                $action->refresh();
+
+                if (isset($validated['run_id']) && $validated['run_id'] !== $action->last_run_id) {
+                    return Response::error('run_id is not the latest run of this action. Call get_action to see it.');
+                }
+
                 foreach ($validated['evidence'] ?? [] as $item) {
                     $this->attach->handle($action, AgentEvidence::toData($item), $mcp->actor());
                 }
 
-                return $this->complete->handle($action, $mcp->actor(), $validated['output_md'] ?? null);
+                $action = $this->complete->handle($action, $mcp->actor(), $validated['output_md'] ?? null);
+
+                return Response::text("\"{$action->title}\" is {$action->status->value}. Call get_task to pick the next action.");
             });
         } catch (InvalidTaskTransition $e) {
             return Response::error($e->getMessage());
         }
-
-        return Response::text("\"{$action->title}\" is {$action->status->value}. Call get_task to pick the next action.");
     }
 
     /**

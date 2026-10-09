@@ -14,6 +14,10 @@ use Illuminate\Foundation\Queue\Queueable;
  * Caches mean leaf progress on `projects.progress_pct`. Dispatched after commit with a 2 s delay and
  * unique per project until it starts, so a burst of task changes (an agent closing many actions)
  * costs one query and a change made while it runs queues one more.
+ *
+ * Known gap (accepted): the unique lock is taken at dispatch, inside the transaction. If that
+ * transaction rolls back, a debounce committed by another transaction in the same window was
+ * already dropped, so project progress stays stale until the next task change.
  */
 class RollupProgressJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
 {

@@ -6,14 +6,13 @@ use App\Domain\Activity\ActivityRecorder;
 use App\Domain\Activity\Data\Actor;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\RunStatus;
-use App\Domain\Task\Enums\TaskStatus;
-use App\Domain\Task\Exceptions\InvalidActionTransition;
 use App\Domain\Task\Models\TaskAction;
 use Illuminate\Support\Facades\DB;
 
 class SkipAction
 {
     public function __construct(
+        protected LockActionForChange $lock,
         protected CloseStartedRuns $closeRuns,
         protected SyncTaskFromActions $sync,
         protected ActivityRecorder $activity,
@@ -21,15 +20,11 @@ class SkipAction
 
     public function handle(TaskAction $action, Actor $actor, ?string $reason = null): TaskAction
     {
-        if ($action->status->isClosed()) {
-            return $action;
-        }
-
-        if ($action->task->status === TaskStatus::Locked) {
-            throw InvalidActionTransition::taskLocked($action);
-        }
-
         return DB::transaction(function () use ($action, $actor, $reason): TaskAction {
+            if (! $this->lock->handle($action)) {
+                return $action;
+            }
+
             $this->closeRuns->handle($action, RunStatus::Cancelled, $actor);
 
             $action->forceFill([

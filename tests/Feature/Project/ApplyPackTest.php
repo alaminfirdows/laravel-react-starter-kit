@@ -7,10 +7,12 @@ use App\Domain\Project\Actions\ApplyPack;
 use App\Domain\Project\Models\Project;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\TaskStatus;
+use App\Domain\Task\Events\TaskStatusChanged;
 use App\Domain\Task\Models\Task;
 use App\Domain\Workspace\Contracts\WorkspaceDiscoveryService;
 use App\Domain\Workspace\Models\Workspace;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 
 beforeEach(function () {
     $this->workspace = Workspace::factory()->create();
@@ -45,6 +47,16 @@ test('copies the subtree, actions and dependencies', function () {
         ->and($call->status)->toBe(TaskStatus::Locked)
         ->and($recruit->status)->toBe(TaskStatus::Todo)
         ->and($this->project->packs()->first()->pack_version)->toBe(2);
+});
+
+test('blocked new tasks start locked without per-task events', function () {
+    Event::fake([TaskStatusChanged::class]);
+
+    app(ApplyPack::class)->handle($this->project, $this->pack);
+
+    expect(Task::where('catalog_task_id', $this->call->id)->firstOrFail()->status)->toBe(TaskStatus::Locked);
+    Event::assertNotDispatched(TaskStatusChanged::class);
+    $this->assertDatabaseMissing('activity_log', ['event' => 'task.locked']);
 });
 
 test('applying twice is idempotent', function () {

@@ -144,3 +144,18 @@ test('mark task done respects action criteria', function () {
 
     app(MarkTaskDone::class)->handle($this->task->fresh(), $this->founder);
 })->throws(InvalidActionTransition::class, 'Doc link');
+
+test('start or skip from a stale model cannot reopen a completed action', function () {
+    $staleForStart = TaskAction::find($this->first->id);
+    $staleForSkip = TaskAction::find($this->first->id);
+
+    app(CompleteAction::class)->handle($this->first, $this->founder);
+
+    expect(fn () => app(StartAction::class)->handle($staleForStart, $this->agent, RunChannel::Mcp))
+        ->toThrow(InvalidActionTransition::class);
+
+    app(SkipAction::class)->handle($staleForSkip, $this->founder);
+
+    expect($this->first->fresh()->status)->toBe(ActionStatus::Done)
+        ->and($this->first->fresh()->last_run_id)->toBeNull();
+});

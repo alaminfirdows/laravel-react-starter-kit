@@ -7,7 +7,6 @@ use App\Domain\Activity\Data\Actor;
 use App\Domain\Task\Enums\ActionStatus;
 use App\Domain\Task\Enums\RunChannel;
 use App\Domain\Task\Enums\RunStatus;
-use App\Domain\Task\Enums\TaskStatus;
 use App\Domain\Task\Exceptions\InvalidActionTransition;
 use App\Domain\Task\Models\ActionRun;
 use App\Domain\Task\Models\TaskAction;
@@ -16,25 +15,22 @@ use Illuminate\Support\Facades\DB;
 class StartAction
 {
     public function __construct(
+        protected LockActionForChange $lock,
         protected SyncTaskFromActions $sync,
         protected ActivityRecorder $activity,
     ) {}
 
     public function handle(TaskAction $action, Actor $actor, RunChannel $channel, ?string $renderedPrompt = null): ActionRun
     {
-        if ($action->status->isClosed()) {
-            throw InvalidActionTransition::closed($action);
-        }
-
-        if ($action->task->status === TaskStatus::Locked) {
-            throw InvalidActionTransition::taskLocked($action);
-        }
-
-        if ($action->status === ActionStatus::AwaitingApproval) {
-            throw InvalidActionTransition::approvalRequired($action);
-        }
-
         return DB::transaction(function () use ($action, $actor, $channel, $renderedPrompt): ActionRun {
+            if (! $this->lock->handle($action)) {
+                throw InvalidActionTransition::closed($action);
+            }
+
+            if ($action->status === ActionStatus::AwaitingApproval) {
+                throw InvalidActionTransition::approvalRequired($action);
+            }
+
             $run = new ActionRun([
                 'task_action_id' => $action->id,
                 'task_id' => $action->task_id,
