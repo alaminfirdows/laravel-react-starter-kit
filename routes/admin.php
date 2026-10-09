@@ -3,6 +3,7 @@
 use App\Domain\Catalog\Http\Controllers\Admin\CatalogActionController;
 use App\Domain\Catalog\Http\Controllers\Admin\CatalogTaskController;
 use App\Domain\Catalog\Http\Controllers\Admin\CatalogTaskPublicationController;
+use App\Domain\Catalog\Http\Controllers\Admin\CommunityPackReviewController;
 use App\Domain\Catalog\Http\Controllers\Admin\PackController;
 use App\Domain\Catalog\Http\Controllers\Admin\PromptTemplateController;
 use App\Http\Controllers\Admin\AdminDashboardController;
@@ -35,4 +36,7 @@ Route::middleware(['auth', 'verified', 'can:admin'])
         Route::resource('packs', PackController::class)
             ->only(['index', 'create', 'store', 'edit', 'update'])
             ->parameters(['packs' => 'pack:key']);
+
+        Route::get('community-packs', [CommunityPackReviewController::class, 'index'])->name('community-packs.index');
+        Route::post('community-packs/{pack:key}/review', [CommunityPackReviewController::class, 'store'])->name('community-packs.review.store');
     });

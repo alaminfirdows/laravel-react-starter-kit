@@ -7,6 +7,7 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { index } from '@/routes/admin';
 import { index as catalogIndex } from '@/routes/admin/catalog';
+import { index as communityPacksIndex } from '@/routes/admin/community-packs';
 import { index as packsIndex } from '@/routes/admin/packs';
 import { index as promptsIndex } from '@/routes/admin/prompts';
 import type { NavItem } from '@/types';
@@ -19,6 +20,7 @@ export default function AdminLayout({ children }: PropsWithChildren) {
         { title: 'Catalog', href: catalogIndex() },
         { title: 'Prompts', href: promptsIndex() },
         { title: 'Packs', href: packsIndex() },
+        { title: 'Community', href: communityPacksIndex() },
     ];
 
     return (
