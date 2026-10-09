@@ -2,7 +2,9 @@
 
 namespace App\Domain\Project\Models;
 
+use App\Domain\Knowledge\Models\Competitor;
 use App\Domain\Knowledge\Models\Decision;
+use App\Domain\Knowledge\Models\Interview;
 use App\Domain\Knowledge\Models\KnowledgeDocument;
 use App\Domain\Project\Enums\BusinessModel;
 use App\Domain\Project\Enums\LegalEntityStatus;
@@ -155,6 +157,22 @@ class Project extends Model
     public function decisions(): HasMany
     {
         return $this->hasMany(Decision::class);
+    }
+
+    /**
+     * @return HasMany<Interview, $this>
+     */
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class);
+    }
+
+    /**
+     * @return HasMany<Competitor, $this>
+     */
+    public function competitors(): HasMany
+    {
+        return $this->hasMany(Competitor::class);
     }
 
     /**

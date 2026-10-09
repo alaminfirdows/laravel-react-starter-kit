@@ -3,8 +3,11 @@
 use App\Domain\Activity\Http\Controllers\ProjectActivityController;
 use App\Domain\Comment\Http\Controllers\CommentResolutionController;
 use App\Domain\Comment\Http\Controllers\TaskCommentController;
+use App\Domain\Knowledge\Http\Controllers\CompetitorController;
 use App\Domain\Knowledge\Http\Controllers\DecisionController;
+use App\Domain\Knowledge\Http\Controllers\InterviewController;
 use App\Domain\Knowledge\Http\Controllers\KnowledgeController;
+use App\Domain\Knowledge\Http\Controllers\ResearchController;
 use App\Domain\Project\Enums\ProjectSetupStep;
 use App\Domain\Project\Http\Controllers\ProjectController;
 use App\Domain\Project\Http\Controllers\ProjectLogoController;
@@ -51,6 +54,14 @@ Route::prefix('projects')->name('projects.')->group(function () use ($steps) {
     Route::get('{project}/knowledge/{knowledgeDocument}', [KnowledgeController::class, 'show'])->name('knowledge.show');
     Route::get('{project}/knowledge/{knowledgeDocument}/edit', [KnowledgeController::class, 'edit'])->name('knowledge.edit');
     Route::put('{project}/knowledge/{knowledgeDocument}', [KnowledgeController::class, 'update'])->name('knowledge.update');
+
+    Route::get('{project}/research', [ResearchController::class, 'index'])->name('research.index');
+    Route::post('{project}/research/interviews', [InterviewController::class, 'store'])->name('research.interviews.store');
+    Route::put('{project}/research/interviews/{interview}', [InterviewController::class, 'update'])->name('research.interviews.update');
+    Route::delete('{project}/research/interviews/{interview}', [InterviewController::class, 'destroy'])->name('research.interviews.destroy');
+    Route::post('{project}/research/competitors', [CompetitorController::class, 'store'])->name('research.competitors.store');
+    Route::put('{project}/research/competitors/{competitor}', [CompetitorController::class, 'update'])->name('research.competitors.update');
+    Route::delete('{project}/research/competitors/{competitor}', [CompetitorController::class, 'destroy'])->name('research.competitors.destroy');
 
     Route::get('{project}/decisions', [DecisionController::class, 'index'])->name('decisions.index');
     Route::post('{project}/decisions', [DecisionController::class, 'store'])->name('decisions.store');
